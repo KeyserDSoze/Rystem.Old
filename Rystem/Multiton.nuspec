@@ -2,10 +2,10 @@
 <package>
   <metadata>
     <id>Rystem</id>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <title>Multiton</title>
     <authors>Alessandro Rapiti</authors>
-    <owners>Vetrya S.p.A.</owners>
+    <owners>Alessandro Rapiti</owners>
     <licenseUrl>http://icon.com</licenseUrl>
     <projectUrl>http://icon.com</projectUrl>
     <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
