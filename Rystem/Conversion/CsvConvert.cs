@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using static System.FormattableString;
 
-namespace Rystem.Utility.Conversion
+namespace Rystem.Conversion
 {
     public class CsvConvert
     {
