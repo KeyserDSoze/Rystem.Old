@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Rystem
+namespace Rystem.Cache
 {
     internal class MultitonCache<TEntry> where TEntry : AMultiton
     {

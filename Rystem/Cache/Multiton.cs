@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem
+namespace Rystem.Cache
 {
     internal delegate AMultiton CreationFunction(AMultitonKey key);
     public abstract class AMultiton

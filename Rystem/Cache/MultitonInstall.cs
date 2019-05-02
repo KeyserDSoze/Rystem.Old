@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem
+namespace Rystem.Cache
 {
     /// <summary>
     /// Install Multiton paradigma for your Entity.

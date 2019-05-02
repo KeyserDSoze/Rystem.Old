@@ -1,0 +1,37 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Rystem</id>
+    <version>1.0.0</version>
+    <title>Multiton</title>
+    <authors>Alessandro Rapiti</authors>
+    <owners>Vetrya S.p.A.</owners>
+    <licenseUrl>http://icon.com</licenseUrl>
+    <projectUrl>http://icon.com</projectUrl>
+    <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Utility to implement: Multiton with Redis Cache or Table Storage, Csv conversion as Newtonsoft.</description>
+    <releaseNotes>
+      - First Release.
+    </releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>Rystem Cache Conversion Csv</tags>
+    <references>
+      <reference file="Rystem.dll" />
+    </references>
+  </metadata>
+  <files>
+    <file src="bin\Release\*.dll" target="lib\Release" />
+    <file src="bin\Release\*.pdb" target="lib\Release" />
+    <file src="bin\Debug\*.dll" target="lib\Debug" />
+    <file src="bin\Debug\*.pdb" target="lib\Debug" />
+    <!-- RELEASE -->
+    <!--<file src="bin\Release\Multiton.dll" target="lib"></file>
+    <file src="..\Multiton\bin\Release\Multiton.dll" target="lib"></file>-->
+    <!-- .Net 4.6.2 specific folders -->
+    <!--<file src="bin\Release\Multiton.dll" target="lib\net462"></file>-->
+    <!--<file src="..\Multiton\bin\Release\Multiton.dll" target="lib\net462"></file>-->
+    <!--<file src="..\Multiton\bin\Release\Multiton.pdb" target="lib\net462"></file>-->
+
+  </files>
+</package>
