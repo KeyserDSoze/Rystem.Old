@@ -4,10 +4,11 @@ using Rystem.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
 {
-    public class ConnectionMessage
+    public abstract class AConnectionMessage
     {
         [JsonProperty("A")]
         public int Attempt { get; set; }
@@ -28,24 +29,8 @@ namespace Rystem.Azure.Queue
         }
         public T ToObject<T>() where T : new()
         {
-            return this.Container.ToObject<T>();
+            return (T)this.Container;
         }
-    }
-    public static class ExtensionConnectionMessageMethod
-    {
-        public static ConnectionMessage ToConnectionMessage(this string connectionMessage)
-        {
-            try
-            {
-                return JsonConvert.DeserializeObject<ConnectionMessage>(connectionMessage);
-            }
-            catch
-            {
-                return new ConnectionMessage()
-                {
-                    Attempt = 0,
-                };
-            }
-        }
+        public abstract Task<long> SendFurther(int delay = 0);
     }
 }

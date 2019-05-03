@@ -71,12 +71,12 @@ namespace Rystem.Azure.Queue
         }
         public static async Task<long> Send(this IServiceBus serviceBusEntity, int delayInSeconds = 0, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
-            Message message = new Message(Encoding.UTF8.GetBytes(new ConnectionMessage()
+            Message message = new Message(Encoding.UTF8.GetBytes(new EventHubMessage()
             {
                 Attempt = attempt,
                 Container = serviceBusEntity,
                 Flow = flowType,
-                Version = version
+                Version = version,
             }.ToJson()));
             if (delayInSeconds == 0)
                 await Instance(serviceBusEntity.GetType()).SendAsync(message);

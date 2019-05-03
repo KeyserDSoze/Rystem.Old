@@ -17,7 +17,19 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
                     B = "dasdsa"
                 }
             };
-            myEventHub.Send().ConfigureAwait(false).GetAwaiter().GetResult();
+            //myEventHub.Send().ConfigureAwait(false).GetAwaiter().GetResult();
+            EventHubMessage connectionMessage = new EventHubMessage()
+            {
+                Attempt = 0,
+                Container = myEventHub,
+                Flow = Enums.FlowType.Flow0,
+                Version = Enums.VersionType.V0,
+            };
+            myEventHub = connectionMessage.ToObject<MyEventHub>();
+            string jsonSent = connectionMessage.ToJson();
+            connectionMessage = jsonSent.ToEventHubMessage();
+            myEventHub = connectionMessage.ToObject<MyEventHub>();
+            connectionMessage.SendFurther(30).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }
     }

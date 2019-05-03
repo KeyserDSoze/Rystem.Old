@@ -64,8 +64,8 @@ namespace Rystem.ConsoleApp.Tester.Cache
         {
             return new Service()
             {
-                A = Entropy.GetTimedKey(),
-                C = Entropy.GetNumber(100)
+                A = Alea.GetTimedKey(),
+                C = Alea.GetNumber(100)
             };
         }
     }

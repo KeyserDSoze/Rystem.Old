@@ -70,12 +70,12 @@ namespace Rystem.Azure.Queue
         }
         public static async Task<bool> Send(this IEventHub eventHubEntity, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
-            ConnectionMessage connectionMessage = new ConnectionMessage()
+            EventHubMessage connectionMessage = new EventHubMessage()
             {
                 Attempt = attempt,
                 Container = eventHubEntity,
                 Flow = flowType,
-                Version = version
+                Version = version,
             };
             EventData eventData = new EventData(Encoding.UTF8.GetBytes(connectionMessage.ToJson()));
             await Instance(eventHubEntity.GetType()).SendAsync(eventData);
