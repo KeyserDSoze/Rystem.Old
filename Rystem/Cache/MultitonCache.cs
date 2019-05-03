@@ -70,7 +70,8 @@ namespace Rystem.Cache
                     }
                 }
             }
-            return JsonConvert.DeserializeObject<TEntry>(Cache.StringGet(keyString), new JsonSerializerSettings()
+            string json = Cache.StringGet(keyString);
+            return JsonConvert.DeserializeObject<TEntry>(json, new JsonSerializerSettings()
             {
                 TypeNameHandling = TypeNameHandling.Auto
             });

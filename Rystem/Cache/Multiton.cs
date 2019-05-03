@@ -11,7 +11,7 @@ namespace Rystem.Cache
     internal delegate AMultiton CreationFunction(AMultitonKey key);
     public abstract class AMultiton
     {
-        internal DateTime LastUpdate;
+        internal long LastUpdate = 0;
         /// <summary>
         /// Fetch data of the istance by your database, or webrequest, or your business logic.
         /// </summary>
@@ -83,22 +83,22 @@ namespace Rystem.Cache
             string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
             if (ExpireMultiton > -1)
             {
-                if (!multitonDictionary.ContainsKey(innerKey) || (ExpireMultiton > 0 && multitonDictionary[innerKey]?.LastUpdate < DateTime.UtcNow) || multitonDictionary[innerKey] == null)
+                if (!multitonDictionary.ContainsKey(innerKey) || (ExpireMultiton > 0 && multitonDictionary[innerKey]?.LastUpdate < DateTime.UtcNow.Ticks) || multitonDictionary[innerKey] == null)
                 {
                     lock (TrafficLight)
                     {
-                        if (!multitonDictionary.ContainsKey(innerKey) || (ExpireMultiton > 0 && multitonDictionary[innerKey]?.LastUpdate < DateTime.UtcNow) || multitonDictionary[innerKey] == null)
+                        if (!multitonDictionary.ContainsKey(innerKey) || (ExpireMultiton > 0 && multitonDictionary[innerKey]?.LastUpdate < DateTime.UtcNow.Ticks) || multitonDictionary[innerKey] == null)
                         {
                             if (!multitonDictionary.ContainsKey(innerKey)) multitonDictionary.Add(innerKey, null);
                             if (HasCache || HasTableStorage)
                             {
                                 multitonDictionary[innerKey] = (TEntry)FromCache(key, type);
-                                if (ExpireMultiton > 0) multitonDictionary[innerKey].LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton);
+                                if (ExpireMultiton > 0 && multitonDictionary[innerKey] != null) multitonDictionary[innerKey].LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton).Ticks;
                             }
                             else
                             {
                                 multitonDictionary[innerKey] = (TEntry)((AMultiton)Activator.CreateInstance(type)).Fetch(key);
-                                if (ExpireMultiton > 0) multitonDictionary[innerKey].LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton);
+                                if (ExpireMultiton > 0 && multitonDictionary[innerKey] != null) multitonDictionary[innerKey].LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton).Ticks;
                             }
                         }
                     }
