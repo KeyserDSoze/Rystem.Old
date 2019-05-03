@@ -38,6 +38,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
                 bool deleting = serviceKey.Delete();
                 if (!deleting) return false;
             }
+            MultitonUtility.ClearAllCache(Service.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }
     }
@@ -52,9 +53,10 @@ namespace Rystem.ConsoleApp.Tester.Cache
     }
     public class Service : AMultiton
     {
+        internal const string ConnectionString = "redistest23.redis.cache.windows.net:6380,password=xLnjyPpuHLRb+Z6rJ9PnsnvWTYS4NodjnPyULUNkoa8=,ssl=True,abortConnect=False";
         static Service()
         {
-            MultitonInstall<Service>.OnStart("redistest23.redis.cache.windows.net:6380,password=xLnjyPpuHLRb+Z6rJ9PnsnvWTYS4NodjnPyULUNkoa8=,ssl=True,abortConnect=False", CacheExpireTime.FiveMinutes, MultitonExpireTime.TurnOff);
+            MultitonInstall<Service>.OnStart(ConnectionString, CacheExpireTime.FiveMinutes, MultitonExpireTime.TurnOff);
         }
         public string A { get; set; }
         public int C { get; set; }
