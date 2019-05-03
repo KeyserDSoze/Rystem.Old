@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.EventHubs;
+using Microsoft.Azure.ServiceBus;
 using Rystem.Enums;
 using System;
 using System.Collections.Generic;
@@ -7,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
 {
-    public interface IEventHub { }
-    public static class EventHubHelper
+    public interface IServiceBus { }
+    public static class ServiceBusHelper
     {
         private static Dictionary<string, string> connectionStrings = new Dictionary<string, string>();
-        private static Dictionary<string, EventHubClient> eventHubs = new Dictionary<string, EventHubClient>();
+        private static Dictionary<string, QueueClient> seriviceBuses = new Dictionary<string, QueueClient>();
         private static readonly object TrafficLight = new object();
         private static string connectionStringDefault;
         private static string entityPathDefault;
@@ -20,14 +21,14 @@ namespace Rystem.Azure.Queue
             connectionStringDefault = connectionString;
             entityPathDefault = entityPath;
         }
-        public static void Install<TEntity>(string connectionString = null, string entityPath = null) where TEntity : IEventHub, new()
+        public static void Install<TEntity>(string connectionString = null, string entityPath = null) where TEntity : IServiceBus, new()
         {
             Type type = typeof(TEntity);
-            if (!eventHubs.ContainsKey(type.FullName))
+            if (!seriviceBuses.ContainsKey(type.FullName))
             {
                 lock (TrafficLight)
                 {
-                    if (!eventHubs.ContainsKey(type.FullName))
+                    if (!seriviceBuses.ContainsKey(type.FullName))
                     {
                         Installer(type, connectionString, entityPath);
                     }
@@ -47,39 +48,55 @@ namespace Rystem.Azure.Queue
                 connectionStringWithEntityPath += $";EntityPath={entityPathDefault}";
             else
                 connectionStringWithEntityPath += $";EntityPath={type.Name.ToLower()}";
-            eventHubs.Add(type.FullName, EventHubClient.CreateFromConnectionString(
-                new EventHubsConnectionStringBuilder(connectionStringWithEntityPath).ToString()));
+            seriviceBuses.Add(type.FullName, new QueueClient(new ServiceBusConnectionStringBuilder(connectionStringWithEntityPath), ReceiveMode.PeekLock));
+
         }
-        private static EventHubClient Instance(Type type)
+        private static QueueClient Instance(Type type)
         {
-            if (!eventHubs.ContainsKey(type.FullName))
+            if (!seriviceBuses.ContainsKey(type.FullName))
             {
                 lock (TrafficLight)
                 {
-                    if (!eventHubs.ContainsKey(type.FullName))
+                    if (!seriviceBuses.ContainsKey(type.FullName))
                     {
                         Activator.CreateInstance(type);
-                        if (!eventHubs.ContainsKey(type.FullName))
+                        if (!seriviceBuses.ContainsKey(type.FullName))
                         {
                             Installer(type, null, null);
                         }
                     }
                 }
             }
-            return eventHubs[type.FullName];
+            return seriviceBuses[type.FullName];
         }
-        public static async Task<bool> Send(this IEventHub eventHubEntity, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        public static async Task<long> Send(this IServiceBus serviceBusEntity, int delayInSeconds = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
-            ConnectionMessage connectionMessage = new ConnectionMessage()
+            Message message = new Message(Encoding.UTF8.GetBytes(new ConnectionMessage()
             {
                 Attempt = 0,
-                Container = eventHubEntity,
+                Container = serviceBusEntity,
                 Flow = flowType,
                 Version = version
-            };
-            EventData eventData = new EventData(Encoding.UTF8.GetBytes(connectionMessage.ToJson()));
-            await Instance(eventHubEntity.GetType()).SendAsync(eventData);
-            return true;
+            }.ToJson()));
+            if (delayInSeconds == 0)
+                await Instance(serviceBusEntity.GetType()).SendAsync(message);
+            else
+                return await Instance(serviceBusEntity.GetType()).ScheduleMessageAsync(message, DateTime.UtcNow.AddSeconds(delayInSeconds));
+            return 0;
+        }
+        public static async Task<bool> Delete(this IServiceBus serviceBusEntity, long messageId)
+        {
+            //It's not possible to delete an active message, it's possible to delete only scheduled messages
+            try
+            {
+                if (messageId > 0)
+                    await Instance(serviceBusEntity.GetType()).CancelScheduledMessageAsync(messageId);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
