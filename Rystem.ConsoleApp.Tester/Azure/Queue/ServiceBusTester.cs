@@ -17,8 +17,20 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
                     B = "dasdsa"
                 }
             };
-            long messageId = myServiceBus.Send(120).ConfigureAwait(false).GetAwaiter().GetResult();
-            myServiceBus.Delete(messageId).ConfigureAwait(false).GetAwaiter().GetResult();
+            //long messageId = myServiceBus.Send(120).ConfigureAwait(false).GetAwaiter().GetResult();
+            //myServiceBus.Delete(messageId).ConfigureAwait(false).GetAwaiter().GetResult();
+            ServiceBusMessage connectionMessage = new ServiceBusMessage()
+            {
+                Attempt = 0,
+                Container = myServiceBus,
+                Flow = Enums.FlowType.Flow0,
+                Version = Enums.VersionType.V0,
+            };
+            myServiceBus = connectionMessage.ToObject<MyServiceBus>();
+            string jsonSent = connectionMessage.ToJson();
+            connectionMessage = jsonSent.ToServiceBusMessage();
+            myServiceBus = connectionMessage.ToObject<MyServiceBus>();
+            connectionMessage.SendFurther(30).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }
     }

@@ -27,7 +27,8 @@ namespace Rystem.Azure.Queue
         {
             return JsonConvert.SerializeObject(this, NewtonsoftConst.JsonSettings);
         }
-        public T ToObject<T>() where T : new()
+        public T ToObject<T>()
+            where T : new()
         {
             return (T)this.Container;
         }

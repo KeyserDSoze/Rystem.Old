@@ -12,6 +12,7 @@ namespace Rystem.Azure.Queue
     {
         public override async Task<long> SendFurther(int delay = 0)
         {
+            await Task.Delay(delay);
             await ((IEventHub)this.Container).Send(this.Attempt + 1, this.Flow, this.Version);
             return 0;
         }
