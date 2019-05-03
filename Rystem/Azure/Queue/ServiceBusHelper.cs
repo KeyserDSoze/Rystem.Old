@@ -69,11 +69,11 @@ namespace Rystem.Azure.Queue
             }
             return seriviceBuses[type.FullName];
         }
-        public static async Task<long> Send(this IServiceBus serviceBusEntity, int delayInSeconds = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        public static async Task<long> Send(this IServiceBus serviceBusEntity, int delayInSeconds = 0, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
             Message message = new Message(Encoding.UTF8.GetBytes(new ConnectionMessage()
             {
-                Attempt = 0,
+                Attempt = attempt,
                 Container = serviceBusEntity,
                 Flow = flowType,
                 Version = version

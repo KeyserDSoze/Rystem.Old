@@ -68,11 +68,11 @@ namespace Rystem.Azure.Queue
             }
             return eventHubs[type.FullName];
         }
-        public static async Task<bool> Send(this IEventHub eventHubEntity, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        public static async Task<bool> Send(this IEventHub eventHubEntity, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
             ConnectionMessage connectionMessage = new ConnectionMessage()
             {
-                Attempt = 0,
+                Attempt = attempt,
                 Container = eventHubEntity,
                 Flow = flowType,
                 Version = version

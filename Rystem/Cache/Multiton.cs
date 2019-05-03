@@ -95,7 +95,6 @@ namespace Rystem.Cache
         private static TEntry Instance(AMultitonKey key)
         {
             Type type = typeof(TEntry);
-            string nameInstance = type.FullName;
             string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
             {
@@ -159,7 +158,7 @@ namespace Rystem.Cache
             if (HasCache || HasTableStorage)
                 existed = (bool)MethodInstance(MethodType.Exists).Invoke(null, new object[2] { key, type });
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
-                existed |= multitonDictionary.ContainsKey($"{type.FullName}{MultitonConst.Separator}{key.Value}");
+                existed &= multitonDictionary.ContainsKey($"{type.FullName}{MultitonConst.Separator}{key.Value}");
             return existed;
         }
         private static bool Delete(AMultitonKey key)
@@ -172,7 +171,7 @@ namespace Rystem.Cache
             {
                 string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
                 if (multitonDictionary.ContainsKey(innerKey))
-                    deleted |= multitonDictionary.Remove(innerKey);
+                    deleted &= multitonDictionary.Remove(innerKey);
             }
             return deleted;
         }
