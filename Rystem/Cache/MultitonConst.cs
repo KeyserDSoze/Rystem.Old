@@ -20,11 +20,11 @@ namespace Rystem.Cache
                     {
                         foreach (Type type in assembly.GetTypes())
                         {
-                            if (type.BaseType == MultitonConst.MultitonKey)
+                            if (type.BaseType == MultitonKey)
                             {
                                 PropertyInfoDictionary.Add(type,
                                     type.GetProperties().ToList().FindAll(x =>
-                                        x.GetCustomAttribute(MultitonConst.NoKey) == null && CheckPrimitiveList(x.PropertyType)));
+                                        x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
                             }
                         }
                     }
@@ -45,7 +45,7 @@ namespace Rystem.Cache
             TypeNameHandling = TypeNameHandling.Auto,
             NullValueHandling = NullValueHandling.Ignore
         };
-        public const char Separator = '_';
+        public const char Separator = '╬';
         public static Type NoKey = typeof(NoMultitonKey);
         public static Type MultitonKey = typeof(AMultitonKey);
         public static readonly List<Type> NormalTypes = new List<Type>

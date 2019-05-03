@@ -2,15 +2,15 @@
 <package>
   <metadata>
     <id>Rystem</id>
-    <version>1.0.1</version>
-    <title>Multiton</title>
+    <version>2.0.0</version>
+    <title>Rystem</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
     <licenseUrl>http://icon.com</licenseUrl>
     <projectUrl>http://icon.com</projectUrl>
     <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Utility to implement: Multiton with Redis Cache or Table Storage, Csv conversion as Newtonsoft.</description>
+    <description>Utility to implement: Multiton with Redis Cache or Table Storage, Csv conversion as Newtonsoft, EventHub and ServiceBus.</description>
     <releaseNotes>
       - First Release.
     </releaseNotes>
