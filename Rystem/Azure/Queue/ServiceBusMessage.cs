@@ -12,7 +12,7 @@ namespace Rystem.Azure.Queue
     {
         public override async Task<long> SendFurther(int delay = 0)
         {
-            return await ((IServiceBus)this.Container).Send(delay, this.Attempt + 1, this.Flow, this.Version);
+            return await ((IServiceBus)this.Container).Send(delay, this.Installation, this.Attempt + 1, this.Flow, this.Version);
         }
     }
     public static class ExtensionServiceBusMessageMessageMethod

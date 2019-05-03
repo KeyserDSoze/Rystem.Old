@@ -18,6 +18,8 @@ namespace Rystem.Azure.Queue
         public FlowType Flow { get; set; } = FlowType.Flow0;
         [JsonProperty("V")]
         public VersionType Version { get; set; } = VersionType.V0;
+        [JsonProperty("I")]
+        public Installation Installation { get; set; } = Installation.Null;
         private DateTime? eventTimeStamp;
         [JsonProperty("T")]
         public DateTime EventTimeStamp { get { return (DateTime)(eventTimeStamp ?? (eventTimeStamp = DateTime.UtcNow)); } set { eventTimeStamp = value; } }

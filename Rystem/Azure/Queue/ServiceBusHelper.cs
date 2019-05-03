@@ -21,21 +21,22 @@ namespace Rystem.Azure.Queue
             connectionStringDefault = connectionString;
             entityPathDefault = entityPath;
         }
-        public static void Install<TEntity>(string connectionString = null, string entityPath = null) where TEntity : IServiceBus, new()
+        public static void Install<TEntity>(string connectionString = null, string entityPath = null, Installation installation = Installation.Null) where TEntity : IServiceBus, new()
         {
             Type type = typeof(TEntity);
-            if (!seriviceBuses.ContainsKey(type.FullName))
+            string key = installation == Installation.Null ? $"{type.FullName}" : $"{type.FullName}_{installation}";
+            if (!seriviceBuses.ContainsKey(key))
             {
                 lock (TrafficLight)
                 {
-                    if (!seriviceBuses.ContainsKey(type.FullName))
+                    if (!seriviceBuses.ContainsKey(key))
                     {
-                        Installer(type, connectionString, entityPath);
+                        Installer(type, key, connectionString, entityPath);
                     }
                 }
             }
         }
-        private static void Installer(Type type, string connectionString = null, string entityPath = null)
+        private static void Installer(Type type, string key, string connectionString = null, string entityPath = null)
         {
             string connectionStringWithEntityPath;
             if (connectionString != null)
@@ -48,30 +49,31 @@ namespace Rystem.Azure.Queue
                 connectionStringWithEntityPath += $";EntityPath={entityPathDefault}";
             else
                 connectionStringWithEntityPath += $";EntityPath={type.Name.ToLower()}";
-            seriviceBuses.Add(type.FullName, new QueueClient(new ServiceBusConnectionStringBuilder(connectionStringWithEntityPath), ReceiveMode.PeekLock));
+            seriviceBuses.Add(key, new QueueClient(new ServiceBusConnectionStringBuilder(connectionStringWithEntityPath), ReceiveMode.PeekLock));
 
         }
-        private static QueueClient Instance(Type type)
+        private static QueueClient Instance(Type type, Installation installation = Installation.Null)
         {
-            if (!seriviceBuses.ContainsKey(type.FullName))
+            string key = installation == Installation.Null ? $"{type.FullName}" : $"{type.FullName}_{installation}";
+            if (!seriviceBuses.ContainsKey(key))
             {
                 lock (TrafficLight)
                 {
-                    if (!seriviceBuses.ContainsKey(type.FullName))
+                    if (!seriviceBuses.ContainsKey(key))
                     {
                         Activator.CreateInstance(type);
-                        if (!seriviceBuses.ContainsKey(type.FullName))
+                        if (!seriviceBuses.ContainsKey(key))
                         {
-                            Installer(type, null, null);
+                            Installer(type, key, null, null);
                         }
                     }
                 }
             }
-            return seriviceBuses[type.FullName];
+            return seriviceBuses[key];
         }
-        public static async Task<long> Send(this IServiceBus serviceBusEntity, int delayInSeconds = 0, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        public static async Task<long> Send(this IServiceBus serviceBusEntity, int delayInSeconds = 0, Installation installation = Installation.Null, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
-            Message message = new Message(Encoding.UTF8.GetBytes(new EventHubMessage()
+            Message message = new Message(Encoding.UTF8.GetBytes(new ServiceBusMessage()
             {
                 Attempt = attempt,
                 Container = serviceBusEntity,
@@ -79,18 +81,28 @@ namespace Rystem.Azure.Queue
                 Version = version,
             }.ToJson()));
             if (delayInSeconds == 0)
-                await Instance(serviceBusEntity.GetType()).SendAsync(message);
+                await Instance(serviceBusEntity.GetType(), installation).SendAsync(message);
             else
-                return await Instance(serviceBusEntity.GetType()).ScheduleMessageAsync(message, DateTime.UtcNow.AddSeconds(delayInSeconds));
+                return await Instance(serviceBusEntity.GetType(), installation).ScheduleMessageAsync(message, DateTime.UtcNow.AddSeconds(delayInSeconds));
             return 0;
         }
-        public static async Task<bool> Delete(this IServiceBus serviceBusEntity, long messageId)
+        public static async Task<Message> DebugSend(this IServiceBus serviceBusEntity, int delayInSeconds = 0, Installation installation = Installation.Null, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        {
+            return new Message(Encoding.UTF8.GetBytes(new ServiceBusMessage()
+            {
+                Attempt = attempt,
+                Container = serviceBusEntity,
+                Flow = flowType,
+                Version = version,
+            }.ToJson()));
+        }
+        public static async Task<bool> Delete(this IServiceBus serviceBusEntity, long messageId, Installation installation = Installation.Null)
         {
             //It's not possible to delete an active message, it's possible to delete only scheduled messages
             try
             {
                 if (messageId > 0)
-                    await Instance(serviceBusEntity.GetType()).CancelScheduledMessageAsync(messageId);
+                    await Instance(serviceBusEntity.GetType(), installation).CancelScheduledMessageAsync(messageId);
                 return true;
             }
             catch

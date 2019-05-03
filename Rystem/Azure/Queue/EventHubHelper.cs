@@ -20,21 +20,23 @@ namespace Rystem.Azure.Queue
             connectionStringDefault = connectionString;
             entityPathDefault = entityPath;
         }
-        public static void Install<TEntity>(string connectionString = null, string entityPath = null) where TEntity : IEventHub, new()
+        public static void Install<TEntity>(string connectionString = null, string entityPath = null, Installation installation = Installation.Null)
+            where TEntity : IEventHub, new()
         {
             Type type = typeof(TEntity);
-            if (!eventHubs.ContainsKey(type.FullName))
+            string key = installation == Installation.Null ? $"{type.FullName}" : $"{type.FullName}_{installation}";
+            if (!eventHubs.ContainsKey(key))
             {
                 lock (TrafficLight)
                 {
-                    if (!eventHubs.ContainsKey(type.FullName))
+                    if (!eventHubs.ContainsKey(key))
                     {
-                        Installer(type, connectionString, entityPath);
+                        Installer(type, key, connectionString, entityPath);
                     }
                 }
             }
         }
-        private static void Installer(Type type, string connectionString = null, string entityPath = null)
+        private static void Installer(Type type, string key, string connectionString = null, string entityPath = null)
         {
             string connectionStringWithEntityPath;
             if (connectionString != null)
@@ -47,28 +49,29 @@ namespace Rystem.Azure.Queue
                 connectionStringWithEntityPath += $";EntityPath={entityPathDefault}";
             else
                 connectionStringWithEntityPath += $";EntityPath={type.Name.ToLower()}";
-            eventHubs.Add(type.FullName, EventHubClient.CreateFromConnectionString(
+            eventHubs.Add(key, EventHubClient.CreateFromConnectionString(
                 new EventHubsConnectionStringBuilder(connectionStringWithEntityPath).ToString()));
         }
-        private static EventHubClient Instance(Type type)
+        private static EventHubClient Instance(Type type, Installation installation = Installation.Null)
         {
-            if (!eventHubs.ContainsKey(type.FullName))
+            string key = installation == Installation.Null ? $"{type.FullName}" : $"{type.FullName}_{installation}";
+            if (!eventHubs.ContainsKey(key))
             {
                 lock (TrafficLight)
                 {
-                    if (!eventHubs.ContainsKey(type.FullName))
+                    if (!eventHubs.ContainsKey(key))
                     {
                         Activator.CreateInstance(type);
-                        if (!eventHubs.ContainsKey(type.FullName))
+                        if (!eventHubs.ContainsKey(key))
                         {
-                            Installer(type, null, null);
+                            Installer(type, key, null, null);
                         }
                     }
                 }
             }
-            return eventHubs[type.FullName];
+            return eventHubs[key];
         }
-        public static async Task<bool> Send(this IEventHub eventHubEntity, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        public static async Task<bool> Send(this IEventHub eventHubEntity, int attempt = 0, Installation installation = Installation.Null, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
             EventHubMessage connectionMessage = new EventHubMessage()
             {
@@ -78,8 +81,20 @@ namespace Rystem.Azure.Queue
                 Version = version,
             };
             EventData eventData = new EventData(Encoding.UTF8.GetBytes(connectionMessage.ToJson()));
-            await Instance(eventHubEntity.GetType()).SendAsync(eventData);
+            await Instance(eventHubEntity.GetType(), installation).SendAsync(eventData);
             return true;
+        }
+        public static async Task<EventData> DebugSend(this IEventHub eventHubEntity, int attempt = 0, Installation installation = Installation.Null, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        {
+            EventHubMessage connectionMessage = new EventHubMessage()
+            {
+                Attempt = attempt,
+                Container = eventHubEntity,
+                Flow = flowType,
+                Version = version,
+            };
+            EventData eventData = new EventData(Encoding.UTF8.GetBytes(connectionMessage.ToJson()));
+            return eventData;
         }
     }
 }
