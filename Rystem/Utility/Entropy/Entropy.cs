@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Utility
 {
-    public static class Random
+    public static class Entropy
     {
         public static string GetTimedKey()
         {

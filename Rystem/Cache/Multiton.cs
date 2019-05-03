@@ -1,10 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
@@ -19,32 +15,52 @@ namespace Rystem.Cache
         /// <returns>This istance.</returns>
         public abstract AMultiton Fetch(AMultitonKey key);
     }
-    public abstract class AMultitonKey
+    internal partial class MultitonManager<TEntry> where TEntry : AMultiton
     {
-
-        private string value;
-        [NoMultitonKey]
-        public string Value
+        private static Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
+        private static object TrafficLightMethod = new object();
+        private static MethodInfo MethodInstance(MethodType methodType = MethodType.Instance)
         {
-            get
+            Type type = typeof(TEntry);
+            string key = $"{methodType}_{type.FullName}";
+            if (!methods.ContainsKey(key))
             {
-                if (value != null) return value;
-                StringBuilder valueBuilder = new StringBuilder();
-                foreach (PropertyInfo propertyInfo in MultitonConst.PropertyInfoDictionary[this.GetType()])
+                lock (TrafficLightMethod)
                 {
-                    valueBuilder.Append($"{propertyInfo.GetValue(this)}{MultitonConst.Separator}");
+                    if (!methods.ContainsKey(key))
+                    {
+                        switch (methodType)
+                        {
+                            case MethodType.Instance:
+                                methods.Add(key, (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("Instance", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                break;
+                            case MethodType.Delete:
+                                methods.Add(key, (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("Delete", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                break;
+                            case MethodType.Update:
+                                methods.Add(key, (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("Update", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                break;
+                            case MethodType.Exists:
+                                methods.Add(key, (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("Exists", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                break;
+                            case MethodType.List:
+                                methods.Add(key, (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("List", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                break;
+                        }
+                    }
                 }
-                return value = valueBuilder.ToString().Trim(MultitonConst.Separator);
             }
+            return methods[key];
         }
     }
-    public partial class MultitonManager<TEntry> where TEntry : AMultiton
+    internal partial class MultitonManager<TEntry> where TEntry : AMultiton
     {
         private static Dictionary<string, TEntry> multitonDictionary = new Dictionary<string, TEntry>();
         private static object TrafficLight = new object();
         private static int ExpireMultiton = 0;
         private static bool HasCache = false;
         private static bool HasTableStorage = false;
+        private static CreationFunction creationFunction = ((AMultiton)Activator.CreateInstance(typeof(TEntry))).Fetch;
         static MultitonManager()
         {
             Type type = typeof(TEntry);
@@ -76,7 +92,7 @@ namespace Rystem.Cache
         /// </summary>
         /// <param name="key">instance key, the real key is composed from typeof(Class of Key).FullName and key.ToString()</param>
         /// <returns></returns>
-        public static TEntry Instance(AMultitonKey key)
+        private static TEntry Instance(AMultitonKey key)
         {
             Type type = typeof(TEntry);
             string nameInstance = type.FullName;
@@ -92,7 +108,7 @@ namespace Rystem.Cache
                             if (!multitonDictionary.ContainsKey(innerKey)) multitonDictionary.Add(innerKey, null);
                             if (HasCache || HasTableStorage)
                             {
-                                multitonDictionary[innerKey] = (TEntry)FromCache(key, type);
+                                multitonDictionary[innerKey] = FromCache(key, type);
                                 if (ExpireMultiton > 0 && multitonDictionary[innerKey] != null) multitonDictionary[innerKey].LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton).Ticks;
                             }
                             else
@@ -103,13 +119,13 @@ namespace Rystem.Cache
                         }
                     }
                 }
-                return (TEntry)multitonDictionary[innerKey];
+                return multitonDictionary[innerKey];
             }
             else
             {
                 if (HasCache || HasTableStorage)
                 {
-                    return (TEntry)FromCache(key, type);
+                    return FromCache(key, type);
                 }
                 else
                 {
@@ -117,74 +133,65 @@ namespace Rystem.Cache
                 }
             }
         }
-        private static AMultiton FromCache(AMultitonKey key, Type type)
+
+        private static TEntry FromCache(AMultitonKey key, Type type)
         {
-            MethodInfo methodInfo = typeof(MultitonManager<>).MakeGenericType(type).GetMethod("FromInnerCache", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic);
-            CreationFunction creationFunction = ((AMultiton)Activator.CreateInstance(type)).Fetch;
-            return (AMultiton)methodInfo.Invoke(null, new object[2] { key, creationFunction });
+            return (TEntry)MethodInstance(MethodType.Instance).Invoke(null, new object[2] { key, creationFunction });
         }
-        private static AMultiton FromInnerCache(AMultitonKey key, CreationFunction creationFunction)
+        private static bool Update(AMultitonKey key, object value = null)
         {
-            return HasCache ? MultitonCache<TEntry>.Instance(key, creationFunction) : MultitonTableStorage<TEntry>.Instance(key, creationFunction);
-        }
-        public static bool Update(AMultitonKey key, object value = null)
-        {
+            bool updated = false;
             Type type = typeof(TEntry);
+            if (value == null) value = ((AMultiton)Activator.CreateInstance(type)).Fetch(key);
+            if (value == null) return updated;
             if (HasCache || HasTableStorage)
-            {
-                MethodInfo methodInfo = (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("Update", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic);
-                if (value == null) value = ((AMultiton)Activator.CreateInstance(type)).Fetch(key);
-                return (bool)methodInfo.Invoke(null, new object[2] { key, value });
-            }
-            else if (value != null)
+                updated = (bool)MethodInstance(MethodType.Update).Invoke(null, new object[2] { key, value });
+            if (ExpireMultiton != (int)MultitonExpireTime.TurnOff)
             {
                 string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
-                if (!multitonDictionary.ContainsKey(innerKey)) multitonDictionary.Add(innerKey, null);
-                multitonDictionary[innerKey] = (TEntry)value;
-                return true;
+                if (!multitonDictionary.ContainsKey(innerKey))
+                    multitonDictionary.Add(innerKey, (TEntry)value);
+                else
+                    multitonDictionary[innerKey] = (TEntry)value;
+                updated &= true;
             }
-            else return false;
+            return updated;
         }
-        public static bool Exists(AMultitonKey key)
+        private static bool Exists(AMultitonKey key)
         {
+            bool existed = false;
             Type type = typeof(TEntry);
             if (HasCache || HasTableStorage)
-            {
-                MethodInfo methodInfo = (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("Exists", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic);
-                return (bool)methodInfo.Invoke(null, new object[2] { key, type });
-            }
-            else
-            {
-                string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
-                return multitonDictionary.ContainsKey(innerKey);
-            }
+                existed = (bool)MethodInstance(MethodType.Exists).Invoke(null, new object[2] { key, type });
+            if (ExpireMultiton != (int)MultitonExpireTime.TurnOff)
+                existed |= multitonDictionary.ContainsKey($"{type.FullName}{MultitonConst.Separator}{key.Value}");
+            return existed;
         }
-        public static bool Delete(AMultitonKey key)
+        private static bool Delete(AMultitonKey key)
         {
+            bool deleted = false;
             Type type = typeof(TEntry);
             if (HasCache || HasTableStorage)
-            {
-                MethodInfo methodInfo = (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("Delete", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic);
-                return (bool)methodInfo.Invoke(null, new object[2] { key, type });
-            }
-            else
+                deleted = (bool)MethodInstance(MethodType.Delete).Invoke(null, new object[2] { key, type });
+            if (ExpireMultiton != (int)MultitonExpireTime.TurnOff)
             {
                 string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
-                return multitonDictionary.Remove(innerKey);
+                if (multitonDictionary.ContainsKey(innerKey))
+                    deleted |= multitonDictionary.Remove(innerKey);
             }
+            return deleted;
         }
-        public static IEnumerable<AMultitonKey> List<TKey>() where TKey : AMultitonKey
+        private static List<TKey> List<TKey>() where TKey : AMultitonKey
         {
             Type type = typeof(TEntry);
             Type keyType = typeof(TKey);
             if (HasCache || HasTableStorage)
             {
-                MethodInfo methodInfo = (HasCache ? typeof(MultitonCache<>) : typeof(MultitonTableStorage<>)).MakeGenericType(type).GetMethod("List", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic);
-                IEnumerable<string> listedKeys = (IEnumerable<string>)methodInfo.Invoke(null, new object[1] { type });
-                List<AMultitonKey> keys = new List<AMultitonKey>();
+                IEnumerable<string> listedKeys = (IEnumerable<string>)MethodInstance(MethodType.List).Invoke(null, new object[1] { type });
+                List<TKey> keys = new List<TKey>();
                 foreach (string key in listedKeys)
                 {
-                    AMultitonKey multitonKey = (TKey)Activator.CreateInstance(keyType);
+                    TKey multitonKey = (TKey)Activator.CreateInstance(keyType);
                     IEnumerator<string> keyValues = PropertyValue(key);
                     if (!keyValues.MoveNext()) continue;
                     foreach (PropertyInfo property in MultitonConst.PropertyInfoDictionary[keyType])
@@ -207,78 +214,4 @@ namespace Rystem.Cache
         }
     }
     public class NoMultitonKey : Attribute { }
-    internal class MultitonConst
-    {
-        public static Dictionary<Type, IEnumerable<PropertyInfo>> PropertyInfoDictionary = new Dictionary<Type, IEnumerable<PropertyInfo>>();
-        static MultitonConst()
-        {
-            List<Type> types = new List<Type>();
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                try
-                {
-                    if (!assembly.FullName.ToLower().Contains("system") && !assembly.FullName.ToLower().Contains("microsoft"))
-                    {
-                        foreach (Type type in assembly.GetTypes())
-                        {
-                            if (type.BaseType == MultitonConst.MultitonKey)
-                            {
-                                PropertyInfoDictionary.Add(type,
-                                    type.GetProperties().ToList().FindAll(x =>
-                                        x.GetCustomAttribute(MultitonConst.NoKey) == null && CheckPrimitiveList(x.PropertyType)));
-                            }
-                        }
-                    }
-                }
-                catch (Exception er)
-                {
-                    string weee = er.ToString();
-                }
-            }
-        }
-        private static bool CheckPrimitiveList(Type type)
-        {
-            foreach (Type typeR in MultitonConst.NormalTypes)
-                if (typeR == type) return true;
-            return false;
-        }
-        public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
-        {
-            TypeNameHandling = TypeNameHandling.Auto,
-            NullValueHandling = NullValueHandling.Ignore
-        };
-        public const char Separator = '_';
-        public static Type NoKey = typeof(NoMultitonKey);
-        public static Type MultitonKey = typeof(AMultitonKey);
-        public static readonly List<Type> NormalTypes = new List<Type>
-        {
-            typeof(int),
-            typeof(bool),
-            typeof(char),
-            typeof(decimal),
-            typeof(double),
-            typeof(long),
-            typeof(byte),
-            typeof(sbyte),
-            typeof(float),
-            typeof(uint),
-            typeof(ulong),
-            typeof(short),
-            typeof(ushort),
-            typeof(string),
-            typeof(int?),
-            typeof(bool?),
-            typeof(char?),
-            typeof(decimal?),
-            typeof(double?),
-            typeof(long?),
-            typeof(byte?),
-            typeof(sbyte?),
-            typeof(float?),
-            typeof(uint?),
-            typeof(ulong?),
-            typeof(short?),
-            typeof(ushort?)
-        };
-    }
 }
