@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.ServiceBus;
+using Rystem.Debug;
 using Rystem.Enums;
 using System;
 using System.Collections.Generic;
@@ -79,6 +80,7 @@ namespace Rystem.Azure.Queue
                 Container = serviceBusEntity,
                 Flow = flowType,
                 Version = version,
+                Installation = installation
             }.ToJson()));
             if (delayInSeconds == 0)
                 await Instance(serviceBusEntity.GetType(), installation).SendAsync(message);
@@ -86,15 +88,26 @@ namespace Rystem.Azure.Queue
                 return await Instance(serviceBusEntity.GetType(), installation).ScheduleMessageAsync(message, DateTime.UtcNow.AddSeconds(delayInSeconds));
             return 0;
         }
-        public static async Task<Message> DebugSend(this IServiceBus serviceBusEntity, int delayInSeconds = 0, Installation installation = Installation.Null, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        public static string GetServiceBusName(this IServiceBus serviceBusEntity, Installation installation = Installation.Null)
         {
-            return new Message(Encoding.UTF8.GetBytes(new ServiceBusMessage()
+            return Instance(serviceBusEntity.GetType(), installation).QueueName;
+        }
+        public static async Task<DebugMessage> DebugSend(this IServiceBus serviceBusEntity, int delayInSeconds = 0, Installation installation = Installation.Null, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        {
+            await Task.Delay(0);
+            Instance(serviceBusEntity.GetType(), installation);
+            return new DebugMessage()
             {
-                Attempt = attempt,
-                Container = serviceBusEntity,
-                Flow = flowType,
-                Version = version,
-            }.ToJson()));
+                DelayInSeconds = delayInSeconds,
+                Message = new Message(Encoding.UTF8.GetBytes(new ServiceBusMessage()
+                {
+                    Attempt = attempt,
+                    Container = serviceBusEntity,
+                    Flow = flowType,
+                    Version = version,
+                    Installation = installation
+                }.ToJson()))
+            };
         }
         public static async Task<bool> Delete(this IServiceBus serviceBusEntity, long messageId, Installation installation = Installation.Null)
         {

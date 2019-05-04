@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.EventHubs;
+using Rystem.Debug;
 using Rystem.Enums;
 using System;
 using System.Collections.Generic;
@@ -79,22 +80,31 @@ namespace Rystem.Azure.Queue
                 Container = eventHubEntity,
                 Flow = flowType,
                 Version = version,
+                Installation = installation
             };
             EventData eventData = new EventData(Encoding.UTF8.GetBytes(connectionMessage.ToJson()));
             await Instance(eventHubEntity.GetType(), installation).SendAsync(eventData);
             return true;
         }
-        public static async Task<EventData> DebugSend(this IEventHub eventHubEntity, int attempt = 0, Installation installation = Installation.Null, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        public static string GetEventHubName(this IEventHub eventHubEntity, Installation installation = Installation.Null)
         {
-            EventHubMessage connectionMessage = new EventHubMessage()
+            return Instance(eventHubEntity.GetType(), installation).EventHubName;
+        }
+        public static async Task<DebugMessage> DebugSend(this IEventHub eventHubEntity, int attempt = 0, Installation installation = Installation.Null, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
+        {
+            await Task.Delay(0);
+            Instance(eventHubEntity.GetType(), installation);
+            return new DebugMessage()
             {
-                Attempt = attempt,
-                Container = eventHubEntity,
-                Flow = flowType,
-                Version = version,
+                EventData = new EventData(Encoding.UTF8.GetBytes(new EventHubMessage()
+                {
+                    Attempt = attempt,
+                    Container = eventHubEntity,
+                    Flow = flowType,
+                    Version = version,
+                    Installation = installation
+                }.ToJson())),
             };
-            EventData eventData = new EventData(Encoding.UTF8.GetBytes(connectionMessage.ToJson()));
-            return eventData;
         }
     }
 }
