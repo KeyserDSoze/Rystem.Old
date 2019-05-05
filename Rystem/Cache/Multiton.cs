@@ -14,6 +14,28 @@ namespace Rystem.Cache
         /// <param name="key">Your istance Id.</param>
         /// <returns>This istance.</returns>
         public abstract AMultiton Fetch(AMultitonKey key);
+        /// <summary>
+        /// Call on start of your application.
+        /// </summary>
+        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
+        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
+        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
+        protected static void Install<TEntity>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+            where TEntity : AMultiton
+        {
+            MultitonManager<TEntity>.OnStart(connectionString, (int)expireCache, (int)expireMultiton);
+        }
+        /// <summary>
+        /// Call on start of your application.
+        /// </summary>
+        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
+        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
+        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
+        protected static void Install<TEntity>(string connectionString, int expireCache, int expireMultiton)
+            where TEntity : AMultiton
+        {
+            MultitonManager<TEntity>.OnStart(connectionString, (int)expireCache, (int)expireMultiton);
+        }
     }
     internal partial class MultitonManager<TEntry> where TEntry : AMultiton
     {
@@ -207,5 +229,4 @@ namespace Rystem.Cache
             }
         }
     }
-    public class NoMultitonKey : Attribute { }
 }

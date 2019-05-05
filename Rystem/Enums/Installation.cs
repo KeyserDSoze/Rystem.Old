@@ -16,6 +16,18 @@ namespace Rystem.Enums
         Inst6,
         Inst7,
         Inst8,
-        Inst9
+        Inst9,
+        Inst10,
+        Inst11,
+        Inst12,
+        Inst13,
+        Inst14,
+        Inst15,
+        Inst16,
+        Inst17,
+        Inst18,
+        Inst19,
+        Inst20,
+        Inst21
     }
 }

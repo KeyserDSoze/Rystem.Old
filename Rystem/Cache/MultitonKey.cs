@@ -5,12 +5,13 @@ using System.Text;
 
 namespace Rystem.Cache
 {
+    public class NoMultitonKey : Attribute { }
     public abstract class AMultitonKey
     {
         internal Type MultitonType;
         private string value;
         [NoMultitonKey]
-        public string Value
+        internal string Value
         {
             get
             {
@@ -20,7 +21,7 @@ namespace Rystem.Cache
                 {
                     valueBuilder.Append($"{propertyInfo.GetValue(this)}{MultitonConst.Separator}");
                 }
-                return value = valueBuilder.ToString();
+                return value = valueBuilder.ToString().Trim(MultitonConst.Separator);
             }
         }
         public AMultitonKey(Type multitonType) => this.MultitonType = multitonType;
