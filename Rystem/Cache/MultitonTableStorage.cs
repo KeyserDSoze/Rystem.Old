@@ -63,7 +63,7 @@ namespace Rystem.Cache
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             if (result.Result == null) return null;
             ARCache cached = (ARCache)result.Result;
-            if (DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > TimeSpan.FromMinutes(ExpireCache).Ticks) return null;
+            if (ExpireCache > 0 && DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > TimeSpan.FromMinutes(ExpireCache).Ticks) return null;
             return cached;
         }
         private static bool Set(string partitionKey, string rowKey, string data)
