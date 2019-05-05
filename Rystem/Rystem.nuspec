@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem</id>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
     <title>Rystem</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -21,7 +21,7 @@
       <dependency id="Microsoft.Azure.EventHubs" version="3.0.0" />
       <dependency id="Microsoft.Azure.ServiceBus" version="3.4.0" />
       <dependency id="StackExchange.Redis" version="2.0.601" />
-      <dependency id="Microsoft.Azure.Storage" version="9.3.3" />
+      <dependency id="WindowsAzure.Storage" version="9.3.3" />
     </dependencies>
     <references>
       <reference file="Rystem.dll" />
