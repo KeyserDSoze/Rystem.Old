@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Rystem.Const;
+using Rystem.Debug;
 using Rystem.Enums;
 using System;
 using System.Collections.Generic;
@@ -35,5 +36,6 @@ namespace Rystem.Azure.Queue
             return (T)this.Container;
         }
         public abstract Task<long> SendFurther(int delay = 0);
+        public abstract Task<DebugMessage> DebugSendFurther(int delay = 0);
     }
 }

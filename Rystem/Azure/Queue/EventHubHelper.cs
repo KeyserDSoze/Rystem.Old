@@ -93,18 +93,20 @@ namespace Rystem.Azure.Queue
         public static async Task<DebugMessage> DebugSend(this IEventHub eventHubEntity, int attempt = 0, Installation installation = Installation.Null, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
             await Task.Delay(0);
-            Instance(eventHubEntity.GetType(), installation);
-            return new DebugMessage()
-            {
-                EventData = new EventData(Encoding.UTF8.GetBytes(new EventHubMessage()
+            if (Instance(eventHubEntity.GetType(), installation) == null)
+                throw new NotImplementedException("Please insert a correct connection string and entity path");
+            else
+                return new DebugMessage()
                 {
-                    Attempt = attempt,
-                    Container = eventHubEntity,
-                    Flow = flowType,
-                    Version = version,
-                    Installation = installation
-                }.ToJson())),
-            };
+                    EventData = new EventData(Encoding.UTF8.GetBytes(new EventHubMessage()
+                    {
+                        Attempt = attempt,
+                        Container = eventHubEntity,
+                        Flow = flowType,
+                        Version = version,
+                        Installation = installation
+                    }.ToJson())),
+                };
         }
     }
 }

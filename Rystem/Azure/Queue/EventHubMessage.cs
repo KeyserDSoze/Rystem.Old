@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Rystem.Const;
+using Rystem.Debug;
 using Rystem.Enums;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,12 @@ namespace Rystem.Azure.Queue
 {
     public class EventHubMessage : AConnectionMessage
     {
+        public override async Task<DebugMessage> DebugSendFurther(int delay = 0)
+        {
+            await Task.Delay(delay);
+            return await ((IEventHub)this.Container).DebugSend(this.Attempt + 1, this.Installation, this.Flow, this.Version);
+        }
+
         public override async Task<long> SendFurther(int delay = 0)
         {
             await Task.Delay(delay);
