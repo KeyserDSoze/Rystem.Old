@@ -15,7 +15,7 @@ namespace Rystem.Cache
         private static readonly object TrafficLight = new object();
         private static readonly object OnStartTrafficLight = new object();
         private static int ExpireCache = 0;
-        private const string TableName = "ARCache";
+        private const string TableName = "RystemCache";
         internal static void OnStart(string connectionString, int expireCache = 0)
         {
             ConnectionString = connectionString;
@@ -29,7 +29,7 @@ namespace Rystem.Cache
         {
             string partitionKey = typeof(TEntry).FullName;
             string rowKey = key.Value;
-            ARCache cached = null;
+            RystemCache cached = null;
             if ((cached = Exist(partitionKey, rowKey)) == null)
             {
                 lock (TrafficLight)
@@ -51,30 +51,30 @@ namespace Rystem.Cache
             }
             return JsonConvert.DeserializeObject<TEntry>(cached.Data, MultitonConst.JsonSettings);
         }
-        private static ARCache Get(string partitionKey, string rowKey)
+        private static RystemCache Get(string partitionKey, string rowKey)
         {
-            TableOperation operation = TableOperation.Retrieve<ARCache>(partitionKey, rowKey);
+            TableOperation operation = TableOperation.Retrieve<RystemCache>(partitionKey, rowKey);
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-            return (ARCache)result.Result;
+            return (RystemCache)result.Result;
         }
-        private static ARCache Exist(string partitionKey, string rowKey)
+        private static RystemCache Exist(string partitionKey, string rowKey)
         {
-            TableOperation operation = TableOperation.Retrieve<ARCache>(partitionKey, rowKey);
+            TableOperation operation = TableOperation.Retrieve<RystemCache>(partitionKey, rowKey);
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             if (result.Result == null) return null;
-            ARCache cached = (ARCache)result.Result;
+            RystemCache cached = (RystemCache)result.Result;
             if (ExpireCache > 0 && DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > TimeSpan.FromMinutes(ExpireCache).Ticks) return null;
             return cached;
         }
         private static bool Set(string partitionKey, string rowKey, string data)
         {
-            ARCache aRCache = new ARCache()
+            RystemCache rystemCache = new RystemCache()
             {
                 PartitionKey = partitionKey,
                 RowKey = rowKey,
                 Data = data
             };
-            TableOperation operation = TableOperation.InsertOrReplace(aRCache);
+            TableOperation operation = TableOperation.InsertOrReplace(rystemCache);
             TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             return (esito.HttpStatusCode == 204);
         }
@@ -86,13 +86,13 @@ namespace Rystem.Cache
         }
         private static bool Remove(string partitionKey, string rowKey)
         {
-            ARCache aRCache = new ARCache()
+            RystemCache rystemCache = new RystemCache()
             {
                 PartitionKey = partitionKey,
                 RowKey = rowKey,
                 ETag = "*"
             };
-            TableOperation operation = TableOperation.Delete(aRCache);
+            TableOperation operation = TableOperation.Delete(rystemCache);
             TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             return (esito.HttpStatusCode == 204);
         }
@@ -131,7 +131,7 @@ namespace Rystem.Cache
             return Listing(partitionKey);
         }
     }
-    internal class ARCache : TableEntity
+    internal class RystemCache : TableEntity
     {
         public string Data { get; set; }
     }
