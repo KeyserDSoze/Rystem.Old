@@ -72,7 +72,7 @@ namespace Rystem.Cache
         {
             MultitonConst.CreatePropertyInfoDictionary();
             Type type = typeof(TEntry);
-            MultitonInstaller.ConnectionMultiton connectionMultiton = MultitonInstaller.GetConfiguration(type);
+            MultitonInstaller.MultitonConfiguration connectionMultiton = MultitonInstaller.GetConfiguration(type);
             ExpireMultiton = connectionMultiton.ExpireMultiton;
             HasCache = !string.IsNullOrWhiteSpace(connectionMultiton.ConnectionString) && connectionMultiton.ConnectionString.Contains(".redis.cache.windows.net");
             HasTableStorage = !string.IsNullOrWhiteSpace(connectionMultiton.ConnectionString) && !HasCache;

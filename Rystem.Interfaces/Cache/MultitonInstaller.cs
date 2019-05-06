@@ -9,8 +9,8 @@ namespace Rystem.Cache
     /// <typeparam name="TEntry">AMultiton Entity</typeparam>
     public static class MultitonInstaller
     {
-        private static Dictionary<string, ConnectionMultiton> Contexts = new Dictionary<string, ConnectionMultiton>();
-        public class ConnectionMultiton
+        private static Dictionary<string, MultitonConfiguration> Contexts = new Dictionary<string, MultitonConfiguration>();
+        public class MultitonConfiguration
         {
             public string ConnectionString { get; set; }
             public int ExpireCache { get; set; }
@@ -39,7 +39,7 @@ namespace Rystem.Cache
         {
             Type type = typeof(TEntry);
             if (!Contexts.ContainsKey(type.FullName))
-                Contexts.Add(type.FullName, new ConnectionMultiton()
+                Contexts.Add(type.FullName, new MultitonConfiguration()
                 {
                     ConnectionString = connectionString,
                     ExpireCache = expireCache,
@@ -68,7 +68,7 @@ namespace Rystem.Cache
         {
             Configure<TEntry>(connectionString, (int)expireCache, expireMultiton);
         }
-        public static ConnectionMultiton GetConfiguration(Type type)
+        public static MultitonConfiguration GetConfiguration(Type type)
         {
             if (Contexts.ContainsKey(type.FullName))
                 return Contexts[type.FullName];
