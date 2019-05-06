@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Rystem.Cache
 {
-    internal class MultitonCache<TEntry> where TEntry : AMultiton
+    internal class MultitonCache<TEntry> where TEntry : IMultiton
     {
         private static string ConnectionString;
         private static IDatabase Cache
@@ -40,9 +40,9 @@ namespace Rystem.Cache
                 }
             }
         }
-        internal static TEntry Instance(AMultitonKey key, CreationFunction functionIfNotExists)
+        internal static TEntry Instance(IMultitonKey key, CreationFunction functionIfNotExists)
         {
-            string keyString = $"{typeof(TEntry).FullName}{MultitonConst.Separator}{key.Value}";
+            string keyString = $"{typeof(TEntry).FullName}{MultitonConst.Separator}{key.Value()}";
             if (!Cache.KeyExists(keyString))
             {
                 lock (TrafficLight)
@@ -64,7 +64,7 @@ namespace Rystem.Cache
                         }
                         else
                         {
-                            return null;
+                            return default(TEntry);
                         }
                     }
                 }
@@ -75,9 +75,9 @@ namespace Rystem.Cache
                 TypeNameHandling = TypeNameHandling.Auto
             });
         }
-        internal static bool Update(AMultitonKey key, TEntry value)
+        internal static bool Update(IMultitonKey key, TEntry value)
         {
-            string keyString = $"{typeof(TEntry).FullName}{MultitonConst.Separator}{key.Value}";
+            string keyString = $"{typeof(TEntry).FullName}{MultitonConst.Separator}{key.Value()}";
             bool code = false;
             if (ExpireCache > 0)
             {
@@ -89,14 +89,14 @@ namespace Rystem.Cache
             }
             return code;
         }
-        internal static bool Exists(AMultitonKey key, Type type)
+        internal static bool Exists(IMultitonKey key, Type type)
         {
-            string keyString = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
+            string keyString = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
             return Cache.KeyExists(keyString);
         }
-        internal static bool Delete(AMultitonKey key, Type type)
+        internal static bool Delete(IMultitonKey key, Type type)
         {
-            string keyString = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
+            string keyString = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
             return Cache.KeyDelete(keyString);
         }
         internal static IEnumerable<string> List(Type type)

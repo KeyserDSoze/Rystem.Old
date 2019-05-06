@@ -7,7 +7,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-namespace Rystem.Azure.Storage.TableStorage
+
+namespace Rystem.Azure.Storage
 {
     /// <summary>
     /// Dummy class

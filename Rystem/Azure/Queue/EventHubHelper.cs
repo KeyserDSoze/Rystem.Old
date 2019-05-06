@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
 {
-    public interface IEventHub { }
     public static class EventHubHelper
     {
         private static Dictionary<string, string> connectionStrings = new Dictionary<string, string>();

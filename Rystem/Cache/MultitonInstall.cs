@@ -4,7 +4,7 @@
     /// Install Multiton paradigma for your Entity.
     /// </summary>
     /// <typeparam name="TEntry">AMultiton Entity</typeparam>
-    public class MultitonInstall<TEntry> where TEntry : AMultiton
+    public class MultitonInstall<TEntry> where TEntry : IMultiton
     {
         /// <summary>
         /// Call on start of your application.

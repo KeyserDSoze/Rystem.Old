@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Azure\Storage\TableStorage\TableStorage.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="3.0.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
@@ -19,6 +23,10 @@
     </PackageReference>
     <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rystem.Interfaces\Rystem.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

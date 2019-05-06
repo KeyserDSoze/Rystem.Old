@@ -20,23 +20,21 @@ namespace Rystem.ConsoleApp.Tester.Cache
 }
 namespace Wonda.Engine.Library.Multiton
 {
-    public class LastBillingOkKey : AMultitonKey
+    public class LastBillingOkKey : IMultitonKey
     {
         public string ServiceId { get; set; }
         public string CustomerId { get; set; }
-        public LastBillingOkKey() : base(typeof(LastBillingOk))
-        {
-        }
+        public Type MultitonType => typeof(LastBillingOk);
     }
-    public class LastBillingOk : AMultiton
+    public class LastBillingOk : IMultiton
     {
         public long LastEventTime { get; set; }
         static LastBillingOk()
         {
-            Install<LastBillingOk>("DefaultEndpointsProtocol=https;AccountName=wondacustomerbase;AccountKey=+pSYUSkVNAn1t2CJXqd38o4XtN6bmBbEqtDxz7KS6kIxM6ZWD6fSckKEVFiLRDCG2y6BjoPRVOvjU0kDbV3WnA==;EndpointSuffix=core.windows.net", CacheExpireTime.Infinite, MultitonExpireTime.TurnOff);
+            MultitonInstall<LastBillingOk>.OnStart("DefaultEndpointsProtocol=https;AccountName=wondacustomerbase;AccountKey=+pSYUSkVNAn1t2CJXqd38o4XtN6bmBbEqtDxz7KS6kIxM6ZWD6fSckKEVFiLRDCG2y6BjoPRVOvjU0kDbV3WnA==;EndpointSuffix=core.windows.net", CacheExpireTime.Infinite, MultitonExpireTime.TurnOff);
         }
 
-        public override AMultiton Fetch(AMultitonKey key)
+        public IMultiton Fetch(IMultitonKey key)
         {
             LastBillingOkKey lastBillingOkKey = (LastBillingOkKey)key;
             LastBillingOk lastBillingOk = new LastBillingOk()

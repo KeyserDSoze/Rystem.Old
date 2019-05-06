@@ -1,0 +1,5 @@
+﻿package manager console
+Install-Package NuGet.CommandLine (se non è installato il nuget.exe)
+cd .\Rystem (cd spazio e poi TAB e scegli il progetto)
+nuget pack -IncludeReferencedProjects -Symbols -Properties Configuration=Release
+nuget push Rystem.Interfaces.1.0.0.symbols.nupkg -source "C:\Users\a.rapiti\OneDrive - Vetrya S.p.A\Repository\Nuget"

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rystem.Azure.Storage.TableStorage
+namespace Rystem.Azure.Storage
 {
     public interface ITableStorage
     {

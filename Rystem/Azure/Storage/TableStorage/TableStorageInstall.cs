@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Storage.TableStorage
+namespace Rystem.Azure.Storage
 {
     public static class TableStorageInstall
     {

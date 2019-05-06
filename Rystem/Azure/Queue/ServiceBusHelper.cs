@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
 {
-    public interface IServiceBus { }
     public static class ServiceBusHelper
     {
         private static Dictionary<string, string> connectionStrings = new Dictionary<string, string>();

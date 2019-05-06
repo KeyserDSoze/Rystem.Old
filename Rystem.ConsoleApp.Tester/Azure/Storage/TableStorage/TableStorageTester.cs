@@ -1,4 +1,4 @@
-﻿using Rystem.Azure.Storage.TableStorage;
+﻿using Rystem.Azure.Storage;
 using System;
 using System.Collections.Generic;
 using System.Text;

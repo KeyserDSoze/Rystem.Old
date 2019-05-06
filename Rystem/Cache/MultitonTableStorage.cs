@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Rystem.Cache
 {
-    internal class MultitonTableStorage<TEntry> where TEntry : AMultiton
+    internal class MultitonTableStorage<TEntry> where TEntry : IMultiton
     {
         private static CloudTable Context;
         private static string ConnectionString;
@@ -25,10 +25,10 @@ namespace Rystem.Cache
             Context = tableClient.GetTableReference(TableName);
             Context.CreateIfNotExistsAsync().GetAwaiter().GetResult();
         }
-        internal static TEntry Instance(AMultitonKey key, CreationFunction functionIfNotExists)
+        internal static TEntry Instance(IMultitonKey key, CreationFunction functionIfNotExists)
         {
             string partitionKey = typeof(TEntry).FullName;
-            string rowKey = key.Value;
+            string rowKey = key.Value();
             RystemCache cached = null;
             if ((cached = Exist(partitionKey, rowKey)) == null)
             {
@@ -44,7 +44,7 @@ namespace Rystem.Cache
                         }
                         else
                         {
-                            return null;
+                            return default(TEntry);
                         }
                     }
                 }
@@ -78,10 +78,10 @@ namespace Rystem.Cache
             TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             return (esito.HttpStatusCode == 204);
         }
-        internal static bool Update(AMultitonKey key, TEntry value)
+        internal static bool Update(IMultitonKey key, TEntry value)
         {
             string partitionKey = typeof(TEntry).FullName;
-            string rowKey = key.Value;
+            string rowKey = key.Value();
             return Set(partitionKey, rowKey, JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
         }
         private static bool Remove(string partitionKey, string rowKey)
@@ -96,16 +96,16 @@ namespace Rystem.Cache
             TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             return (esito.HttpStatusCode == 204);
         }
-        internal static bool Delete(AMultitonKey key, Type type)
+        internal static bool Delete(IMultitonKey key, Type type)
         {
             string partitionKey = type.FullName;
-            string rowKey = key.Value;
+            string rowKey = key.Value();
             return Remove(partitionKey, rowKey);
         }
-        internal static bool Exists(AMultitonKey key, Type type)
+        internal static bool Exists(IMultitonKey key, Type type)
         {
             string partitionKey = type.FullName;
-            string rowKey = key.Value;
+            string rowKey = key.Value();
             return Exist(partitionKey, rowKey) != null;
         }
         private static IEnumerable<string> Listing(string partitionKey)

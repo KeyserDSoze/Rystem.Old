@@ -20,7 +20,7 @@ namespace Rystem.Cache
                     {
                         foreach (Type type in assembly.GetTypes())
                         {
-                            if (type.BaseType == MultitonKey)
+                            if (type.GetInterfaces().ToList().Find(x => x == MultitonKey) != null)
                             {
                                 PropertyInfoDictionary.Add(type,
                                     type.GetProperties().ToList().FindAll(x =>
@@ -47,7 +47,7 @@ namespace Rystem.Cache
         };
         public const char Separator = '╬';
         public static Type NoKey = typeof(NoMultitonKey);
-        public static Type MultitonKey = typeof(AMultitonKey);
+        public static Type MultitonKey = typeof(IMultitonKey);
         public static readonly List<Type> NormalTypes = new List<Type>
         {
             typeof(int),

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Rystem.Interfaces</id>
+    <version>1.0.1</version>
+    <title>Rystem Interfaces</title>
+    <authors>Alessandro Rapiti</authors>
+    <owners>Alessandro Rapiti</owners>
+    <licenseUrl>http://icon.com</licenseUrl>
+    <projectUrl>http://icon.com</projectUrl>
+    <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Interfaces of Rystem</description>
+    <releaseNotes>
+      - First Release.
+    </releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>Rystem Cache Conversion Csv</tags>
+    <references>
+      <reference file="Rystem.Interfaces.dll" />
+    </references>
+  </metadata>
+  <files>
+    <file src="bin\Release\*.dll" target="lib\Release" />
+    <file src="bin\Release\*.pdb" target="lib\Release" />
+    <file src="bin\Debug\*.dll" target="lib\Debug" />
+    <file src="bin\Debug\*.pdb" target="lib\Debug" />
+  </files>
+</package>

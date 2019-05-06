@@ -4,40 +4,8 @@ using System.Reflection;
 
 namespace Rystem.Cache
 {
-    internal delegate AMultiton CreationFunction(AMultitonKey key);
-    public abstract class AMultiton
-    {
-        internal long LastUpdate = 0;
-        /// <summary>
-        /// Fetch data of the istance by your database, or webrequest, or your business logic.
-        /// </summary>
-        /// <param name="key">Your istance Id.</param>
-        /// <returns>This istance.</returns>
-        public abstract AMultiton Fetch(AMultitonKey key);
-        /// <summary>
-        /// Call on start of your application.
-        /// </summary>
-        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
-        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
-        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        protected static void Install<TEntity>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
-            where TEntity : AMultiton
-        {
-            MultitonManager<TEntity>.OnStart(connectionString, (int)expireCache, (int)expireMultiton);
-        }
-        /// <summary>
-        /// Call on start of your application.
-        /// </summary>
-        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
-        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
-        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        protected static void Install<TEntity>(string connectionString, int expireCache, int expireMultiton)
-            where TEntity : AMultiton
-        {
-            MultitonManager<TEntity>.OnStart(connectionString, (int)expireCache, (int)expireMultiton);
-        }
-    }
-    internal partial class MultitonManager<TEntry> where TEntry : AMultiton
+    internal delegate IMultiton CreationFunction(IMultitonKey key);
+    internal partial class MultitonManager<TEntry> where TEntry : IMultiton
     {
         private static Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         private static object TrafficLightMethod = new object();
@@ -75,14 +43,31 @@ namespace Rystem.Cache
             return methods[key];
         }
     }
-    internal partial class MultitonManager<TEntry> where TEntry : AMultiton
+    internal partial class MultitonManager<TEntry> where TEntry : IMultiton
     {
-        private static Dictionary<string, TEntry> multitonDictionary = new Dictionary<string, TEntry>();
+        private class MultitonDummy
+        {
+            internal long LastUpdate { get; set; } = 0;
+            internal TEntry Entry { get; set; }
+            public static implicit operator TEntry(MultitonDummy multitonDummy)
+            {
+                return multitonDummy.Entry;
+            }
+            public static implicit operator MultitonDummy(TEntry entry)
+            {
+                return new MultitonDummy()
+                {
+                    Entry = entry,
+                    LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton).Ticks
+                };
+            }
+        }
+        private static Dictionary<string, MultitonDummy> multitonDictionary = new Dictionary<string, MultitonDummy>();
         private static object TrafficLight = new object();
         private static int ExpireMultiton = 0;
         private static bool HasCache = false;
         private static bool HasTableStorage = false;
-        private static CreationFunction creationFunction = ((AMultiton)Activator.CreateInstance(typeof(TEntry))).Fetch;
+        private static CreationFunction creationFunction = ((IMultiton)Activator.CreateInstance(typeof(TEntry))).Fetch;
         static MultitonManager()
         {
             Type type = typeof(TEntry);
@@ -114,10 +99,10 @@ namespace Rystem.Cache
         /// </summary>
         /// <param name="key">instance key, the real key is composed from typeof(Class of Key).FullName and key.ToString()</param>
         /// <returns></returns>
-        private static TEntry Instance(AMultitonKey key)
+        private static TEntry Instance(IMultitonKey key)
         {
             Type type = typeof(TEntry);
-            string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
+            string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
             {
                 if (!multitonDictionary.ContainsKey(innerKey) || (ExpireMultiton > 0 && multitonDictionary[innerKey]?.LastUpdate < DateTime.UtcNow.Ticks) || multitonDictionary[innerKey] == null)
@@ -126,17 +111,12 @@ namespace Rystem.Cache
                     {
                         if (!multitonDictionary.ContainsKey(innerKey) || (ExpireMultiton > 0 && multitonDictionary[innerKey]?.LastUpdate < DateTime.UtcNow.Ticks) || multitonDictionary[innerKey] == null)
                         {
-                            if (!multitonDictionary.ContainsKey(innerKey)) multitonDictionary.Add(innerKey, null);
+                            if (!multitonDictionary.ContainsKey(innerKey))
+                                multitonDictionary.Add(innerKey, null);
                             if (HasCache || HasTableStorage)
-                            {
                                 multitonDictionary[innerKey] = (TEntry)MethodInstance(MethodType.Instance).Invoke(null, new object[2] { key, creationFunction });
-                                if (ExpireMultiton > 0 && multitonDictionary[innerKey] != null) multitonDictionary[innerKey].LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton).Ticks;
-                            }
                             else
-                            {
-                                multitonDictionary[innerKey] = (TEntry)((AMultiton)Activator.CreateInstance(type)).Fetch(key);
-                                if (ExpireMultiton > 0 && multitonDictionary[innerKey] != null) multitonDictionary[innerKey].LastUpdate = DateTime.UtcNow.AddMinutes(ExpireMultiton).Ticks;
-                            }
+                                multitonDictionary[innerKey] = (TEntry)((IMultiton)Activator.CreateInstance(type)).Fetch(key);
                         }
                     }
                 }
@@ -145,26 +125,22 @@ namespace Rystem.Cache
             else
             {
                 if (HasCache || HasTableStorage)
-                {
                     return (TEntry)MethodInstance(MethodType.Instance).Invoke(null, new object[2] { key, creationFunction });
-                }
                 else
-                {
-                    return (TEntry)((AMultiton)Activator.CreateInstance(type)).Fetch(key);
-                }
+                    return (TEntry)((IMultiton)Activator.CreateInstance(type)).Fetch(key);
             }
         }
-        private static bool Update(AMultitonKey key, object value = null)
+        private static bool Update(IMultitonKey key, object value = null)
         {
             bool updated = false;
             Type type = typeof(TEntry);
-            if (value == null) value = ((AMultiton)Activator.CreateInstance(type)).Fetch(key);
+            if (value == null) value = ((IMultiton)Activator.CreateInstance(type)).Fetch(key);
             if (value == null) return updated;
             if (HasCache || HasTableStorage)
                 updated = (bool)MethodInstance(MethodType.Update).Invoke(null, new object[2] { key, value });
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
             {
-                string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
+                string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
                 if (!multitonDictionary.ContainsKey(innerKey))
                     multitonDictionary.Add(innerKey, (TEntry)value);
                 else
@@ -173,17 +149,17 @@ namespace Rystem.Cache
             }
             return updated;
         }
-        private static bool Exists(AMultitonKey key)
+        private static bool Exists(IMultitonKey key)
         {
             bool existed = false;
             Type type = typeof(TEntry);
             if (HasCache || HasTableStorage)
                 existed = (bool)MethodInstance(MethodType.Exists).Invoke(null, new object[2] { key, type });
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
-                existed &= multitonDictionary.ContainsKey($"{type.FullName}{MultitonConst.Separator}{key.Value}");
+                existed &= multitonDictionary.ContainsKey($"{type.FullName}{MultitonConst.Separator}{key.Value()}");
             return existed;
         }
-        private static bool Delete(AMultitonKey key)
+        private static bool Delete(IMultitonKey key)
         {
             bool deleted = false;
             Type type = typeof(TEntry);
@@ -191,13 +167,13 @@ namespace Rystem.Cache
                 deleted = (bool)MethodInstance(MethodType.Delete).Invoke(null, new object[2] { key, type });
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
             {
-                string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value}";
+                string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
                 if (multitonDictionary.ContainsKey(innerKey))
                     deleted &= multitonDictionary.Remove(innerKey);
             }
             return deleted;
         }
-        private static List<TKey> List<TKey>() where TKey : AMultitonKey
+        private static List<TKey> List<TKey>() where TKey : IMultitonKey
         {
             Type type = typeof(TEntry);
             Type keyType = typeof(TKey);
