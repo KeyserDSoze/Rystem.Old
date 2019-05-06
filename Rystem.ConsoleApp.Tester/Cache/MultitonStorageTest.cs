@@ -31,7 +31,7 @@ namespace Wonda.Engine.Library.Multiton
         public long LastEventTime { get; set; }
         static LastBillingOk()
         {
-            MultitonInstall<LastBillingOk>.OnStart("DefaultEndpointsProtocol=https;AccountName=wondacustomerbase;AccountKey=+pSYUSkVNAn1t2CJXqd38o4XtN6bmBbEqtDxz7KS6kIxM6ZWD6fSckKEVFiLRDCG2y6BjoPRVOvjU0kDbV3WnA==;EndpointSuffix=core.windows.net", CacheExpireTime.Infinite, MultitonExpireTime.TurnOff);
+            MultitonInstaller.Configure<LastBillingOk>("DefaultEndpointsProtocol=https;AccountName=wondacustomerbase;AccountKey=+pSYUSkVNAn1t2CJXqd38o4XtN6bmBbEqtDxz7KS6kIxM6ZWD6fSckKEVFiLRDCG2y6BjoPRVOvjU0kDbV3WnA==;EndpointSuffix=core.windows.net", CacheExpireTime.Infinite, MultitonExpireTime.TurnOff);
         }
 
         public IMultiton Fetch(IMultitonKey key)

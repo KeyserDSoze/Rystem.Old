@@ -11,14 +11,24 @@ namespace Rystem.Azure.Queue
 {
     public class ServiceBusMessage : AConnectionMessage
     {
-        public override async Task<DebugMessage> DebugSendFurther(int delay = 0)
+        public override DebugMessage DebugSendFurther(int delay = 0)
         {
-            await Task.Delay(delay);
-            return await ((IServiceBus)this.Container).DebugSend(delay, this.Installation, this.Attempt + 1, this.Flow, this.Version);
+            return ((IServiceBus)this.Container).DebugSend(delay, this.Installation, this.Attempt + 1, this.Flow, this.Version);
         }
-        public override async Task<long> SendFurther(int delay = 0)
+
+        public override async Task<DebugMessage> DebugSendFurtherAsync(int delay = 0)
         {
-            return await ((IServiceBus)this.Container).Send(delay, this.Installation, this.Attempt + 1, this.Flow, this.Version);
+            return await ((IServiceBus)this.Container).DebugSendAsync(delay, this.Installation, this.Attempt + 1, this.Flow, this.Version);
+        }
+
+        public override long SendFurther(int delay = 0)
+        {
+            return ((IServiceBus)this.Container).Send(delay, this.Installation, this.Attempt + 1, this.Flow, this.Version);
+        }
+
+        public override async Task<long> SendFurtherAsync(int delay = 0)
+        {
+            return await ((IServiceBus)this.Container).SendAsync(delay, this.Installation, this.Attempt + 1, this.Flow, this.Version);
         }
     }
     public static class ExtensionServiceBusMessageMessageMethod

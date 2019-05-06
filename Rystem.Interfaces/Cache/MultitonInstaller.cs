@@ -1,20 +1,32 @@
-﻿namespace Rystem.Cache
+﻿using System;
+using System.Collections.Generic;
+
+namespace Rystem.Cache
 {
     /// <summary>
     /// Install Multiton paradigma for your Entity.
     /// </summary>
     /// <typeparam name="TEntry">AMultiton Entity</typeparam>
-    public class MultitonInstall<TEntry> where TEntry : IMultiton
+    public static class MultitonInstaller
     {
+        private static Dictionary<string, ConnectionMultiton> Contexts = new Dictionary<string, ConnectionMultiton>();
+        public class ConnectionMultiton
+        {
+            public string ConnectionString { get; set; }
+            public int ExpireCache { get; set; }
+            public int ExpireMultiton { get; set; }
+        }
+
         /// <summary>
         /// Call on start of your application.
         /// </summary>
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void OnStart(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+            where TEntry : IMultiton
         {
-            MultitonManager<TEntry>.OnStart(connectionString, (int)expireCache, (int)expireMultiton);
+            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
         }
         /// <summary>
         /// Call on start of your application.
@@ -22,9 +34,17 @@
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void OnStart(string connectionString, int expireCache, int expireMultiton)
+        public static void Configure<TEntry>(string connectionString, int expireCache, int expireMultiton)
+            where TEntry : IMultiton
         {
-            MultitonManager<TEntry>.OnStart(connectionString, expireCache, expireMultiton);
+            Type type = typeof(TEntry);
+            if (!Contexts.ContainsKey(type.FullName))
+                Contexts.Add(type.FullName, new ConnectionMultiton()
+                {
+                    ConnectionString = connectionString,
+                    ExpireCache = expireCache,
+                    ExpireMultiton = expireMultiton
+                });
         }
         /// <summary>
         /// Call on start of your application.
@@ -32,9 +52,10 @@
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void OnStart(string connectionString, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TEntry>(string connectionString, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+            where TEntry : IMultiton
         {
-            MultitonManager<TEntry>.OnStart(connectionString, expireCache, (int)expireMultiton);
+            Configure<TEntry>(connectionString, expireCache, (int)expireMultiton);
         }
         /// <summary>
         /// Call on start of your application.
@@ -42,9 +63,16 @@
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void OnStart(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
+        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
+            where TEntry : IMultiton
         {
-            MultitonManager<TEntry>.OnStart(connectionString, (int)expireCache, expireMultiton);
+            Configure<TEntry>(connectionString, (int)expireCache, expireMultiton);
+        }
+        public static ConnectionMultiton GetConfiguration(Type type)
+        {
+            if (Contexts.ContainsKey(type.FullName))
+                return Contexts[type.FullName];
+            throw new NotImplementedException("Please use Install static method in static constructor of your class to set ConnectionString and parameters of caching and heap multiton.");
         }
     }
     /// <summary>

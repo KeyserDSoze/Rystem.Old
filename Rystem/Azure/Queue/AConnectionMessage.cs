@@ -35,7 +35,9 @@ namespace Rystem.Azure.Queue
         {
             return (T)this.Container;
         }
-        public abstract Task<long> SendFurther(int delay = 0);
-        public abstract Task<DebugMessage> DebugSendFurther(int delay = 0);
+        public abstract long SendFurther(int delay = 0);
+        public abstract DebugMessage DebugSendFurther(int delay = 0);
+        public abstract Task<long> SendFurtherAsync(int delay = 0);
+        public abstract Task<DebugMessage> DebugSendFurtherAsync(int delay = 0);
     }
 }

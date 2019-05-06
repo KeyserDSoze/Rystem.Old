@@ -18,7 +18,7 @@ namespace Rystem.Azure.Storage
     /// <summary>
     /// Context class
     /// </summary>
-    public static partial class ExternalTableStorage
+    public static partial class ExtensionTableStorage
     {
         private static object TrafficLight = new object();
         private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
@@ -107,7 +107,7 @@ namespace Rystem.Azure.Storage
     /// <summary>
     /// Async Methods
     /// </summary>
-    public static partial class ExternalTableStorage
+    public static partial class ExtensionTableStorage
     {
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, string tableName = "")
         where TEntity : ITableStorage, new()
@@ -163,7 +163,7 @@ namespace Rystem.Azure.Storage
     /// <summary>
     /// Utility for Async
     /// </summary>
-    public static partial class ExternalTableStorage
+    public static partial class ExtensionTableStorage
     {
 
         private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).ToList().FindAll(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0).FirstOrDefault();
@@ -251,7 +251,7 @@ namespace Rystem.Azure.Storage
     /// <summary>
     /// Sync methods
     /// </summary>
-    public static partial class ExternalTableStorage
+    public static partial class ExtensionTableStorage
     {
         public static bool Exists<TEntity>(this TEntity entity, string tableName = "")
             where TEntity : ITableStorage, new()

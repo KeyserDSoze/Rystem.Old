@@ -9,28 +9,37 @@ namespace Rystem.Cache
     internal class MultitonConst
     {
         public static Dictionary<Type, IEnumerable<PropertyInfo>> PropertyInfoDictionary = new Dictionary<Type, IEnumerable<PropertyInfo>>();
-        static MultitonConst()
+        private static object TrafficLight = new object();
+        internal static void CreatePropertyInfoDictionary()
         {
-            List<Type> types = new List<Type>();
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            if (PropertyInfoDictionary.Count <= 0)
             {
-                try
+                lock (TrafficLight)
                 {
-                    if (!assembly.FullName.ToLower().Contains("system") && !assembly.FullName.ToLower().Contains("microsoft"))
+                    if (PropertyInfoDictionary.Count <= 0)
                     {
-                        foreach (Type type in assembly.GetTypes())
+                        List<Type> types = new List<Type>();
+                        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
                         {
-                            if (type.GetInterfaces().ToList().Find(x => x == MultitonKey) != null)
+                            try
                             {
-                                PropertyInfoDictionary.Add(type,
-                                    type.GetProperties().ToList().FindAll(x =>
-                                        x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
+                                if (!assembly.FullName.ToLower().Contains("system") && !assembly.FullName.ToLower().Contains("microsoft"))
+                                {
+                                    foreach (Type type in assembly.GetTypes())
+                                    {
+                                        if (type.GetInterfaces().ToList().Find(x => x == MultitonKey) != null)
+                                        {
+                                            PropertyInfoDictionary.Add(type, type.GetProperties().ToList().FindAll(x =>
+                                                x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
+                                        }
+                                    }
+                                }
+                            }
+                            catch
+                            {
                             }
                         }
                     }
-                }
-                catch
-                {
                 }
             }
         }

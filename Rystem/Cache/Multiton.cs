@@ -70,28 +70,20 @@ namespace Rystem.Cache
         private static CreationFunction creationFunction = ((IMultiton)Activator.CreateInstance(typeof(TEntry))).Fetch;
         static MultitonManager()
         {
+            MultitonConst.CreatePropertyInfoDictionary();
             Type type = typeof(TEntry);
-            Activator.CreateInstance(type);
-        }
-        /// <summary>
-        /// Call on start of your application.
-        /// </summary>
-        /// <param name="connectionString">Redis Cache connectionstring (default: null [no cache used])</param>
-        /// <param name="expireCache">timespan for next update Redis Cache (default: 0, infinite)</param>
-        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only redis cache) (with 0 you can use a Multiton without update time)</param>
-        internal static void OnStart(string connectionString, int expireCache = 0, int expireMultiton = -1)
-        {
-            ExpireMultiton = expireMultiton;
-            HasCache = !string.IsNullOrWhiteSpace(connectionString) && connectionString.Contains(".redis.cache.windows.net");
-            HasTableStorage = !string.IsNullOrWhiteSpace(connectionString) && !HasCache;
+            MultitonInstaller.ConnectionMultiton connectionMultiton = MultitonInstaller.GetConfiguration(type);
+            ExpireMultiton = connectionMultiton.ExpireMultiton;
+            HasCache = !string.IsNullOrWhiteSpace(connectionMultiton.ConnectionString) && connectionMultiton.ConnectionString.Contains(".redis.cache.windows.net");
+            HasTableStorage = !string.IsNullOrWhiteSpace(connectionMultiton.ConnectionString) && !HasCache;
             if (HasCache)
             {
-                MultitonCache<TEntry>.OnStart(connectionString, expireCache);
+                MultitonCache<TEntry>.OnStart(connectionMultiton.ConnectionString, connectionMultiton.ExpireCache);
                 HasCache = true;
             }
             else if (HasTableStorage)
             {
-                MultitonTableStorage<TEntry>.OnStart(connectionString, expireCache);
+                MultitonTableStorage<TEntry>.OnStart(connectionMultiton.ConnectionString, connectionMultiton.ExpireCache);
             }
         }
         /// <summary>

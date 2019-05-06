@@ -28,7 +28,7 @@ namespace Rystem.Azure.Storage
                 return Contexts[type.FullName];
             if (!string.IsNullOrWhiteSpace(ConnectionStringDefault))
                 return (ConnectionStringDefault, new List<string>() { type.Name });
-            throw new NotImplementedException("Please use Install static method in static constructor of your class to set ConnectionString and names of table");
+            throw new NotImplementedException("Please use Install static method in static constructor of your class to set ConnectionString and names of table.");
         }
     }
 }

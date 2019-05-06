@@ -29,7 +29,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
             string jsonSent = connectionMessage.ToJson();
             connectionMessage = jsonSent.ToEventHubMessage();
             myEventHub = connectionMessage.ToObject<MyEventHub>();
-            connectionMessage.SendFurther(30).ConfigureAwait(false).GetAwaiter().GetResult();
+            connectionMessage.SendFurther(30);
             return true;
         }
     }
@@ -39,7 +39,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
         public MyObject B { get; set; }
         static MyEventHub()
         {
-            EventHubHelper.Install<MyEventHub>(
+            EventHubInstaller.Configure<MyEventHub>(
                 "Endpoint=sb://kynsextest.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=9CAVSQGOLEmlKziA3xmK4mM6Oc6SOLCQ+FBmzVL1+54=");
         }
         public class MyObject

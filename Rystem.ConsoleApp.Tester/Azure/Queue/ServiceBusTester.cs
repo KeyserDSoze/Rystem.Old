@@ -30,7 +30,8 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
             string jsonSent = connectionMessage.ToJson();
             connectionMessage = jsonSent.ToServiceBusMessage();
             myServiceBus = connectionMessage.ToObject<MyServiceBus>();
-            connectionMessage.SendFurther(30).ConfigureAwait(false).GetAwaiter().GetResult();
+            new MyServiceBus().Delete(4);
+            long aa = connectionMessage.SendFurther(30);
             return true;
         }
     }
@@ -40,7 +41,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
         public MyObject B { get; set; }
         static MyServiceBus()
         {
-            ServiceBusHelper.Install<MyServiceBus>(
+            ServiceBusInstaller.Configure<MyServiceBus>(
                 "Endpoint=sb://kynsextest2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=qxzmuricdYps0NufDo6rBaqMKVM1ZsgRo2htlfeItqw=");
         }
         public class MyObject
