@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,15 +16,104 @@ namespace Rystem.Azure.Storage
     /// </summary>
     internal class DummyTableStorage : TableEntity { }
     /// <summary>
+    /// Context class
+    /// </summary>
+    public static partial class ExternalTableStorage
+    {
+        private static object TrafficLight = new object();
+        private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
+        private static Dictionary<string, List<PropertyInfo>> SpecialProperties = new Dictionary<string, List<PropertyInfo>>();
+        private static Dictionary<string, Dictionary<string, CloudTable>> Contexts = new Dictionary<string, Dictionary<string, CloudTable>>();
+        private static CloudTable CreateContext(string connectionString, string tableName)
+        {
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+            CloudTable Context = tableClient.GetTableReference(tableName);
+            Context.CreateIfNotExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            return Context;
+        }
+        private static void PropertyExists(Type type)
+        {
+            if (!Properties.ContainsKey(type.FullName))
+            {
+                List<PropertyInfo> propertyInfo = new List<PropertyInfo>();
+                List<PropertyInfo> specialPropertyInfo = new List<PropertyInfo>();
+                foreach (PropertyInfo pi in type.GetProperties())
+                {
+                    if (pi.Name == "PartitionKey" || pi.Name == "RowKey" || pi.Name == "Timestamp" || pi.Name == "ETag")
+                        continue;
+                    if (pi.PropertyType == typeof(int) || pi.PropertyType == typeof(long) ||
+                        pi.PropertyType == typeof(double) || pi.PropertyType == typeof(string) ||
+                        pi.PropertyType == typeof(Guid) || pi.PropertyType == typeof(bool) ||
+                        pi.PropertyType == typeof(DateTime) || pi.PropertyType == typeof(byte[]))
+                    {
+                        propertyInfo.Add(pi);
+                    }
+                    else
+                    {
+                        specialPropertyInfo.Add(pi);
+                    }
+                }
+                Properties.Add(type.FullName, propertyInfo);
+                SpecialProperties.Add(type.FullName, specialPropertyInfo);
+            }
+        }
+        private static void ContextExists(Type type, string tableName = "")
+        {
+            if (!Contexts.ContainsKey(type.FullName))
+            {
+                lock (TrafficLight)
+                {
+                    if (!Contexts.ContainsKey(type.FullName))
+                    {
+                        Contexts.Add(type.FullName, new Dictionary<string, CloudTable>());
+                        var (connectionString, tableNames) = TableStorageInstaller.GetConnectionStringAndTableNames(type);
+                        foreach (string name in tableNames)
+                            Contexts[type.FullName].Add(name, CreateContext(connectionString, name));
+                        PropertyExists(type);
+                    }
+                }
+            }
+        }
+        private static CloudTable GetContext(Type type, string tableName = "")
+        {
+            CloudTable context = null;
+            ContextExists(type, tableName);
+            if (!string.IsNullOrWhiteSpace(tableName))
+            {
+                context = Contexts[type.FullName][tableName];
+            }
+            else
+            {
+                context = Contexts[type.FullName].FirstOrDefault().Value;
+            }
+            return context;
+        }
+        private static Dictionary<string, CloudTable> GetContextList(Type type, string tableName = "")
+        {
+            CloudTable context = null;
+            ContextExists(type, tableName);
+            if (!string.IsNullOrWhiteSpace(tableName))
+            {
+                context = Contexts[type.FullName][tableName];
+            }
+            else
+            {
+                return Contexts[type.FullName];
+            }
+            return new Dictionary<string, CloudTable>() { { type.Name, context } };
+        }
+    }
+    /// <summary>
     /// Async Methods
     /// </summary>
     public static partial class ExternalTableStorage
     {
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, string tableName = "")
-            where TEntity : ITableStorage, new()
+        where TEntity : ITableStorage, new()
         {
             TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entity.PartitionKey, entity.RowKey);
-            TableResult result = await TableStorageInstall.GetContext(entity.GetType(), tableName).ExecuteAsync(operation);
+            TableResult result = await GetContext(entity.GetType(), tableName).ExecuteAsync(operation);
             return result.Result != null;
         }
         public static async Task<List<TEntity>> FetchAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, string tableName = "", CancellationToken ct = default(CancellationToken), Action<IList<TEntity>> onProgress = null)
@@ -32,7 +122,7 @@ namespace Rystem.Azure.Storage
             Type type = typeof(TEntity);
             List<TEntity> items = new List<TEntity>();
             TableContinuationToken token = null;
-            CloudTable context = TableStorageInstall.GetContext(type, tableName);
+            CloudTable context = GetContext(type, tableName);
             string query = ToQuery(expression?.Body);
             do
             {
@@ -48,10 +138,11 @@ namespace Rystem.Azure.Storage
         public static async Task<bool> UpdateAsync(this ITableStorage entity, string tableName = "")
         {
             Type type = entity.GetType();
+            Dictionary<string, CloudTable> pairs = GetContextList(type, tableName);
             TableOperation operation = TableOperation.InsertOrReplace(WriteEntity(entity, type));
             bool returnCode = false;
-            foreach (KeyValuePair<string, CloudTable> context in TableStorageInstall.GetContextList(type, tableName))
-                returnCode = (await context.Value.ExecuteAsync(operation)).HttpStatusCode == 204;
+            foreach (KeyValuePair<string, CloudTable> context in pairs)
+                returnCode &= (await context.Value.ExecuteAsync(operation)).HttpStatusCode == 204;
             return returnCode;
         }
         public static async Task<bool> DeleteAsync(this ITableStorage entity, string tableName = "")
@@ -64,7 +155,7 @@ namespace Rystem.Azure.Storage
                 ETag = "*"
             });
             bool returnCode = false;
-            foreach (KeyValuePair<string, CloudTable> context in TableStorageInstall.GetContextList(type, tableName))
+            foreach (KeyValuePair<string, CloudTable> context in GetContextList(type, tableName))
                 returnCode = (await context.Value.ExecuteAsync(operation)).HttpStatusCode == 204;
             return returnCode;
         }
@@ -74,6 +165,7 @@ namespace Rystem.Azure.Storage
     /// </summary>
     public static partial class ExternalTableStorage
     {
+
         private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).ToList().FindAll(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0).FirstOrDefault();
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
         {
@@ -88,10 +180,10 @@ namespace Rystem.Azure.Storage
             entity.RowKey = dynamicTableEntity.RowKey;
             entity.Timestamp = dynamicTableEntity.Timestamp;
             entity.ETag = dynamicTableEntity.ETag;
-            foreach (PropertyInfo pi in TableStorageInstall.Properties[type.FullName])
+            foreach (PropertyInfo pi in Properties[type.FullName])
                 if (dynamicTableEntity.Properties.ContainsKey(pi.Name))
                     SetValue(dynamicTableEntity.Properties[pi.Name], pi);
-            foreach (PropertyInfo pi in TableStorageInstall.SpecialProperties[type.FullName])
+            foreach (PropertyInfo pi in SpecialProperties[type.FullName])
                 if (dynamicTableEntity.Properties.ContainsKey(pi.Name))
                 {
                     dynamic value = JsonConvertDeserializeMethod.MakeGenericMethod(pi.PropertyType).Invoke(null, new object[2] { dynamicTableEntity.Properties[pi.Name].StringValue, JsonSettings });
@@ -145,12 +237,12 @@ namespace Rystem.Azure.Storage
             dummy.RowKey = string.IsNullOrWhiteSpace(entity.RowKey) ? (entity.RowKey = string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"))) : entity.RowKey;
             dummy.Timestamp = entity.Timestamp == DateTimeOffsetDefault ? (entity.Timestamp = DateTimeOffset.UtcNow) : entity.Timestamp;
             dummy.ETag = string.IsNullOrWhiteSpace(entity.ETag) ? (entity.ETag = "*") : entity.ETag;
-            foreach (PropertyInfo pi in TableStorageInstall.Properties[type.FullName])
+            foreach (PropertyInfo pi in Properties[type.FullName])
             {
                 dynamic value = pi.GetValue(entity);
                 dummy.Properties.Add(pi.Name, new EntityProperty(value));
             }
-            foreach (PropertyInfo pi in TableStorageInstall.SpecialProperties[type.FullName])
+            foreach (PropertyInfo pi in SpecialProperties[type.FullName])
                 dummy.Properties.Add(pi.Name, new EntityProperty(
                     JsonConvert.SerializeObject(pi.GetValue(entity), JsonSettings)));
             return dummy;

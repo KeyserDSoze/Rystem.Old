@@ -26,10 +26,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
     }
     public class Example : ITableStorage
     {
-        static Example()
-        {
-            TableStorageInstall.Install<Example>("DefaultEndpointsProtocol=https;AccountName=testerofficial;AccountKey=p2itSZpRnBV8i5wQFQWwsNs4d75SPTlVnqyDvi1XF/SLRgYRb8Af5l+w6HU+cFVSEnyNT8cWHvig5Yi7sZ4XkA==;EndpointSuffix=core.windows.net");
-        }
+        static Example() => Rystem.Azure.Storage.TableStorageInstaller.Configure<Example>("DefaultEndpointsProtocol=https;AccountName=testerofficial;AccountKey=p2itSZpRnBV8i5wQFQWwsNs4d75SPTlVnqyDvi1XF/SLRgYRb8Af5l+w6HU+cFVSEnyNT8cWHvig5Yi7sZ4XkA==;EndpointSuffix=core.windows.net");
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTimeOffset Timestamp { get; set; }
