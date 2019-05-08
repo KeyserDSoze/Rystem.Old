@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Rystem.Interfaces.Utility;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Rystem.Cache
 {
@@ -10,6 +13,7 @@ namespace Rystem.Cache
     public static class MultitonInstaller
     {
         private static Dictionary<string, MultitonConfiguration> Contexts = new Dictionary<string, MultitonConfiguration>();
+        private static Dictionary<string, Type> KeyTypes = new Dictionary<string, Type>();
         public class MultitonConfiguration
         {
             public string ConnectionString { get; set; }
@@ -23,10 +27,10 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TEntry>(string connectionString, Type keyType = null, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
             where TEntry : IMultiton
         {
-            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
+            Configure<TEntry>(connectionString, keyType, (int)expireCache, (int)expireMultiton);
         }
         /// <summary>
         /// Call on start of your application.
@@ -34,17 +38,20 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, int expireCache, int expireMultiton)
+        public static void Configure<TEntry>(string connectionString, Type keyType = null, int expireCache = 0, int expireMultiton = -1)
             where TEntry : IMultiton
         {
             Type type = typeof(TEntry);
             if (!Contexts.ContainsKey(type.FullName))
+            {
                 Contexts.Add(type.FullName, new MultitonConfiguration()
                 {
                     ConnectionString = connectionString,
                     ExpireCache = expireCache,
                     ExpireMultiton = expireMultiton
                 });
+                KeyTypes.Add(keyType?.Name ?? $"{type.Name}Key", type);
+            }
         }
         /// <summary>
         /// Call on start of your application.
@@ -52,10 +59,10 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TEntry>(string connectionString, Type keyType = null, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
             where TEntry : IMultiton
         {
-            Configure<TEntry>(connectionString, expireCache, (int)expireMultiton);
+            Configure<TEntry>(connectionString, keyType, expireCache, (int)expireMultiton);
         }
         /// <summary>
         /// Call on start of your application.
@@ -63,16 +70,29 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
+        public static void Configure<TEntry>(string connectionString, Type keyType = null, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
             where TEntry : IMultiton
         {
-            Configure<TEntry>(connectionString, (int)expireCache, expireMultiton);
+            Configure<TEntry>(connectionString, keyType, (int)expireCache, expireMultiton);
         }
         public static MultitonConfiguration GetConfiguration(Type type)
         {
             if (Contexts.ContainsKey(type.FullName))
                 return Contexts[type.FullName];
             throw new NotImplementedException("Please use Install static method in static constructor of your class to set ConnectionString and parameters of caching and heap multiton.");
+        }
+        public static Type GetKeyType(Type keyType)
+        {
+            if (!KeyTypes.ContainsKey(keyType.Name))
+                ForceInstallation();
+            return KeyTypes[keyType.Name];
+        }
+        private static void ForceInstallation()
+        {
+            foreach (Type type in Assembler.Types.ToList().FindAll(ø => ø.GetInterface("IMultiton") != null))
+            {
+                Activator.CreateInstance(type);
+            }
         }
     }
     /// <summary>

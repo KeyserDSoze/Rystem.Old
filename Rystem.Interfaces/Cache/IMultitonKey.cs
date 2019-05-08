@@ -7,7 +7,5 @@ namespace Rystem.Cache
     public class NoMultitonKey : Attribute { }
     public interface IMultitonKey
     {
-        [NoMultitonKey]
-        Type MultitonType { get; }
     }
 }

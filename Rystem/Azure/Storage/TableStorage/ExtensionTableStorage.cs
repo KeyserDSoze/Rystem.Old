@@ -1,6 +1,7 @@
 ﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using Rystem.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +19,9 @@ namespace Rystem.Azure.Storage
     /// <summary>
     /// Context class
     /// </summary>
-    public static partial class ExtensionTableStorage
+    public static class ExtensionTableStorage
     {
+        #region Context
         private static object TrafficLight = new object();
         private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
         private static Dictionary<string, List<PropertyInfo>> SpecialProperties = new Dictionary<string, List<PropertyInfo>>();
@@ -58,7 +60,7 @@ namespace Rystem.Azure.Storage
                 SpecialProperties.Add(type.FullName, specialPropertyInfo);
             }
         }
-        private static void ContextExists(Type type, string tableName = "")
+        private static void ContextExists(Type type, Installation installation = Installation.Default, string tableName = "")
         {
             if (!Contexts.ContainsKey(type.FullName))
             {
@@ -67,7 +69,7 @@ namespace Rystem.Azure.Storage
                     if (!Contexts.ContainsKey(type.FullName))
                     {
                         Contexts.Add(type.FullName, new Dictionary<string, CloudTable>());
-                        var (connectionString, tableNames) = TableStorageInstaller.GetConnectionStringAndTableNames(type);
+                        var (connectionString, tableNames) = TableStorageInstaller.GetConnectionStringAndTableNames(type, installation);
                         foreach (string name in tableNames)
                             Contexts[type.FullName].Add(name, CreateContext(connectionString, name));
                         PropertyExists(type);
@@ -75,10 +77,10 @@ namespace Rystem.Azure.Storage
                 }
             }
         }
-        private static CloudTable GetContext(Type type, string tableName = "")
+        private static CloudTable GetContext(Type type, Installation installation = Installation.Default, string tableName = "")
         {
             CloudTable context = null;
-            ContextExists(type, tableName);
+            ContextExists(type, installation, tableName);
             if (!string.IsNullOrWhiteSpace(tableName))
             {
                 context = Contexts[type.FullName][tableName];
@@ -89,10 +91,10 @@ namespace Rystem.Azure.Storage
             }
             return context;
         }
-        private static Dictionary<string, CloudTable> GetContextList(Type type, string tableName = "")
+        private static Dictionary<string, CloudTable> GetContextList(Type type, Installation installation = Installation.Default, string tableName = "")
         {
             CloudTable context = null;
-            ContextExists(type, tableName);
+            ContextExists(type, installation, tableName);
             if (!string.IsNullOrWhiteSpace(tableName))
             {
                 context = Contexts[type.FullName][tableName];
@@ -103,26 +105,23 @@ namespace Rystem.Azure.Storage
             }
             return new Dictionary<string, CloudTable>() { { type.Name, context } };
         }
-    }
-    /// <summary>
-    /// Async Methods
-    /// </summary>
-    public static partial class ExtensionTableStorage
-    {
-        public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, string tableName = "")
+        #endregion
+  
+        #region Async Methods
+        public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
         where TEntity : ITableStorage, new()
         {
             TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entity.PartitionKey, entity.RowKey);
-            TableResult result = await GetContext(entity.GetType(), tableName).ExecuteAsync(operation);
+            TableResult result = await GetContext(entity.GetType(), installation, tableName).ExecuteAsync(operation);
             return result.Result != null;
         }
-        public static async Task<List<TEntity>> FetchAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, string tableName = "", CancellationToken ct = default(CancellationToken), Action<IList<TEntity>> onProgress = null)
+        public static async Task<List<TEntity>> FetchAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default, string tableName = "", CancellationToken ct = default(CancellationToken), Action<IList<TEntity>> onProgress = null)
             where TEntity : ITableStorage, new()
         {
             Type type = typeof(TEntity);
             List<TEntity> items = new List<TEntity>();
             TableContinuationToken token = null;
-            CloudTable context = GetContext(type, tableName);
+            CloudTable context = GetContext(type, installation, tableName);
             string query = ToQuery(expression?.Body);
             do
             {
@@ -135,17 +134,17 @@ namespace Rystem.Azure.Storage
             return items;
         }
 
-        public static async Task<bool> UpdateAsync(this ITableStorage entity, string tableName = "")
+        public static async Task<bool> UpdateAsync(this ITableStorage entity, Installation installation = Installation.Default, string tableName = "")
         {
             Type type = entity.GetType();
-            Dictionary<string, CloudTable> pairs = GetContextList(type, tableName);
+            Dictionary<string, CloudTable> pairs = GetContextList(type, installation, tableName);
             TableOperation operation = TableOperation.InsertOrReplace(WriteEntity(entity, type));
             bool returnCode = false;
             foreach (KeyValuePair<string, CloudTable> context in pairs)
                 returnCode &= (await context.Value.ExecuteAsync(operation)).HttpStatusCode == 204;
             return returnCode;
         }
-        public static async Task<bool> DeleteAsync(this ITableStorage entity, string tableName = "")
+        public static async Task<bool> DeleteAsync(this ITableStorage entity, Installation installation = Installation.Default, string tableName = "")
         {
             Type type = entity.GetType();
             TableOperation operation = TableOperation.Delete(new DummyTableStorage()
@@ -155,17 +154,13 @@ namespace Rystem.Azure.Storage
                 ETag = "*"
             });
             bool returnCode = false;
-            foreach (KeyValuePair<string, CloudTable> context in GetContextList(type, tableName))
+            foreach (KeyValuePair<string, CloudTable> context in GetContextList(type, installation, tableName))
                 returnCode = (await context.Value.ExecuteAsync(operation)).HttpStatusCode == 204;
             return returnCode;
         }
-    }
-    /// <summary>
-    /// Utility for Async
-    /// </summary>
-    public static partial class ExtensionTableStorage
-    {
-
+        #endregion
+   
+        #region Utility for Async Methods
         private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).ToList().FindAll(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0).FirstOrDefault();
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
         {
@@ -234,9 +229,9 @@ namespace Rystem.Azure.Storage
         {
             DynamicTableEntity dummy = new DynamicTableEntity();
             dummy.PartitionKey = entity.PartitionKey;
-            dummy.RowKey = string.IsNullOrWhiteSpace(entity.RowKey) ? (entity.RowKey = string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"))) : entity.RowKey;
+            dummy.RowKey = entity.RowKey = entity.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"));
             dummy.Timestamp = entity.Timestamp == DateTimeOffsetDefault ? (entity.Timestamp = DateTimeOffset.UtcNow) : entity.Timestamp;
-            dummy.ETag = string.IsNullOrWhiteSpace(entity.ETag) ? (entity.ETag = "*") : entity.ETag;
+            dummy.ETag = entity.ETag = entity.ETag ?? "*";
             foreach (PropertyInfo pi in Properties[type.FullName])
             {
                 dynamic value = pi.GetValue(entity);
@@ -247,31 +242,29 @@ namespace Rystem.Azure.Storage
                     JsonConvert.SerializeObject(pi.GetValue(entity), JsonSettings)));
             return dummy;
         }
-    }
-    /// <summary>
-    /// Sync methods
-    /// </summary>
-    public static partial class ExtensionTableStorage
-    {
-        public static bool Exists<TEntity>(this TEntity entity, string tableName = "")
+        #endregion
+   
+        #region Sync Methods
+        public static bool Exists<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
             where TEntity : ITableStorage, new()
         {
-            return entity.ExistsAsync(tableName).ConfigureAwait(false).GetAwaiter().GetResult();
+            return entity.ExistsAsync(installation, tableName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
-        public static List<TEntity> Fetch<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, string tableName = "", CancellationToken ct = default(CancellationToken), Action<IList<TEntity>> onProgress = null)
+        public static List<TEntity> Fetch<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default, string tableName = "", CancellationToken ct = default(CancellationToken), Action<IList<TEntity>> onProgress = null)
             where TEntity : ITableStorage, new()
         {
-            return entity.FetchAsync(expression, takeCount, tableName, ct, onProgress).ConfigureAwait(false).GetAwaiter().GetResult();
+            return entity.FetchAsync(expression, takeCount, installation, tableName, ct, onProgress).ConfigureAwait(false).GetAwaiter().GetResult();
         }
-        public static bool Delete<TEntity>(this TEntity entity, string tableName = "")
+        public static bool Delete<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
              where TEntity : ITableStorage, new()
         {
-            return entity.DeleteAsync(tableName).ConfigureAwait(false).GetAwaiter().GetResult();
+            return entity.DeleteAsync(installation, tableName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
-        public static bool Update<TEntity>(this TEntity entity, string tableName = "")
+        public static bool Update<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
              where TEntity : ITableStorage, new()
         {
-            return entity.UpdateAsync(tableName).ConfigureAwait(false).GetAwaiter().GetResult();
+            return entity.UpdateAsync(installation, tableName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
+        #endregion
     }
 }

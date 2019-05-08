@@ -12,15 +12,17 @@ namespace Rystem.Cache
             Type keyType = multitonKey.GetType();
             StringBuilder valueBuilder = new StringBuilder();
             foreach (PropertyInfo propertyInfo in MultitonConst.PropertyInfoDictionary[keyType])
-                valueBuilder.Append($"{propertyInfo.GetValue(multitonKey)}{MultitonConst.Separator}");
-            return valueBuilder.ToString().Trim(MultitonConst.Separator);
+                valueBuilder.Append($"{MultitonConst.Separator}{propertyInfo.GetValue(multitonKey)}");
+            return valueBuilder.ToString();
         }
         private static Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         private static object TrafficLight = new object();
         private static MethodInfo MethodInstance<TEntry>(TEntry entry, MethodType methodType = MethodType.Instance)
              where TEntry : IMultitonKey, new()
         {
-            string key = $"{methodType}_{entry.MultitonType.FullName}";
+            Type keyType = entry.GetType();
+            Type type = MultitonInstaller.GetKeyType(keyType);
+            string key = $"{methodType}_{type.FullName}";
             if (!methods.ContainsKey(key))
             {
                 lock (TrafficLight)
@@ -30,19 +32,19 @@ namespace Rystem.Cache
                         switch (methodType)
                         {
                             case MethodType.Instance:
-                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(entry.MultitonType).GetMethod("Instance", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(type).GetMethod("Instance", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
                                 break;
                             case MethodType.Delete:
-                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(entry.MultitonType).GetMethod("Delete", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(type).GetMethod("Delete", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
                                 break;
                             case MethodType.Update:
-                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(entry.MultitonType).GetMethod("Update", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(type).GetMethod("Update", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
                                 break;
                             case MethodType.Exists:
-                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(entry.MultitonType).GetMethod("Exists", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
+                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(type).GetMethod("Exists", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic));
                                 break;
                             case MethodType.List:
-                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(entry.MultitonType).GetMethod("List", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(entry.GetType()));
+                                methods.Add(key, typeof(MultitonManager<>).MakeGenericType(type).GetMethod("List", BindingFlags.FlattenHierarchy | BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(entry.GetType()));
                                 break;
                         }
                     }

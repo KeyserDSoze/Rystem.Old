@@ -42,7 +42,7 @@ namespace Rystem.Cache
         }
         internal static TEntry Instance(IMultitonKey key, CreationFunction functionIfNotExists)
         {
-            string keyString = $"{typeof(TEntry).FullName}{MultitonConst.Separator}{key.Value()}";
+            string keyString = $"{typeof(TEntry).FullName}{key.Value()}";
             if (!Cache.KeyExists(keyString))
             {
                 lock (TrafficLight)
@@ -77,7 +77,7 @@ namespace Rystem.Cache
         }
         internal static bool Update(IMultitonKey key, TEntry value)
         {
-            string keyString = $"{typeof(TEntry).FullName}{MultitonConst.Separator}{key.Value()}";
+            string keyString = $"{typeof(TEntry).FullName}{key.Value()}";
             bool code = false;
             if (ExpireCache > 0)
             {
@@ -91,12 +91,12 @@ namespace Rystem.Cache
         }
         internal static bool Exists(IMultitonKey key, Type type)
         {
-            string keyString = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
+            string keyString = $"{type.FullName}{key.Value()}";
             return Cache.KeyExists(keyString);
         }
         internal static bool Delete(IMultitonKey key, Type type)
         {
-            string keyString = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
+            string keyString = $"{type.FullName}{key.Value()}";
             return Cache.KeyDelete(keyString);
         }
         internal static IEnumerable<string> List(Type type)

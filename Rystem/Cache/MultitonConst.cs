@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Rystem.Interfaces.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,26 +19,19 @@ namespace Rystem.Cache
                 {
                     if (PropertyInfoDictionary.Count <= 0)
                     {
-                        List<Type> types = new List<Type>();
-                        foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                        try
                         {
-                            try
+                            foreach (Type type in Assembler.Types)
                             {
-                                if (!assembly.FullName.ToLower().Contains("system") && !assembly.FullName.ToLower().Contains("microsoft"))
+                                if (type.GetInterfaces().ToList().Find(x => x == MultitonKey) != null)
                                 {
-                                    foreach (Type type in assembly.GetTypes())
-                                    {
-                                        if (type.GetInterfaces().ToList().Find(x => x == MultitonKey) != null)
-                                        {
-                                            PropertyInfoDictionary.Add(type, type.GetProperties().ToList().FindAll(x =>
-                                                x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
-                                        }
-                                    }
+                                    PropertyInfoDictionary.Add(type, type.GetProperties().ToList().FindAll(x =>
+                                        x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
                                 }
                             }
-                            catch
-                            {
-                            }
+                        }
+                        catch
+                        {
                         }
                     }
                 }

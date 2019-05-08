@@ -20,12 +20,14 @@ namespace Rystem.Azure.Queue
         [JsonProperty("V")]
         public VersionType Version { get; set; } = VersionType.V0;
         [JsonProperty("I")]
-        public Installation Installation { get; set; } = Installation.Null;
+        public Installation Installation { get; set; } = Installation.Default;
         private DateTime? eventTimeStamp;
         [JsonProperty("T")]
         public DateTime EventTimeStamp { get { return (DateTime)(eventTimeStamp ?? (eventTimeStamp = DateTime.UtcNow)); } set { eventTimeStamp = value; } }
         [JsonProperty("G")]
         public DateTime AggregatedTimeStamp => new DateTime(this.EventTimeStamp.Year, this.EventTimeStamp.Month, this.EventTimeStamp.Day, this.EventTimeStamp.Hour, (this.EventTimeStamp.Minute / 5) * 5, 0);
+        [JsonProperty("B")]
+        public int IsBatch { get; set; } = 0;
         public string ToJson()
         {
             return JsonConvert.SerializeObject(this, NewtonsoftConst.JsonSettings);

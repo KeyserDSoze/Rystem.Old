@@ -35,7 +35,7 @@ namespace Rystem.Azure.Storage
         /// }
         /// </code>
         /// </example>
-        public static void Configure(string connectionString, BlobStorageType blobStorageType = BlobStorageType.Unspecified, string container = null)
+        public static void ConfigureAsDefault(string connectionString, BlobStorageType blobStorageType = BlobStorageType.Unspecified, string container = null)
         {
             ConnectionStringDefault = connectionString;
             ContainerDefault = container;

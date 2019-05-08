@@ -6,7 +6,7 @@ namespace Rystem.Enums
 {
     public enum Installation
     {
-        Null = -1,
+        Default = -1,
         Inst0,
         Inst1,
         Inst2,

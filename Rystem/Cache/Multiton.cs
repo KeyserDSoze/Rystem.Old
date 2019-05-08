@@ -94,7 +94,7 @@ namespace Rystem.Cache
         private static TEntry Instance(IMultitonKey key)
         {
             Type type = typeof(TEntry);
-            string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
+            string innerKey = $"{type.FullName}{key.Value()}";
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
             {
                 if (!multitonDictionary.ContainsKey(innerKey) || (ExpireMultiton > 0 && multitonDictionary[innerKey]?.LastUpdate < DateTime.UtcNow.Ticks) || multitonDictionary[innerKey] == null)
@@ -132,7 +132,7 @@ namespace Rystem.Cache
                 updated = (bool)MethodInstance(MethodType.Update).Invoke(null, new object[2] { key, value });
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
             {
-                string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
+                string innerKey = $"{type.FullName}{key.Value()}";
                 if (!multitonDictionary.ContainsKey(innerKey))
                     multitonDictionary.Add(innerKey, (TEntry)value);
                 else
@@ -148,7 +148,7 @@ namespace Rystem.Cache
             if (HasCache || HasTableStorage)
                 existed = (bool)MethodInstance(MethodType.Exists).Invoke(null, new object[2] { key, type });
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
-                existed &= multitonDictionary.ContainsKey($"{type.FullName}{MultitonConst.Separator}{key.Value()}");
+                existed &= multitonDictionary.ContainsKey($"{type.FullName}{key.Value()}");
             return existed;
         }
         private static bool Delete(IMultitonKey key)
@@ -159,7 +159,7 @@ namespace Rystem.Cache
                 deleted = (bool)MethodInstance(MethodType.Delete).Invoke(null, new object[2] { key, type });
             if (ExpireMultiton > (int)MultitonExpireTime.TurnOff)
             {
-                string innerKey = $"{type.FullName}{MultitonConst.Separator}{key.Value()}";
+                string innerKey = $"{type.FullName}{key.Value()}";
                 if (multitonDictionary.ContainsKey(innerKey))
                     deleted &= multitonDictionary.Remove(innerKey);
             }

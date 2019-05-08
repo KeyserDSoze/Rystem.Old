@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem.Interfaces.Utility;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,23 +13,7 @@ namespace Rystem.Conversion
 {
     public class CsvConvert
     {
-        private static readonly List<Type> Types;
-        static CsvConvert()
-        {
-            List<Type> types = new List<Type>();
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                try
-                {
-                    if (!assembly.FullName.ToLower().Contains("system") && !assembly.FullName.ToLower().Contains("microsoft")) types.AddRange(assembly.GetTypes());
-                }
-                catch (Exception er)
-                {
-                    string weee = er.ToString();
-                }
-            }
-            Types = types;
-        }
+        private static readonly List<Type> Types = Assembler.Types;
         private static readonly char[] Separator = new char[10] { '┐', '┼', '╚', '╔', '╩', '╦', '└', '┴', '┬', '├' };
         private static readonly char SeparatorForList = '■';
         private static readonly char SeparatorForDictionary = '¶';

@@ -16,7 +16,7 @@ namespace Rystem.Azure.Queue
             ConnectionStringDefault = connectionString;
             EntityPathDefault = entityPath;
         }
-        public static void Configure<Entity>(string connectionString, string entityPath = null, Installation installation = Installation.Null) where Entity : new()
+        public static void Configure<Entity>(string connectionString, string entityPath = null, Installation installation = Installation.Default) where Entity : new()
         {
             Type type = typeof(Entity);
             if (!Contexts.ContainsKey(type.FullName))
@@ -24,7 +24,7 @@ namespace Rystem.Azure.Queue
             if (!Contexts[type.FullName].ContainsKey(installation))
                 Contexts[type.FullName].Add(installation, (connectionString, entityPath));
         }
-        public static string GetCompleteConnectionStringAndEntityPath(Type type, Installation installation = Installation.Null)
+        public static string GetCompleteConnectionStringAndEntityPath(Type type, Installation installation = Installation.Default)
         {
             if (Contexts.ContainsKey(type.FullName))
                 if(Contexts[type.FullName].ContainsKey(installation))

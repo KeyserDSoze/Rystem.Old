@@ -46,14 +46,13 @@ namespace Rystem.ConsoleApp.Tester.Cache
     {
         public int Id { get; set; }
         public string Another { get; set; }
-        public Type MultitonType => typeof(Service);
     }
     public class Service : IMultiton
     {
         internal const string ConnectionString = "redistest23.redis.cache.windows.net:6380,password=xLnjyPpuHLRb+Z6rJ9PnsnvWTYS4NodjnPyULUNkoa8=,ssl=True,abortConnect=False";
         static Service()
         {
-            MultitonInstaller.Configure<Service>(ConnectionString, CacheExpireTime.FiveMinutes, MultitonExpireTime.FiveMinutes);
+            MultitonInstaller.Configure<Service>(ConnectionString, typeof(ServiceKey), CacheExpireTime.FiveMinutes, MultitonExpireTime.FiveMinutes);
         }
         public string A { get; set; }
         public int C { get; set; }
