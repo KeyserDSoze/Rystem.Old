@@ -1,4 +1,5 @@
 ﻿using Rystem.Azure.Queue;
+using Rystem.Debug;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
     {
         public bool DoWork(string entry)
         {
-            MyEventHub myEventHub = new MyEventHub()
+            MyAbstractionEventHub myEventHub = new MyEventHub()
             {
                 A = "dsad",
                 B = new MyEventHub.MyObject()
@@ -17,23 +18,35 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
                     B = "dasdsa"
                 }
             };
-            //myEventHub.Send().ConfigureAwait(false).GetAwaiter().GetResult();
-            EventHubMessage connectionMessage = new EventHubMessage()
+            List<MyAbstractionEventHub> myAbstractionEventHubs = new List<MyAbstractionEventHub>()
             {
-                Attempt = 0,
-                Container = myEventHub,
-                Flow = Enums.FlowType.Flow0,
-                Version = Enums.VersionType.V0,
+                myEventHub,
+                myEventHub
             };
-            myEventHub = connectionMessage.ToObject<MyEventHub>();
-            string jsonSent = connectionMessage.ToJson();
-            connectionMessage = jsonSent.ToEventHubMessage();
-            myEventHub = connectionMessage.ToObject<MyEventHub>();
-            connectionMessage.SendFurther(30);
+            myEventHub.Send();
+            myAbstractionEventHubs.SendBatch();
+            DebugMessage debugMessage = myEventHub.DebugSend();
+            DebugMessage debugMessages = myAbstractionEventHubs.DebugSendBatch();
+            //EventHubMessage connectionMessage = new EventHubMessage()
+            //{
+            //    Attempt = 0,
+            //    Container = myEventHub,
+            //    Flow = Enums.FlowType.Flow0,
+            //    Version = Enums.VersionType.V0,
+            //};
+            //myEventHub = connectionMessage.ToObject<MyEventHub>();
+            //string jsonSent = connectionMessage.ToJson();
+            //connectionMessage = jsonSent.ToEventHubMessage();
+            //myEventHub = connectionMessage.ToObject<MyEventHub>();
+            //connectionMessage.SendFurther(30);
             return true;
         }
     }
-    public class MyEventHub : IEventHub
+    public abstract class MyAbstractionEventHub : IEventHub
+    {
+
+    }
+    public class MyEventHub : MyAbstractionEventHub
     {
         public string A { get; set; }
         public MyObject B { get; set; }

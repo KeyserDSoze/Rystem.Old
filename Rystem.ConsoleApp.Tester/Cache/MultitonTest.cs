@@ -20,9 +20,9 @@ namespace Rystem.ConsoleApp.Tester.Cache
                 List<ServiceKey> serviceKeys = serviceKey.List();
                 Console.WriteLine($"List must be zero: {serviceKeys.Count}");
                 if (serviceKeys.Count > 0) return false;
-                bool updating = serviceKey.Update();
+                bool updating = serviceKey.Restore();
                 if (!updating) return false;
-                updating = serviceKey.Update(new Service()
+                updating = serviceKey.Restore(new Service()
                 {
                     A = "updating",
                     C = 20

@@ -11,7 +11,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
         public bool DoWork(string entry)
         {
             LastBillingOk lastBillingOk = new LastBillingOkKey() { CustomerId = "222", ServiceId = "9"}.Instance();
-            new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Update(new LastBillingOk() { LastEventTime = DateTime.UtcNow.Ticks });
+            new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Restore(new LastBillingOk() { LastEventTime = DateTime.UtcNow.Ticks });
             new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Delete();
             return true;
         }
@@ -41,7 +41,7 @@ namespace Wonda.Engine.Library.Multiton
             {
                 LastEventTime = DateTime.UtcNow.Ticks
             };
-            lastBillingOkKey.Update(lastBillingOk);
+            lastBillingOkKey.Restore(lastBillingOk);
             return lastBillingOk;
         }
     }

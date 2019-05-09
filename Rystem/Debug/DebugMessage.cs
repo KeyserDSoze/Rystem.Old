@@ -28,15 +28,15 @@ namespace Rystem.Debug
             }
         }
         public int DelayInSeconds { get; set; }
-        public EventData EventData { get; set; }
-        public Message Message { get; set; }
+        public EventData[] EventDatas { get; set; }
+        public string ServiceBusMessage { get; set; }
         public DebugMessage()
         {
             int a = this.Id;
         }
         public override string ToString()
         {
-            return $"Id: {this.Id} - Delay: {this.DelayInSeconds} s - Has EventData: {this.EventData != null} - Has Message: {this.Message != null}";
+            return $"Id: {this.Id} - Delay: {this.DelayInSeconds} s - Has EventData: {this.EventDatas != null && EventDatas.Length > 0} - Has Message: {this.ServiceBusMessage != null}";
         }
     }
 }

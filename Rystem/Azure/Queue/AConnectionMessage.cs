@@ -3,8 +3,6 @@ using Rystem.Const;
 using Rystem.Debug;
 using Rystem.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
@@ -33,7 +31,6 @@ namespace Rystem.Azure.Queue
             return JsonConvert.SerializeObject(this, NewtonsoftConst.JsonSettings);
         }
         public T ToObject<T>()
-            where T : new()
         {
             return (T)this.Container;
         }
