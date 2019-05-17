@@ -12,7 +12,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
         {
             LastBillingOk lastBillingOk = new LastBillingOkKey() { CustomerId = "222", ServiceId = "9"}.Instance();
             new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Restore(new LastBillingOk() { LastEventTime = DateTime.UtcNow.Ticks });
-            new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Delete();
+            new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Remove();
             return true;
         }
     }

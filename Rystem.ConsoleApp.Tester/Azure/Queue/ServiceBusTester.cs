@@ -24,9 +24,9 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
                 myServiceBus
             };
             long messageId = myServiceBus.Send(120);
-            myServiceBus.Delete(messageId);
+            myServiceBus.DeleteScheduled(messageId);
             messageId = myServiceBuses.SendBatch(120);
-            myServiceBus.Delete(messageId);
+            myServiceBus.DeleteScheduled(messageId);
             DebugMessage debugMessage = myServiceBus.DebugSend();
             DebugMessage debugMessage2 = myServiceBuses.DebugSendBatch();
             //ServiceBusMessage connectionMessage = new ServiceBusMessage()

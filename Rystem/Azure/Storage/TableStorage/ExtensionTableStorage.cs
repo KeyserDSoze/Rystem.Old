@@ -176,7 +176,7 @@ namespace Rystem.Azure.Storage
             TEntity entity = (TEntity)Activator.CreateInstance(entityType);
             entity.PartitionKey = dynamicTableEntity.PartitionKey;
             entity.RowKey = dynamicTableEntity.RowKey;
-            entity.Timestamp = dynamicTableEntity.Timestamp;
+            entity.Timestamp = dynamicTableEntity.Timestamp.DateTime.ToUniversalTime();
             entity.ETag = dynamicTableEntity.ETag;
             foreach (PropertyInfo pi in Properties[entityType.FullName])
                 if (dynamicTableEntity.Properties.ContainsKey(pi.Name))
@@ -227,7 +227,7 @@ namespace Rystem.Azure.Storage
             BinaryExpression binaryExpression = (BinaryExpression)expression;
             return ToQuery(binaryExpression.Left) + ExpressionTypeExtensions.MakeLogic(binaryExpression.NodeType) + ToQuery(binaryExpression.Right);
         }
-        private static DateTimeOffset DateTimeOffsetDefault = default(DateTimeOffset);
+        private static DateTime DateTimeDefault = default;
         private static DynamicTableEntity WriteEntity<TEntity>(this TEntity entity)
             where TEntity : ITableStorage
         {
@@ -235,7 +235,7 @@ namespace Rystem.Azure.Storage
             DynamicTableEntity dummy = new DynamicTableEntity();
             dummy.PartitionKey = entity.PartitionKey;
             dummy.RowKey = entity.RowKey = entity.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"));
-            dummy.Timestamp = entity.Timestamp == DateTimeOffsetDefault ? (entity.Timestamp = DateTime.UtcNow) : entity.Timestamp;
+            dummy.Timestamp = entity.Timestamp > DateTimeDefault ? entity.Timestamp: (entity.Timestamp = DateTime.UtcNow);
             dummy.ETag = entity.ETag = entity.ETag ?? "*";
             foreach (PropertyInfo pi in Properties[type.FullName])
             {

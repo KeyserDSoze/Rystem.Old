@@ -57,7 +57,7 @@ namespace Rystem.Cache
         {
             return MethodInstance(entry).Invoke(null, new object[1] { entry });
         }
-        public static bool Delete<TEntry>(this TEntry entry)
+        public static bool Remove<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey
         {
             return (bool)MethodInstance(entry, MethodType.Delete).Invoke(null, new object[1] { entry });
@@ -67,12 +67,12 @@ namespace Rystem.Cache
         {
             return (bool)MethodInstance(entry, MethodType.Update).Invoke(null, new object[2] { entry, value });
         }
-        public static bool Exists<TEntry>(this TEntry entry, string value = null)
+        public static bool IsPresent<TEntry>(this TEntry entry, string value = null)
             where TEntry : IMultitonKey
         {
             return (bool)MethodInstance(entry, MethodType.Exists).Invoke(null, new object[1] { entry });
         }
-        public static List<TEntry> List<TEntry>(this TEntry entry)
+        public static List<TEntry> AllKeys<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey, new()
         {
             return (List<TEntry>)MethodInstance(entry, MethodType.List).Invoke(null, null);

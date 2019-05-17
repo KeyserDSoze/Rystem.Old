@@ -69,11 +69,21 @@ namespace Rystem.Interfaces
                     else
                         throw new NotImplementedException($"Wrong abstract installation type used {installation} instead {string.Join(",", Contexts[installerType.FullName][entity.BaseType.FullName].Select(x => x.Key))}.");
                 }
+                else if (DefaultContexts.ContainsKey(installerType.FullName))
+                    return new InternalConnection()
+                    {
+                        ConnectionString = DefaultContexts[installerType.FullName].ConnectionString,
+                        Names = new List<string>() { entity.Name }
+                    };
                 else
                     throw new NotImplementedException($"{entity.FullName} never installed. Please use Install static method in static constructor of your class to set ConnectionString and names of table.");
             }
             else if (DefaultContexts.ContainsKey(installerType.FullName))
-                return DefaultContexts[installerType.FullName];
+                return new InternalConnection()
+                {
+                    ConnectionString = DefaultContexts[installerType.FullName].ConnectionString,
+                    Names = new List<string>() { entity.Name }
+                };
             else
                 throw new NotImplementedException($"{installerType.FullName} never installed. Please use Install static method in static constructor of your class to set ConnectionString and names of table.");
         }

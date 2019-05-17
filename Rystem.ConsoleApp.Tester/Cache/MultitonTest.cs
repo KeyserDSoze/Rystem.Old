@@ -17,7 +17,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
                     Id = i,
                     Another = "ssss"
                 };
-                List<ServiceKey> serviceKeys = serviceKey.List();
+                List<ServiceKey> serviceKeys = serviceKey.AllKeys();
                 Console.WriteLine($"List must be zero: {serviceKeys.Count}");
                 if (serviceKeys.Count > 0) return false;
                 bool updating = serviceKey.Restore();
@@ -30,12 +30,12 @@ namespace Rystem.ConsoleApp.Tester.Cache
                 if (!updating) return false;
                 Service service = serviceKey.Instance();
                 if (service == null || service.A != "updating") return false;
-                bool exists = serviceKey.Exists();
+                bool exists = serviceKey.IsPresent();
                 if (!exists) return false;
-                serviceKeys = serviceKey.List();
+                serviceKeys = serviceKey.AllKeys();
                 Console.WriteLine($"List must be one: {serviceKeys.Count}");
                 if (serviceKeys.Count != 1) return false;
-                bool deleting = serviceKey.Delete();
+                bool deleting = serviceKey.Remove();
                 if (!deleting) return false;
             }
             MultitonUtility.ClearAllCache(Service.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();

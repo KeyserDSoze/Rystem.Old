@@ -66,15 +66,15 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
         public string OperatorAction { get; set; }
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
-        public DateTimeOffset Timestamp { get; set; }
+        public DateTime Timestamp { get; set; }
         public string ETag { get; set; }
     }
     public abstract class Coso : ITableStorage
     {
-        static Coso() => TableStorageInstaller.Configure<Coso>(TableStorageTester.ConnectionString);
+        static Coso() => TableStorageInstaller.ConfigureAsDefault(TableStorageTester.ConnectionString);
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
-        public DateTimeOffset Timestamp { get; set; }
+        public DateTime Timestamp { get; set; }
         public string ETag { get; set; }
     }
     public class Example : Coso

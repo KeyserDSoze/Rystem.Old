@@ -29,7 +29,7 @@ namespace Rystem.Azure.Queue
                 return await Instance(serviceBusEntity.GetType(), installation).ScheduleMessageAsync(message, DateTime.UtcNow.AddSeconds(delayInSeconds));
             return 0;
         }
-        public static async Task<bool> DeleteAsync(this IServiceBus serviceBusEntity, long messageId, Installation installation = Installation.Default)
+        public static async Task<bool> DeleteScheduledAsync(this IServiceBus serviceBusEntity, long messageId, Installation installation = Installation.Default)
         {
             //It's not possible to delete an active message, it's possible to delete only scheduled messages
             try
@@ -109,9 +109,9 @@ namespace Rystem.Azure.Queue
         {
             return Instance(serviceBusEntity.GetType(), installation).QueueName;
         }
-        public static bool Delete(this IServiceBus serviceBusEntity, long messageId, Installation installation = Installation.Default)
+        public static bool DeleteScheduled(this IServiceBus serviceBusEntity, long messageId, Installation installation = Installation.Default)
         {
-            return serviceBusEntity.DeleteAsync(messageId, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+            return serviceBusEntity.DeleteScheduledAsync(messageId, installation).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         public static long SendBatch(this IEnumerable<IServiceBus> serviceBusEntities, int delayInSeconds = 0, Installation installation = Installation.Default, int attempt = 0, FlowType flowType = FlowType.Flow0, VersionType version = VersionType.V0)
         {
