@@ -68,11 +68,12 @@ namespace Rystem.Azure.Storage
                 {
                     if (!Contexts.ContainsKey(type.FullName))
                     {
-                        Contexts.Add(type.FullName, new Dictionary<string, CloudTable>());
+                        Dictionary<string, CloudTable> cloudContext = new Dictionary<string, CloudTable>();
                         var (connectionString, tableNames) = TableStorageInstaller.GetConnectionStringAndTableNames(type, installation);
                         foreach (string name in tableNames)
-                            Contexts[type.FullName].Add(name, CreateContext(connectionString, name));
+                            cloudContext.Add(name, CreateContext(connectionString, name));
                         PropertyExists(type);
+                        Contexts.Add(type.FullName, cloudContext);
                     }
                 }
             }
@@ -270,6 +271,12 @@ namespace Rystem.Azure.Storage
              where TEntity : ITableStorage
         {
             return entity.UpdateAsync(installation, tableName).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+        public static List<string> ListOfTables<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+           where TEntity : ITableStorage
+        {
+            Dictionary<string, CloudTable> pairs = GetContextList(entity.GetType(), installation);
+            return pairs.Select(x => x.Value.Name).ToList();
         }
         #endregion
     }
