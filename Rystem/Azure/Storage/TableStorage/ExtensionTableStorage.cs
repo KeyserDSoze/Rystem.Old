@@ -25,7 +25,7 @@ namespace Rystem.Azure.Storage
         private static object TrafficLight = new object();
         private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
         private static Dictionary<string, List<PropertyInfo>> SpecialProperties = new Dictionary<string, List<PropertyInfo>>();
-        private static Dictionary<string, Dictionary<string, CloudTable>> Contexts = new Dictionary<string, Dictionary<string, CloudTable>>();
+        private static Dictionary<string, Dictionary<Installation, Dictionary<string, CloudTable>>> Contexts = new Dictionary<string, Dictionary<Installation, Dictionary<string, CloudTable>>>();
         private static CloudTable CreateContext(string connectionString, string tableName)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
@@ -63,17 +63,21 @@ namespace Rystem.Azure.Storage
         private static void ContextExists(Type type, Installation installation = Installation.Default, string tableName = "")
         {
             if (!Contexts.ContainsKey(type.FullName))
+                lock (TrafficLight)
+                    if (!Contexts.ContainsKey(type.FullName))
+                        Contexts.Add(type.FullName, new Dictionary<Installation, Dictionary<string, CloudTable>>());
+            if (!Contexts[type.FullName].ContainsKey(installation))
             {
                 lock (TrafficLight)
                 {
-                    if (!Contexts.ContainsKey(type.FullName))
+                    if (!Contexts[type.FullName].ContainsKey(installation))
                     {
                         Dictionary<string, CloudTable> cloudContext = new Dictionary<string, CloudTable>();
                         var (connectionString, tableNames) = TableStorageInstaller.GetConnectionStringAndTableNames(type, installation);
                         foreach (string name in tableNames)
                             cloudContext.Add(name, CreateContext(connectionString, name));
                         PropertyExists(type);
-                        Contexts.Add(type.FullName, cloudContext);
+                        Contexts[type.FullName].Add(installation, cloudContext);
                     }
                 }
             }
@@ -84,11 +88,11 @@ namespace Rystem.Azure.Storage
             ContextExists(type, installation, tableName);
             if (!string.IsNullOrWhiteSpace(tableName))
             {
-                context = Contexts[type.FullName][tableName];
+                context = Contexts[type.FullName][installation][tableName];
             }
             else
             {
-                context = Contexts[type.FullName].FirstOrDefault().Value;
+                context = Contexts[type.FullName][installation].FirstOrDefault().Value;
             }
             return context;
         }
@@ -98,11 +102,11 @@ namespace Rystem.Azure.Storage
             ContextExists(type, installation, tableName);
             if (!string.IsNullOrWhiteSpace(tableName))
             {
-                context = Contexts[type.FullName][tableName];
+                context = Contexts[type.FullName][installation][tableName];
             }
             else
             {
-                return Contexts[type.FullName];
+                return Contexts[type.FullName][installation];
             }
             return new Dictionary<string, CloudTable>() { { type.Name, context } };
         }
@@ -236,7 +240,7 @@ namespace Rystem.Azure.Storage
             DynamicTableEntity dummy = new DynamicTableEntity();
             dummy.PartitionKey = entity.PartitionKey;
             dummy.RowKey = entity.RowKey = entity.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"));
-            dummy.Timestamp = entity.Timestamp > DateTimeDefault ? entity.Timestamp: (entity.Timestamp = DateTime.UtcNow);
+            dummy.Timestamp = entity.Timestamp > DateTimeDefault ? entity.Timestamp : (entity.Timestamp = DateTime.UtcNow);
             dummy.ETag = entity.ETag = entity.ETag ?? "*";
             foreach (PropertyInfo pi in Properties[type.FullName])
             {

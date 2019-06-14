@@ -1,4 +1,5 @@
 ﻿using Rystem.Azure.Storage;
+using Rystem.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,21 +40,19 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
         };
         public bool DoWork(string entry)
         {
-            TableStorageInstaller.ConfigureAsDefault("DefaultEndpointsProtocol=http;AccountName=centroservizi;AccountKey=esFapuE6DY7aspODT4WuUL03TZlFXuBEUtYirpb5WgO7hAsDgHaZmDkebILNdKYA859yhan1ri+J6rHfzguyiw==");
-            Parallel.ForEach(msites, x =>
+            TableStorageInstaller.Configure<Testone>(ConnectionString, Installation.Inst0);
+            TableStorageInstaller.Configure<Testone>(ConnectionString + "++2", Installation.Inst1);
+            var x = new Testone().Fetch(installation: Installation.Inst0);
+            var y = new Testone().Fetch(installation: Installation.Inst1);
+            Testone testone = new Testone()
             {
-                Execute(x);
-            });
-            return true;
-            //Testone testone = new Testone()
-            //{
-            //    PartitionKey = "T4st",
-            //    Optional = "dddd"
-            //};
+                PartitionKey = "T4st",
+                Optional = "dddd"
+            };
             //List<string> names = testone.ListOfTables();
             //testone.Update();
             //List<Testone> testones = new Testone().Fetch();
-            //return true;
+            return true;
             //ALog actionLog = new UserAction()
             //{
             //    PartitionKey = "333333333",
