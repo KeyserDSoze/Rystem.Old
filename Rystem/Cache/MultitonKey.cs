@@ -7,6 +7,7 @@ namespace Rystem.Cache
 {
     public static class MultitonKeyExtensionMethod
     {
+        public static string ToKeyString(this IMultitonKey multitonKey) => multitonKey.Value().Trim(MultitonConst.Separator);
         internal static string Value(this IMultitonKey multitonKey)
         {
             Type keyType = multitonKey.GetType();

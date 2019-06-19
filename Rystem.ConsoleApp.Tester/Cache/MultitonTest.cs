@@ -17,6 +17,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
                     Id = i,
                     Another = "ssss"
                 };
+                serviceKey.ToKeyString();
                 List<ServiceKey> serviceKeys = serviceKey.AllKeys();
                 Console.WriteLine($"List must be zero: {serviceKeys.Count}");
                 if (serviceKeys.Count > 0) return false;
