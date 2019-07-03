@@ -161,6 +161,14 @@ namespace Rystem.Azure.Storage.BlobStorage
             cloudBlob.Properties.ContentType = blobValue.BlobProperties.ContentType ?? MimeMapping.GetMimeMapping(blobValue.DestinationFileName);
             if (blobValue.BlobProperties.CacheControl != null)
                 cloudBlob.Properties.CacheControl = blobValue.BlobProperties.CacheControl;
+            if (blobValue.BlobProperties.ContentDisposition != null)
+                cloudBlob.Properties.ContentDisposition = blobValue.BlobProperties.ContentDisposition;
+            if (blobValue.BlobProperties.ContentEncoding != null)
+                cloudBlob.Properties.ContentEncoding = blobValue.BlobProperties.ContentEncoding;
+            if (blobValue.BlobProperties.ContentLanguage != null)
+                cloudBlob.Properties.ContentLanguage = blobValue.BlobProperties.ContentLanguage;
+            if (blobValue.BlobProperties.ContentMD5 != null)
+                cloudBlob.Properties.ContentMD5 = blobValue.BlobProperties.ContentMD5;
             using (Stream stream = blobValue.MemoryStream)
             {
                 await cloudBlob.UploadFromStreamAsync(stream);
