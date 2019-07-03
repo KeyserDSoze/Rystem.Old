@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.WindowsAzure.Storage.Blob;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -46,6 +47,6 @@ namespace Rystem.Azure.Storage
         /// <summary>
         /// Tipologia di contenuto, in base al MIME Type del file
         /// </summary>
-        public string ContentType { get; set; }
+        public BlobProperties BlobProperties { get; set; }
     }
 }

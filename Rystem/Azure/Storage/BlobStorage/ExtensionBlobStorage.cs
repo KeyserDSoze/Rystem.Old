@@ -158,7 +158,9 @@ namespace Rystem.Azure.Storage.BlobStorage
             Type type = blob.GetType();
             BlobValue blobValue = blob.Value();
             ICloudBlob cloudBlob = GetBlobReference(blobValue.DestinationFileName, type);
-            cloudBlob.Properties.ContentType = blobValue.ContentType ?? MimeMapping.GetMimeMapping(blobValue.DestinationFileName);
+            cloudBlob.Properties.ContentType = blobValue.BlobProperties.ContentType ?? MimeMapping.GetMimeMapping(blobValue.DestinationFileName);
+            if (blobValue.BlobProperties.CacheControl != null)
+                cloudBlob.Properties.CacheControl = blobValue.BlobProperties.CacheControl;
             using (Stream stream = blobValue.MemoryStream)
             {
                 await cloudBlob.UploadFromStreamAsync(stream);
@@ -204,7 +206,7 @@ namespace Rystem.Azure.Storage.BlobStorage
                 var fileLenght = cloudBlob.Properties.Length;
                 byte[] fileByte = new byte[fileLenght];
                 await cloudBlob.DownloadToByteArrayAsync(fileByte, 0);
-                blobValue.ContentType = cloudBlob.Properties.ContentType;
+                blobValue.BlobProperties = cloudBlob.Properties;
                 blobValue.MemoryStream = new MemoryStream(fileByte);
                 blob.OnRetrieve(blobValue);
                 return blobValue;

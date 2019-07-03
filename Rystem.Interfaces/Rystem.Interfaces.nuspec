@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem.Interfaces</id>
-    <version>3.0.5</version>
+    <version>3.0.6</version>
     <title>Rystem Interfaces</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -16,6 +16,9 @@
     </releaseNotes>
     <copyright>Copyright 2019</copyright>
     <tags>Rystem Cache Conversion Csv</tags>
+    <dependencies>
+      <dependency id="WindowsAzure.Storage" version="9.3.3" />
+    </dependencies>
     <references>
       <reference file="Rystem.Interfaces.dll" />
     </references>
