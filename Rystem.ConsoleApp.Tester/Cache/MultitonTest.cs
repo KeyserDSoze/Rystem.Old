@@ -53,7 +53,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
     }
     public class Service : IMultiton
     {
-        internal const string ConnectionString = "DigitalPay.redis.cache.windows.net:6380,password=1LyYNFK5B8BFK+WBVLp+Avy5Lh+jG1EMjBJALe5q328=,ssl=True,abortConnect=False";
+        internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static Service()
         {
             MultitonInstaller.Configure<Service>(ConnectionString, typeof(ServiceKey), CacheExpireTime.FiveMinutes, MultitonExpireTime.FiveMinutes);
