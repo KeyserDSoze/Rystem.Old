@@ -32,6 +32,7 @@ namespace Rystem.Conversion
                 if (propertyInfo.GetCustomAttribute(Ignore) == null)
                 {
                     object value = propertyInfo.GetValue(data);
+#warning Manca il controllo sugli array
                     if (value is IDictionary)
                     {
                         Type[] types = propertyInfo.PropertyType.GetGenericArguments();

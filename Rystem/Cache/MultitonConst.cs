@@ -9,33 +9,24 @@ namespace Rystem.Cache
 {
     internal class MultitonConst
     {
-        public static Dictionary<Type, IEnumerable<PropertyInfo>> PropertyInfoDictionary = new Dictionary<Type, IEnumerable<PropertyInfo>>();
+        private static Dictionary<string, IEnumerable<PropertyInfo>> PropertyInfoDictionary = new Dictionary<string, IEnumerable<PropertyInfo>>();
         private static object TrafficLight = new object();
-        internal static void CreatePropertyInfoDictionary()
+        internal static IEnumerable<PropertyInfo> Instance(Type keyType)
         {
-            if (PropertyInfoDictionary.Count <= 0)
+            if (!PropertyInfoDictionary.ContainsKey(keyType.FullName))
             {
                 lock (TrafficLight)
                 {
-                    if (PropertyInfoDictionary.Count <= 0)
+                    if (!PropertyInfoDictionary.ContainsKey(keyType.FullName))
                     {
-                        try
-                        {
-                            foreach (Type type in Assembler.Types)
-                            {
-                                if (type.GetInterfaces().ToList().Find(x => x == MultitonKey) != null)
-                                {
-                                    PropertyInfoDictionary.Add(type, type.GetProperties().ToList().FindAll(x =>
-                                        x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
-                                }
-                            }
-                        }
-                        catch
-                        {
-                        }
+                        PropertyInfoDictionary.Add(keyType.FullName, keyType.GetProperties().ToList().FindAll(x =>
+                                    x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
+                        if (PropertyInfoDictionary[keyType.FullName].Count() == 0)
+                            throw new ArgumentException($"{keyType.FullName} doesn't implement any primitive property to create the key as string.");
                     }
                 }
             }
+            return PropertyInfoDictionary[keyType.FullName];
         }
         private static bool CheckPrimitiveList(Type type)
         {
@@ -79,7 +70,8 @@ namespace Rystem.Cache
             typeof(uint?),
             typeof(ulong?),
             typeof(short?),
-            typeof(ushort?)
+            typeof(ushort?),
+            typeof(Guid)
         };
     }
 }

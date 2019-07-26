@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 
 namespace Rystem.Interfaces.Utility
@@ -9,16 +12,28 @@ namespace Rystem.Interfaces.Utility
         public static readonly List<Type> Types = new List<Type>();
         static Assembler()
         {
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            List<Assembly> allAssemblies = new List<Assembly>();
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            foreach (string dll in Directory.GetFiles(path, "*.dll"))
             {
                 try
                 {
-                    if (!assembly.FullName.ToLower().Contains("system") && !assembly.FullName.ToLower().Contains("microsoft"))
-                        Types.AddRange(assembly.GetTypes());
+                    allAssemblies.Add(Assembly.LoadFile(dll));
                 }
                 catch (Exception er)
                 {
-                    string weee = er.ToString();
+                    string gomorra = er.ToString();
+                }
+            }
+            foreach (Assembly assembly in allAssemblies)
+            {
+                try
+                {
+                    Types.AddRange(assembly.GetExportedTypes());
+                }
+                catch (Exception er)
+                {
+                    string sodoma = er.ToString();
                 }
             }
         }

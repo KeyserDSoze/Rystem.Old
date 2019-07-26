@@ -70,7 +70,6 @@ namespace Rystem.Cache
         private static CreationFunction creationFunction = ((IMultiton)Activator.CreateInstance(typeof(TEntry))).Fetch;
         static MultitonManager()
         {
-            MultitonConst.CreatePropertyInfoDictionary();
             Type type = typeof(TEntry);
             MultitonInstaller.MultitonConfiguration connectionMultiton = MultitonInstaller.GetConfiguration(type);
             ExpireMultiton = connectionMultiton.ExpireMultiton;
@@ -178,7 +177,8 @@ namespace Rystem.Cache
                     TKey multitonKey = (TKey)Activator.CreateInstance(keyType);
                     IEnumerator<string> keyValues = PropertyValue(key);
                     if (!keyValues.MoveNext()) continue;
-                    foreach (PropertyInfo property in MultitonConst.PropertyInfoDictionary[keyType])
+                    
+                    foreach (PropertyInfo property in MultitonConst.Instance(keyType))
                     {
                         property.SetValue(multitonKey, Convert.ChangeType(keyValues.Current, property.PropertyType));
                         if (!keyValues.MoveNext()) break;

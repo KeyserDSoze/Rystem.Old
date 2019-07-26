@@ -81,11 +81,33 @@ namespace Rystem.Cache
                 return Contexts[type.FullName];
             throw new NotImplementedException("Please use Install static method in static constructor of your class to set ConnectionString and parameters of caching and heap multiton.");
         }
+        private static readonly object KeyTrafficLight = new object();
         public static Type GetKeyType(Type keyType)
         {
             if (!KeyTypes.ContainsKey(keyType.Name))
-                ForceInstallation();
+            {
+                lock (KeyTrafficLight)
+                {
+                    if (!KeyTypes.ContainsKey(keyType.Name))
+                    {
+                        string result = ReplaceFirstOccurrence(keyType.AssemblyQualifiedName, "Key, ", ", ");
+                        Type valueType = Type.GetType(result);
+                        if (valueType == null)
+                            ForceInstallation();
+                        else
+                            Activator.CreateInstance(valueType);
+                        if (!KeyTypes.ContainsKey(keyType.Name))
+                            throw new ArgumentException($"{keyType.FullName} doesn't exist its multiton class. Please call yourClass and yourClassKey in the same namespace and same assembly.");
+                    }
+                }
+            }
             return KeyTypes[keyType.Name];
+            string ReplaceFirstOccurrence(string Source, string Find, string Replace)
+            {
+                int Place = Source.IndexOf(Find);
+                string result = Source.Remove(Place, Find.Length).Insert(Place, Replace);
+                return result;
+            }
         }
         private static void ForceInstallation()
         {

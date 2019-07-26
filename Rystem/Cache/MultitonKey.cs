@@ -12,7 +12,7 @@ namespace Rystem.Cache
         {
             Type keyType = multitonKey.GetType();
             StringBuilder valueBuilder = new StringBuilder();
-            foreach (PropertyInfo propertyInfo in MultitonConst.PropertyInfoDictionary[keyType])
+            foreach (PropertyInfo propertyInfo in MultitonConst.Instance(keyType))
                 valueBuilder.Append($"{MultitonConst.Separator}{propertyInfo.GetValue(multitonKey)}");
             return valueBuilder.ToString();
         }
@@ -56,7 +56,15 @@ namespace Rystem.Cache
         public static dynamic Instance<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey
         {
-            return MethodInstance(entry).Invoke(null, new object[1] { entry });
+            try
+            {
+                return MethodInstance(entry).Invoke(null, new object[1] { entry });
+            }
+            catch (Exception er)
+            {
+                string sale = er.ToString();
+                return null;
+            }
         }
         public static bool Remove<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey
