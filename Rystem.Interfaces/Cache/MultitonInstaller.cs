@@ -179,6 +179,10 @@ namespace Rystem.Cache
         /// </summary>
         OneMonth = 60 * 24 * 7 * 30,
         /// <summary>
+        /// Data is stored in cache for 6 months
+        /// </summary>
+        SixMonths = 60 * 24 * 7 * 30 * 6,
+        /// <summary>
         /// Data is stored in cache for 360 days
         /// </summary>
         OneYear = 60 * 24 * 7 * 30 * 360
@@ -224,6 +228,10 @@ namespace Rystem.Cache
         /// Data is stored in memory app for 30 days
         /// </summary>
         OneMonth = 60 * 24 * 7 * 30,
+        /// <summary>
+        /// Data is stored in cache for 6 months
+        /// </summary>
+        SixMonths = 60 * 24 * 7 * 30 * 6,
         /// <summary>
         /// Data is stored in memory app for 360 days
         /// </summary>
