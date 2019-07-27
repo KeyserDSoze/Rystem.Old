@@ -5,7 +5,7 @@ using System.Text;
 namespace Rystem.Cache
 {
     public class NoMultitonKey : Attribute { }
-    public interface IMultitonKey
+    public interface IMultitonKey : IMulti
     {
     }
 }

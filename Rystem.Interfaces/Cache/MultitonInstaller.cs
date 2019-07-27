@@ -19,35 +19,8 @@ namespace Rystem.Cache
             public Type KeyType { get; set; }
             public Type Type { get; set; }
         }
-
-        /// <summary>
-        /// Call on start of your application.
-        /// </summary>
-        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
-        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
-        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, Type keyType = null, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
-            where TEntry : IMultiton
+        private static void Configure(Type keyType, Type type, string connectionString, int expireCache = 0, int expireMultiton = -1)
         {
-            Configure<TEntry>(connectionString, keyType, (int)expireCache, (int)expireMultiton);
-        }
-        /// <summary>
-        /// Call on start of your application.
-        /// </summary>
-        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
-        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
-        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, Type keyType = null, int expireCache = 0, int expireMultiton = -1)
-            where TEntry : IMultiton
-        {
-            Type type = typeof(TEntry);
-            if (keyType == null)
-            {
-                string result = ReplaceFirstOccurrence(type.AssemblyQualifiedName, ", ", "Key, ");
-                keyType = Type.GetType(result);
-            }
-            if (keyType == null)
-                throw new ArgumentException($"{type.FullName} doesn't exist its multiton key class. Please create yourClass and yourClassKey in the same namespace and same assembly *pay attention to call them ClassName and ClassNameKey.");
             if (!Contexts.ContainsKey(type.FullName) || !KeyContexts.ContainsKey(keyType.FullName))
             {
                 MultitonConfiguration multitonConfiguration = new MultitonConfiguration()
@@ -63,34 +36,98 @@ namespace Rystem.Cache
                 if (!KeyContexts.ContainsKey(keyType.FullName))
                     KeyContexts.Add(keyType.FullName, multitonConfiguration);
             }
-            string ReplaceFirstOccurrence(string Source, string Find, string Replace)
+        }
+
+        /// <summary>
+        /// Call on start of your application.
+        /// </summary>
+        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
+        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
+        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
+        public static void Configure<TKey, TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+            where TKey : IMultitonKey
+            where TEntry : IMultiton
+        {
+            Configure(typeof(TKey), typeof(TEntry), connectionString, (int)expireCache, (int)expireMultiton);
+        }
+        /// <summary>
+        /// Call on start of your application.
+        /// </summary>
+        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
+        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
+        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
+        public static void Configure<TKey, TEntry>(string connectionString, int expireCache = 0, int expireMultiton = -1)
+             where TKey : IMultitonKey
+             where TEntry : IMultiton
+        {
+            Configure(typeof(TKey), typeof(TEntry), connectionString, expireCache, expireMultiton);
+        }
+        /// <summary>
+        /// Call on start of your application.
+        /// </summary>
+        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
+        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
+        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
+        public static void Configure<TKey, TEntry>(string connectionString, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+            where TKey : IMultitonKey
+            where TEntry : IMultiton
+        {
+            Configure(typeof(TKey), typeof(TEntry), connectionString, expireCache, (int)expireMultiton);
+        }
+        /// <summary>
+        /// Call on start of your application.
+        /// </summary>
+        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
+        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
+        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
+        public static void Configure<TKey, TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
+            where TKey : IMultitonKey
+            where TEntry : IMultiton
+        {
+            Configure(typeof(TKey), typeof(TEntry), connectionString, (int)expireCache, expireMultiton);
+        }
+        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+            where TEntry : IMulti
+        {
+            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
+        }
+        public static void Configure<TEntry>(string connectionString, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+           where TEntry : IMulti
+        {
+            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
+        }
+        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
+           where TEntry : IMulti
+        {
+            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
+        }
+        public static void Configure<TEntry>(string connectionString, int expireCache = 0, int expireMultiton = -1)
+          where TEntry : IMulti
+        {
+            if (typeof(IMultiton).IsAssignableFrom(typeof(TEntry)))
             {
-                int Place = Source.IndexOf(Find);
-                string result = Source.Remove(Place, Find.Length).Insert(Place, Replace);
-                return result;
+                Type type = typeof(TEntry);
+                string result = ReplaceFirstOccurrence(type.AssemblyQualifiedName, ", ", "Key, ");
+                Type keyType = Type.GetType(result);
+                if (keyType == null)
+                    throw new ArgumentException($"{type.FullName} doesn't exist its multiton key class. Please create yourClass and yourClassKey in the same namespace and same assembly *pay attention to call them ClassName and ClassNameKey.");
+                Configure(keyType, type, connectionString, expireCache, expireMultiton);
+            }
+            else
+            {
+                Type keyType = typeof(TEntry);
+                string result = ReplaceFirstOccurrence(keyType.AssemblyQualifiedName, "Key, ", ", ");
+                Type type = Type.GetType(result);
+                if (type == null)
+                    throw new ArgumentException($"{type.FullName} doesn't exist its multiton class. Please create yourClass and yourClassKey in the same namespace and same assembly *pay attention to call them ClassName and ClassNameKey.");
+                Configure(keyType, type, connectionString, expireCache, expireMultiton);
             }
         }
-        /// <summary>
-        /// Call on start of your application.
-        /// </summary>
-        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
-        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
-        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, Type keyType = null, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
-            where TEntry : IMultiton
+        private static string ReplaceFirstOccurrence(string Source, string Find, string Replace)
         {
-            Configure<TEntry>(connectionString, keyType, expireCache, (int)expireMultiton);
-        }
-        /// <summary>
-        /// Call on start of your application.
-        /// </summary>
-        /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
-        /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
-        /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TEntry>(string connectionString, Type keyType = null, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
-            where TEntry : IMultiton
-        {
-            Configure<TEntry>(connectionString, keyType, (int)expireCache, expireMultiton);
+            int Place = Source.IndexOf(Find);
+            string result = Source.Remove(Place, Find.Length).Insert(Place, Replace);
+            return result;
         }
         public static MultitonConfiguration GetConfiguration(Type type)
         {

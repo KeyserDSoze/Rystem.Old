@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    public interface IMultiton
+    public interface IMultiton : IMulti
     {
         /// <summary>
         /// Fetch data of the istance by your database, or webrequest, or your business logic.
@@ -13,4 +13,5 @@ namespace Rystem.Cache
         /// <returns>This istance.</returns>
         IMultiton Fetch(IMultitonKey key);
     }
+    public interface IMulti { }
 }

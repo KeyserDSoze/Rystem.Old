@@ -54,7 +54,7 @@ namespace Rystem.Cache
         }
         internal override IMultiton Instance(IMultitonKey key)
         {
-            string keyString = key.ToString();
+            string keyString = key.ToKeyString();
             if (MemoryIsActive)
                 return InMemory.Instance(keyString);
             if (CloudIsActive)
@@ -63,7 +63,7 @@ namespace Rystem.Cache
         }
         internal override bool Update(IMultitonKey key, IMultiton value)
         {
-            string keyString = key.ToString();
+            string keyString = key.ToKeyString();
             if (value == null)
                 value = CreationFunction.Invoke(key);
             return (!MemoryIsActive || InMemory.Update(keyString, (T)value)) &&
@@ -72,7 +72,7 @@ namespace Rystem.Cache
 
         internal override bool Exists(IMultitonKey key)
         {
-            string keyString = key.ToString();
+            string keyString = key.ToKeyString();
             return (!MemoryIsActive || InMemory.Exists(keyString))
                    || (!CloudIsActive || InCloud.Exists(CloudKeyToString(keyString)))
                    && (MemoryIsActive || CloudIsActive);
@@ -80,7 +80,7 @@ namespace Rystem.Cache
 
         internal override bool Delete(IMultitonKey key)
         {
-            string keyString = key.ToString();
+            string keyString = key.ToKeyString();
             return (!MemoryIsActive || InMemory.Delete(keyString)) 
                    && (!CloudIsActive || InCloud.Delete(CloudKeyToString(keyString))) 
                    && (MemoryIsActive || CloudIsActive);

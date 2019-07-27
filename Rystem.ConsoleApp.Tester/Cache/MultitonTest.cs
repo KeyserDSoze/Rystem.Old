@@ -10,11 +10,9 @@ namespace Rystem.ConsoleApp.Tester.Cache
     {
         public bool DoWork(string entry)
         {
+            MultitonUtility.ClearAllCache(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
             for (int i = 0; i < 2; i++)
             {
-                var x = new ServiceKey() {
-                    Id = i
-                }.Instance();
                 ServiceKey serviceKey = new ServiceKey()
                 {
                     Id = i,
@@ -53,7 +51,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()
         {
-            MultitonInstaller.Configure<Service>(ConnectionString, typeof(ServiceKey), CacheExpireTime.TenMinutes, MultitonExpireTime.FiveMinutes);
+            MultitonInstaller.Configure<ServiceKey>(ConnectionString, CacheExpireTime.TenMinutes, MultitonExpireTime.TenMinutes);
         }
     }
     public class Service : IMultiton
