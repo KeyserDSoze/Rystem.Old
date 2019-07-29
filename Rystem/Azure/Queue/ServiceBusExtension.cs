@@ -7,8 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rystem.Azure.Queue;
 
-namespace Rystem.Azure.Queue
+namespace System
 {
     public static class ServiceBusExtension
     {

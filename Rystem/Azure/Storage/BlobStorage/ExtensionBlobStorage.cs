@@ -9,8 +9,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Rystem.Azure.Storage;
 
-namespace Rystem.Azure.Storage.BlobStorage
+namespace System
 {
     public static partial class ExtensionBlobStorage
     {
@@ -18,7 +19,7 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// Esegue il salvataggio asincrono di un file su Blob Storage
         /// </summary>
         /// <returns>url completa del file appena salvato</returns>
-        public static string Save(this IBlob blob)
+        public static string Save(this ABlobStorage blob)
         {
             return blob.SaveAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -29,13 +30,13 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// <param name="destinationFileName">Nome del file da modificare</param>
         /// <param name="text">stringa da appendere al file</param>
         /// <returns>Oggetto <see cref="TBlob"/> che è stato modificato</returns>
-        public static bool AppendText<TEntity>(this IBlob blob, string text)
-            where TEntity : IBlob
+        public static bool AppendText<TEntity>(this ABlobStorage blob, string text)
+            where TEntity : ABlobStorage
         {
             Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(text));
             return blob.AppendStream(stream);
         }
-        public static bool AppendStream(this IBlob blob, Stream stream)
+        public static bool AppendStream(this ABlobStorage blob, Stream stream)
         {
             blob.AppendStreamAsync(stream).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
@@ -44,9 +45,9 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// Metodo per ottenere in modo asincrono il riferimento <see cref="TEntity"/> di un file presente su Blob Storage
         /// </summary>
         /// <returns>Oggetto <see cref="TBlob"/> che raccoglie tutte le proprietà del file recuperato da Blob Storage</returns>
-        public static BlobValue Get(this IBlob blob, BlobValue blobValue = null)
+        public static ABlobStorage Get(this ABlobStorage blob, string name = null)
         {
-            return blob.GetAsync(blobValue).ConfigureAwait(false).GetAwaiter().GetResult();
+            return blob.GetAsync(name).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         /// <summary>
         /// Metodo asincrono per ottenere una lista di <see cref="TBlob"/> in base ad un filtraggio tramite prefisso.
@@ -57,8 +58,8 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di <see cref="TBlob"/> selezionati in base al filtro di prefix</returns>
-        public static List<BlobValue> List<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
-            where TEntity : IBlob
+        public static List<ABlobStorage> List<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+            where TEntity : ABlobStorage
         {
             return blob.ListAsync(prefix, takeCount, ct).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -67,7 +68,7 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// </summary>
         /// <param name="destinationFileName">nome del file da ricercare</param>
         /// <returns>esito della ricerca</returns>
-        public static bool Exists(this IBlob blob)
+        public static bool Exists(this ABlobStorage blob)
         {
             return blob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -75,7 +76,7 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// Metodo asincrono per cancellare un file presente nel Blob
         /// </summary>
         /// <returns>esito della ricerca</returns>
-        public static bool Delete(this IBlob blob)
+        public static bool Delete(this ABlobStorage blob)
         {
             blob.DeleteAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
@@ -89,7 +90,7 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di url</returns>
-        public static List<string> Search(this IBlob blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+        public static List<string> Search(this ABlobStorage blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
         {
             return blob.SearchAsync(prefix, takeCount, ct).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -98,16 +99,16 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// </summary>
         /// <param name="ByteSequence">Sequenza di byte da ricercare</param>
         /// <returns>nome della prima occorrenza della ricerca e numero di file scansionati prima di trovarla</returns>
-        public static (string name, int count) CheckIfByteSequenceExists(this IBlob blob, byte[] byteSequence)
+        public static (string name, int count) CheckIfByteSequenceExists(this ABlobStorage blob, byte[] byteSequence)
         {
             return blob.CheckIfByteSequenceExistsAsync(byteSequence).ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
     public static partial class ExtensionBlobStorage
     {
-        private static Dictionary<string, (CloudBlobContainer, BlobType)> Contexts = new Dictionary<string, (CloudBlobContainer, BlobType)>();
+        private static Dictionary<string, (CloudBlobContainer, BlobType, IBlobManager)> Contexts = new Dictionary<string, (CloudBlobContainer, BlobType, IBlobManager)>();
         private static object TrafficLight = new object();
-        private static (CloudBlobContainer, BlobType) GetContext(Type type)
+        private static (CloudBlobContainer, BlobType, IBlobManager) GetContext(Type type)
         {
             if (!Contexts.ContainsKey(type.FullName))
             {
@@ -118,18 +119,17 @@ namespace Rystem.Azure.Storage.BlobStorage
                         BlobStorageInstaller.BlobConfiguration blobConfiguration = BlobStorageInstaller.GetConnectionString(type);
                         CloudStorageAccount storageAccount = CloudStorageAccount.Parse(blobConfiguration.ConnectionString);
                         CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
-                        CloudBlobContainer context = Client.GetContainerReference(blobConfiguration.Container);
+                        CloudBlobContainer context = Client.GetContainerReference(blobConfiguration.Container ?? type.Name.ToLower());
                         context.CreateIfNotExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                        Contexts.Add(type.FullName, (context, (BlobType)(int)blobConfiguration.BlobStorageType));
+                        Contexts.Add(type.FullName, (context, (BlobType)(int)blobConfiguration.BlobStorageType, blobConfiguration.BlobManager ?? new JsonBlobManager()));
                     }
                 }
             }
             return Contexts[type.FullName];
         }
-        private static ICloudBlob GetBlobReference(string destinationFileName, Type type)
+        private static ICloudBlob GetBlobReference(CloudBlobContainer context, string destinationFileName, BlobType blobType)
         {
             ICloudBlob cloudBlob = null;
-            (CloudBlobContainer context, BlobType blobType) = GetContext(type);
             switch (blobType)
             {
                 default:
@@ -153,11 +153,12 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// Esegue il salvataggio asincrono di un file su Blob Storage
         /// </summary>
         /// <returns>url completa del file appena salvato</returns>
-        public static async Task<string> SaveAsync(this IBlob blob)
+        public static async Task<string> SaveAsync(this ABlobStorage blob)
         {
             Type type = blob.GetType();
-            BlobValue blobValue = blob.Value();
-            ICloudBlob cloudBlob = GetBlobReference(blobValue.DestinationFileName, type);
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(type);
+            BlobValue blobValue = blobManager.Value(blob);
+            ICloudBlob cloudBlob = GetBlobReference(context, blobValue.DestinationFileName, blobType);
             cloudBlob.Properties.ContentType = blobValue.BlobProperties.ContentType ?? MimeMapping.GetMimeMapping(blobValue.DestinationFileName);
             if (blobValue.BlobProperties.CacheControl != null)
                 cloudBlob.Properties.CacheControl = blobValue.BlobProperties.CacheControl;
@@ -175,7 +176,6 @@ namespace Rystem.Azure.Storage.BlobStorage
                 string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
                 await cloudBlob.SetPropertiesAsync();
                 await cloudBlob.FetchAttributesAsync();
-                blob.OnSave(blobValue);
                 return path;
             }
         }
@@ -186,17 +186,18 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// <param name="destinationFileName">Nome del file da modificare</param>
         /// <param name="text">stringa da appendere al file</param>
         /// <returns>Oggetto <see cref="TBlob"/> che è stato modificato</returns>
-        public static async Task<bool> AppendTextAsync<TEntity>(this IBlob blob, string text)
-            where TEntity : IBlob
+        public static async Task<bool> AppendTextAsync<TEntity>(this ABlobStorage blob, string text)
+            where TEntity : ABlobStorage
         {
             Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(text));
             return await blob.AppendStreamAsync(stream);
         }
-        public static async Task<bool> AppendStreamAsync(this IBlob blob, Stream stream)
+        public static async Task<bool> AppendStreamAsync(this ABlobStorage blob, Stream stream)
         {
             Type type = blob.GetType();
-            BlobValue blobValue = blob.Value();
-            CloudAppendBlob cloudBlob = (CloudAppendBlob)GetBlobReference(blobValue.DestinationFileName, type);
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(type);
+            BlobValue blobValue = blobManager.Value(blob);
+            CloudAppendBlob cloudBlob = (CloudAppendBlob)GetBlobReference(context, blobValue.DestinationFileName, blobType);
             await cloudBlob.AppendFromStreamAsync(stream);
             return true;
         }
@@ -204,20 +205,22 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// Metodo per ottenere in modo asincrono il riferimento <see cref="TEntity"/> di un file presente su Blob Storage
         /// </summary>
         /// <returns>Oggetto <see cref="TBlob"/> che raccoglie tutte le proprietà del file recuperato da Blob Storage</returns>
-        public static async Task<BlobValue> GetAsync(this IBlob blob, BlobValue blobValue = null)
+        public static async Task<ABlobStorage> GetAsync(this ABlobStorage blob, string name = null)
         {
-            blobValue = blobValue ?? blob.Value();
-            ICloudBlob cloudBlob = GetBlobReference(blobValue.DestinationFileName, blob.GetType());
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
+            ICloudBlob cloudBlob = GetBlobReference(context, name ?? (name = blobManager.Value(blob)?.DestinationFileName), blobType);
             if (await cloudBlob.ExistsAsync())
             {
                 await cloudBlob.FetchAttributesAsync();
                 var fileLenght = cloudBlob.Properties.Length;
                 byte[] fileByte = new byte[fileLenght];
                 await cloudBlob.DownloadToByteArrayAsync(fileByte, 0);
-                blobValue.BlobProperties = cloudBlob.Properties;
-                blobValue.MemoryStream = new MemoryStream(fileByte);
-                blob.OnRetrieve(blobValue);
-                return blobValue;
+                return blobManager.OnRetrieve(new BlobValue()
+                {
+                    BlobProperties = cloudBlob.Properties,
+                    MemoryStream = new MemoryStream(fileByte),
+                    DestinationFileName = name
+                });
             }
             return null;
         }
@@ -230,24 +233,21 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di <see cref="TBlob"/> selezionati in base al filtro di prefix</returns>
-        public static async Task<List<BlobValue>> ListAsync<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
-            where TEntity : IBlob
+        public static async Task<List<ABlobStorage>> ListAsync<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+            where TEntity : ABlobStorage
         {
-            List<BlobValue> items = new List<BlobValue>();
+            List<ABlobStorage> items = new List<ABlobStorage>();
             BlobContinuationToken token = null;
-            (CloudBlobContainer context, BlobType blobType) = GetContext(blob.GetType());
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
             do
             {
-                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, token);
+                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { });
                 token = segment.ContinuationToken;
-                foreach (ICloudBlob blobItem in segment.Results)
+                foreach (IListBlobItem blobItem in segment.Results)
                 {
-                    string fileName = blobItem.Name;
-                    BlobValue blobValue = new BlobValue()
-                    {
-                        DestinationFileName = fileName
-                    };
-                    items.Add(await blob.GetAsync(blobValue));
+                    if (blobItem is CloudBlobDirectory)
+                        continue;
+                    items.Add(await blob.GetAsync(((ICloudBlob)blobItem).Name));
                 }
                 if (takeCount != null && items.Count >= takeCount) break;
             } while (token != null && !ct.IsCancellationRequested);
@@ -258,18 +258,20 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// </summary>
         /// <param name="destinationFileName">nome del file da ricercare</param>
         /// <returns>esito della ricerca</returns>
-        public static async Task<bool> ExistsAsync(this IBlob blob)
+        public static async Task<bool> ExistsAsync(this ABlobStorage blob)
         {
-            ICloudBlob cloudBlob = GetBlobReference(blob.Value().DestinationFileName, blob.GetType());
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
+            ICloudBlob cloudBlob = GetBlobReference(context, blobManager.Value(blob).DestinationFileName, blobType);
             return await cloudBlob.ExistsAsync();
         }
         /// <summary>
         /// Metodo asincrono per cancellare un file presente nel Blob
         /// </summary>
         /// <returns>esito della ricerca</returns>
-        public static async Task<bool> DeleteAsync(this IBlob blob)
+        public static async Task<bool> DeleteAsync(this ABlobStorage blob)
         {
-            ICloudBlob cloudBlob = GetBlobReference(blob.Value().DestinationFileName, blob.GetType());
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
+            ICloudBlob cloudBlob = GetBlobReference(context, blobManager.Value(blob).DestinationFileName, blobType);
             await cloudBlob.DeleteAsync();
             return true;
         }
@@ -282,19 +284,17 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di url</returns>
-        public static async Task<List<string>> SearchAsync(this IBlob blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+        public static async Task<List<string>> SearchAsync(this ABlobStorage blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
         {
             List<string> items = new List<string>();
             BlobContinuationToken token = null;
-            (CloudBlobContainer context, BlobType blobType) = GetContext(blob.GetType());
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
             do
             {
                 BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, token);
                 token = segment.ContinuationToken;
                 foreach (var blobItem in segment.Results)
-                {
                     items.Add(blobItem.StorageUri.PrimaryUri.ToString());
-                }
                 if (takeCount != null && items.Count >= takeCount) break;
             } while (token != null && !ct.IsCancellationRequested);
             return items;
@@ -304,13 +304,13 @@ namespace Rystem.Azure.Storage.BlobStorage
         /// </summary>
         /// <param name="byteSequence">Sequenza di byte da ricercare</param>
         /// <returns>nome della prima occorrenza della ricerca e numero di file scansionati prima di trovarla</returns>
-        public static async Task<(string name, int count)> CheckIfByteSequenceExistsAsync(this IBlob blob, byte[] byteSequence)
+        public static async Task<(string name, int count)> CheckIfByteSequenceExistsAsync(this ABlobStorage blob, byte[] byteSequence)
         {
             string name = String.Empty;
             int count = 0;
             BlobContinuationToken token = null;
             CancellationToken ct = default(CancellationToken);
-            (CloudBlobContainer context, BlobType blobType) = GetContext(blob.GetType());
+            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
             do
             {
                 BlobResultSegment segment = await context.ListBlobsSegmentedAsync("", token);
