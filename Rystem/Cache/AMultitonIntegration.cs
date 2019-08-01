@@ -13,13 +13,12 @@ namespace Rystem.Cache
         internal abstract bool Delete(string key);
         internal abstract IEnumerable<string> List();
     }
-    internal abstract class AMultitonManager
+    internal interface IMultitonManager
     {
-        internal abstract IMultiton Get(IMultitonKey key);
-        internal abstract IMultiton Instance(IMultitonKey key);
-        internal abstract bool Update(IMultitonKey key, IMultiton value);
-        internal abstract bool Exists(IMultitonKey key);
-        internal abstract bool Delete(IMultitonKey key);
-        internal abstract IEnumerable<string> List();
+        IMultiton Instance(IMultitonKey key);
+        bool Update(IMultitonKey key, IMultiton value);
+        bool Exists(IMultitonKey key);
+        bool Delete(IMultitonKey key);
+        IEnumerable<string> List();
     }
 }

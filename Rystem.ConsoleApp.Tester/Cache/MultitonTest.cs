@@ -24,14 +24,15 @@ namespace Rystem.ConsoleApp.Tester.Cache
                 if (serviceKeys.Count > 0) return false;
                 bool updating = serviceKey.Restore();
                 if (!updating) return false;
+                Service service = serviceKey.Instance();
                 updating = serviceKey.Restore(new Service()
                 {
                     A = "updating",
                     C = 20
                 });
                 if (!updating) return false;
-                Service service = serviceKey.Instance();
-                if (service == null || service.A != "updating") return false;
+                Service service2 = serviceKey.Instance();
+                if (service2 == null || service2.A != "updating") return false;
                 bool exists = serviceKey.IsPresent();
                 if (!exists) return false;
                 serviceKeys = serviceKey.AllKeys();
@@ -51,7 +52,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()
         {
-            MultitonInstaller.Configure<ServiceKey>(ConnectionString, CacheExpireTime.TenMinutes, MultitonExpireTime.TenMinutes);
+            MultitonInstaller.Configure<ServiceKey>(ConnectionString, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
         }
     }
     public class Service : IMultiton

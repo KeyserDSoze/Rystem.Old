@@ -6,7 +6,7 @@ using System.Text;
 namespace Rystem.Cache
 {
     internal delegate IMultiton CreationFunction(IMultitonKey key);
-    internal class MultitonManager<T> : AMultitonManager
+    internal class MultitonManager<T> : IMultitonManager
         where T : IMultiton
     {
         private readonly static AMultitonIntegration<T> InMemory;
@@ -29,64 +29,61 @@ namespace Rystem.Cache
                     InCloud = new InTableStorage<T>(configuration);
             }
         }
-        internal override IMultiton Get(IMultitonKey key)
+        public IMultiton Instance(IMultitonKey key)
         {
             string keyString = key.ToKeyString();
-            if (MemoryIsActive && !InMemory.Exists(keyString))
+            if (MemoryIsActive)
             {
-                lock (TrafficLight)
+                if (!InMemory.Exists(keyString))
                 {
-                    if (!InMemory.Exists(keyString))
+                    lock (TrafficLight)
                     {
-                        if (CloudIsActive && InCloud.Exists(keyString))
-                            InMemory.Update(keyString, InCloud.Instance(keyString));
-                        else
-                            Update(key, (T)CreationFunction.Invoke(key));
+                        if (!InMemory.Exists(keyString))
+                        {
+                            string cloudKeyString = CloudKeyToString(keyString);
+                            if (CloudIsActive && InCloud.Exists(cloudKeyString))
+                                InMemory.Update(keyString, InCloud.Instance(cloudKeyString));
+                            else
+                                Update(key, (T)CreationFunction.Invoke(key));
+                        }
                     }
                 }
+                return InMemory.Instance(keyString);
             }
-            else if (!MemoryIsActive)
+            else
+            {
+                keyString = CloudKeyToString(keyString);
                 if (!InCloud.Exists(keyString))
                     lock (TrafficLight)
                         if (!InCloud.Exists(keyString))
                             Update(key, (T)CreationFunction.Invoke(key));
-            return Instance(key);
+                return InCloud.Instance(keyString);
+            }
         }
-        internal override IMultiton Instance(IMultitonKey key)
-        {
-            string keyString = key.ToKeyString();
-            if (MemoryIsActive)
-                return InMemory.Instance(keyString);
-            if (CloudIsActive)
-                return InCloud.Instance(CloudKeyToString(keyString));
-            throw new NotImplementedException($"Error in {FullName}. Please use MultitonInstaller in static constructor of your key");
-        }
-        internal override bool Update(IMultitonKey key, IMultiton value)
+        public bool Update(IMultitonKey key, IMultiton value)
         {
             string keyString = key.ToKeyString();
             if (value == null)
                 value = CreationFunction.Invoke(key);
             return (!MemoryIsActive || InMemory.Update(keyString, (T)value)) &&
-                (!CloudIsActive || InCloud.Update(CloudKeyToString(keyString), (T)value)) && (MemoryIsActive || CloudIsActive);
+                (!CloudIsActive || InCloud.Update(CloudKeyToString(keyString), (T)value));
         }
 
-        internal override bool Exists(IMultitonKey key)
+        public bool Exists(IMultitonKey key)
         {
             string keyString = key.ToKeyString();
             return (!MemoryIsActive || InMemory.Exists(keyString))
-                   || (!CloudIsActive || InCloud.Exists(CloudKeyToString(keyString)))
-                   && (MemoryIsActive || CloudIsActive);
+                   && (!CloudIsActive || InCloud.Exists(CloudKeyToString(keyString)));
         }
 
-        internal override bool Delete(IMultitonKey key)
+        public bool Delete(IMultitonKey key)
         {
             string keyString = key.ToKeyString();
-            return (!MemoryIsActive || InMemory.Delete(keyString)) 
-                   && (!CloudIsActive || InCloud.Delete(CloudKeyToString(keyString))) 
-                   && (MemoryIsActive || CloudIsActive);
+            return (!MemoryIsActive || InMemory.Delete(keyString))
+                   && (!CloudIsActive || InCloud.Delete(CloudKeyToString(keyString)));
         }
 
-        internal override IEnumerable<string> List()
+        public IEnumerable<string> List()
         {
             if (CloudIsActive)
                 return InCloud.List();

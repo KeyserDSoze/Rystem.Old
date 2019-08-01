@@ -17,9 +17,9 @@ namespace System
                 valueBuilder.Append($"{MultitonConst.Separator}{propertyInfo.GetValue(multitonKey)}");
             return valueBuilder.ToString();
         }
-        private static Dictionary<string, AMultitonManager> Managers = new Dictionary<string, AMultitonManager>();
+        private static Dictionary<string, IMultitonManager> Managers = new Dictionary<string, IMultitonManager>();
         private readonly static object TrafficLight = new object();
-        private static AMultitonManager Manager(Type keyType)
+        private static IMultitonManager Manager(Type keyType)
         {
             if (!Managers.ContainsKey(keyType.FullName))
                 lock (TrafficLight)
@@ -27,14 +27,14 @@ namespace System
                     {
                         Type valueType = MultitonInstaller.GetKeyType(keyType);
                         Type genericType = typeof(MultitonManager<>).MakeGenericType(valueType);
-                        Managers.Add(keyType.FullName, (AMultitonManager)Activator.CreateInstance(genericType));
+                        Managers.Add(keyType.FullName, (IMultitonManager)Activator.CreateInstance(genericType));
                     }
             return Managers[keyType.FullName];
         }
         public static dynamic Instance<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey
         {
-            return Manager(entry.GetType()).Get(entry);
+            return Manager(entry.GetType()).Instance(entry);
         }
         public static bool Remove<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey
