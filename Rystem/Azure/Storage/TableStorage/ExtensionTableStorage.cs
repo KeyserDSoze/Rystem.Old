@@ -35,6 +35,7 @@ namespace System
             Context.CreateIfNotExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             return Context;
         }
+        private static readonly Type NoProperty = typeof(NoTableStorageProperty);
         private static void PropertyExists(Type type)
         {
             if (!Properties.ContainsKey(type.FullName))
@@ -43,6 +44,8 @@ namespace System
                 List<PropertyInfo> specialPropertyInfo = new List<PropertyInfo>();
                 foreach (PropertyInfo pi in type.GetProperties())
                 {
+                    if (pi.GetCustomAttribute(NoProperty) != null)
+                        continue;
                     if (pi.Name == "PartitionKey" || pi.Name == "RowKey" || pi.Name == "Timestamp" || pi.Name == "ETag")
                         continue;
                     if (pi.PropertyType == typeof(int) || pi.PropertyType == typeof(long) ||

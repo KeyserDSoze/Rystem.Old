@@ -2,6 +2,7 @@
 
 namespace Rystem.Azure.Storage
 {
+    public class NoTableStorageProperty : Attribute { }
     public interface ITableStorage
     {
         string PartitionKey { get; set; }

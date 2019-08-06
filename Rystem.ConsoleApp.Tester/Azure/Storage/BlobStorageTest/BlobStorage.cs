@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.Storage;
+﻿using Microsoft.WindowsAzure.Storage.Blob;
+using Rystem.Azure.Storage;
 using Rystem.ConsoleApp.Tester;
 using System;
 using System.Collections.Generic;
@@ -25,5 +26,6 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Storage.BlobStorageTest
         public int Anno { get; set; }
         public string Serie { get; set; }
         public override string Name { get; set; }
+        public override BlobProperties BlobProperties { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

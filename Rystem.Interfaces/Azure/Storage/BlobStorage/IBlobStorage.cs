@@ -11,7 +11,7 @@ namespace Rystem.Azure.Storage
     /// </summary>
     public abstract class ABlobStorage
     {
-        public BlobProperties BlobProperties { get; set; }
+        public abstract BlobProperties BlobProperties { get; set; }
         public abstract string Name { get; set; }
     }
 }

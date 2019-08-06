@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.WindowsAzure.Storage.Blob;
+using Newtonsoft.Json;
 using Rystem.Azure.Storage;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace Rystem.Azure.Storage
         {
             return new BlobValue()
             {
-                BlobProperties = blob.BlobProperties,
+                BlobProperties = blob.BlobProperties ?? new BlobProperties() { ContentType = "text/json" },
                 DestinationFileName = blob.Name,
                 MemoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(blob, JsonSettings)))
             };

@@ -39,8 +39,8 @@ namespace Rystem.Cache
             NullValueHandling = NullValueHandling.Ignore
         };
         public const char Separator = '╬';
-        public static Type NoKey = typeof(NoMultitonKey);
-        public static Type MultitonKey = typeof(IMultitonKey);
+        public static readonly Type NoKey = typeof(NoMultitonKey);
+        public static readonly Type MultitonKey = typeof(IMultitonKey);
         public static readonly List<Type> NormalTypes = new List<Type>
         {
             typeof(int),
