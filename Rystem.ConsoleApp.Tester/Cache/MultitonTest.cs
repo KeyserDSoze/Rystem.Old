@@ -19,18 +19,27 @@ namespace Rystem.ConsoleApp.Tester.Cache
                     Another = "ssss"
                 };
                 serviceKey.ToKeyString();
+                Service2Key service2Key = new Service2Key()
+                {
+                    Id = i,
+                    Another = "ssss2"
+                };
+                service2Key.ToKeyString();
                 List<ServiceKey> serviceKeys = serviceKey.AllKeys();
                 Console.WriteLine($"List must be zero: {serviceKeys.Count}");
                 if (serviceKeys.Count > 0) return false;
                 bool updating = serviceKey.Restore();
                 if (!updating) return false;
                 Service service = serviceKey.Instance();
+                Service service3 = service2Key.Instance();
                 updating = serviceKey.Restore(new Service()
                 {
                     A = "updating",
                     C = 20
                 });
                 if (!updating) return false;
+                serviceKeys = serviceKey.AllKeys();
+                List<Service2Key> service2Keys = service2Key.AllKeys();
                 Service service2 = serviceKey.Instance();
                 if (service2 == null || service2.A != "updating") return false;
                 bool exists = serviceKey.IsPresent();
@@ -53,6 +62,16 @@ namespace Rystem.ConsoleApp.Tester.Cache
         static ServiceKey()
         {
             MultitonInstaller.Configure<ServiceKey>(ConnectionString, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
+        }
+    }
+    public class Service2Key : IMultitonKey
+    {
+        public int Id { get; set; }
+        public string Another { get; set; }
+        internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
+        static Service2Key()
+        {
+            MultitonInstaller.Configure<Service2Key, Service>(ConnectionString, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
         }
     }
     public class Service : IMultiton

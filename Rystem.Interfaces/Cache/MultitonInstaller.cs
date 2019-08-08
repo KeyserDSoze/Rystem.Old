@@ -33,6 +33,8 @@ namespace Rystem.Cache
                 };
                 if (!Contexts.ContainsKey(type.FullName))
                     Contexts.Add(type.FullName, multitonConfiguration);
+                if (Contexts[type.FullName].KeyType.FullName != keyType.FullName)
+                    throw new ArgumentException($"Too many keys found for {keyType.FullName}. A key named {Contexts[type.FullName].KeyType.FullName} already exists for instace {type.FullName}.");
                 if (!KeyContexts.ContainsKey(keyType.FullName))
                     KeyContexts.Add(keyType.FullName, multitonConfiguration);
             }
