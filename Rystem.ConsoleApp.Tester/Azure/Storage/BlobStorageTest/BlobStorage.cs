@@ -11,21 +11,33 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Storage.BlobStorageTest
     {
         public bool DoWork(string entry)
         {
-            new Calendario().List();
+            Meatball meatball = new Meatball()
+            {
+                Name = "Hello2.csv",
+                BlobProperties = new BlobProperties()
+                {
+                    ContentType = "text/csv"
+                }
+            };
+            meatball.Delete();
+            meatball.Save();
+            meatball.Save();
+            meatball.Save();
+            Meatball meatball2 = (Meatball)meatball.Get();
             return true;
         }
     }
 
-    public class Calendario : ABlobStorage
+    public class Meatball : IBlobStorage
     {
-        static Calendario()
+        static Meatball()
         {
-            BlobStorageInstaller.ConfigureAsDefault(StorageConnectionString, BlobStorageType.BlockBlob, nameof(Calendario).ToLower(), new JsonBlobManager());
+            BlobStorageInstaller.Configure<Meatball>(StorageConnectionString, BlobStorageType.AppendBlob, nameof(Meatball).ToLower(), new CsvBlobManager());
         }
-        public const string StorageConnectionString = "DefaultEndpointsProtocol=http;AccountName=colacalcio;AccountKey=bLmB0xUBaruEbpPtS9V/SLEDK4i8qJZeRKIQL9oXxu3XaufQ/9GErOIHcPq9DKWrXgoHFukz8yGy7OybbXwsvA==";
-        public int Anno { get; set; }
-        public string Serie { get; set; }
-        public override string Name { get; set; }
-        public override BlobProperties BlobProperties { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=kynsexstorage;AccountKey=OCwrI4pGQtjc+HEfFetZ0TzExKfum2PrUfcao6cjQEyTfw1mJ15b2vNMWoBGYRkHsXwXJ/WqZXyy6BONehar+Q==;EndpointSuffix=core.windows.net";
+        public int A { get; set; }
+        public string B { get; set; }
+        public string Name { get; set; }
+        public BlobProperties BlobProperties { get; set; }
     }
 }

@@ -9,9 +9,9 @@ namespace Rystem.Azure.Storage
     /// <summary>
     /// Classe astratta che verrà implementata da <see cref="BlobStorage{TBlob}"/>>
     /// </summary>
-    public abstract class ABlobStorage
+    public interface IBlobStorage
     {
-        public abstract BlobProperties BlobProperties { get; set; }
-        public abstract string Name { get; set; }
+        BlobProperties BlobProperties { get; set; }
+        string Name { get; set; }
     }
 }

@@ -19,33 +19,15 @@ namespace System
         /// Esegue il salvataggio asincrono di un file su Blob Storage
         /// </summary>
         /// <returns>url completa del file appena salvato</returns>
-        public static string Save(this ABlobStorage blob)
+        public static string Save(this IBlobStorage blob)
         {
             return blob.SaveAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-        /// <summary>
-        /// Metodo asincrono per aggiungere una stringa ad un file già presente sul Blob.
-        /// Questa operazione è consentita solamente per Blob di tipo Append.
-        /// </summary>
-        /// <param name="destinationFileName">Nome del file da modificare</param>
-        /// <param name="text">stringa da appendere al file</param>
-        /// <returns>Oggetto <see cref="TBlob"/> che è stato modificato</returns>
-        public static bool AppendText<TEntity>(this ABlobStorage blob, string text)
-            where TEntity : ABlobStorage
-        {
-            Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(text));
-            return blob.AppendStream(stream);
-        }
-        public static bool AppendStream(this ABlobStorage blob, Stream stream)
-        {
-            blob.AppendStreamAsync(stream).ConfigureAwait(false).GetAwaiter().GetResult();
-            return true;
         }
         /// <summary>
         /// Metodo per ottenere in modo asincrono il riferimento <see cref="TEntity"/> di un file presente su Blob Storage
         /// </summary>
         /// <returns>Oggetto <see cref="TBlob"/> che raccoglie tutte le proprietà del file recuperato da Blob Storage</returns>
-        public static ABlobStorage Get(this ABlobStorage blob, string name = null)
+        public static IBlobStorage Get(this IBlobStorage blob, string name = null)
         {
             return blob.GetAsync(name).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -58,8 +40,8 @@ namespace System
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di <see cref="TBlob"/> selezionati in base al filtro di prefix</returns>
-        public static List<ABlobStorage> List<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
-            where TEntity : ABlobStorage
+        public static List<IBlobStorage> List<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+            where TEntity : IBlobStorage
         {
             return blob.ListAsync(prefix, takeCount, ct).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -68,7 +50,7 @@ namespace System
         /// </summary>
         /// <param name="destinationFileName">nome del file da ricercare</param>
         /// <returns>esito della ricerca</returns>
-        public static bool Exists(this ABlobStorage blob)
+        public static bool Exists(this IBlobStorage blob)
         {
             return blob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -76,7 +58,7 @@ namespace System
         /// Metodo asincrono per cancellare un file presente nel Blob
         /// </summary>
         /// <returns>esito della ricerca</returns>
-        public static bool Delete(this ABlobStorage blob)
+        public static bool Delete(this IBlobStorage blob)
         {
             blob.DeleteAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
@@ -90,7 +72,7 @@ namespace System
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di url</returns>
-        public static List<string> Search(this ABlobStorage blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+        public static List<string> Search(this IBlobStorage blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
         {
             return blob.SearchAsync(prefix, takeCount, ct).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -99,7 +81,7 @@ namespace System
         /// </summary>
         /// <param name="ByteSequence">Sequenza di byte da ricercare</param>
         /// <returns>nome della prima occorrenza della ricerca e numero di file scansionati prima di trovarla</returns>
-        public static (string name, int count) CheckIfByteSequenceExists(this ABlobStorage blob, byte[] byteSequence)
+        public static (string name, int count) CheckIfByteSequenceExists(this IBlobStorage blob, byte[] byteSequence)
         {
             return blob.CheckIfByteSequenceExistsAsync(byteSequence).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -127,7 +109,7 @@ namespace System
             }
             return Contexts[type.FullName];
         }
-        private static ICloudBlob GetBlobReference(CloudBlobContainer context, string destinationFileName, BlobType blobType)
+        private static async Task<ICloudBlob> GetBlobReference(CloudBlobContainer context, string destinationFileName, BlobType blobType)
         {
             ICloudBlob cloudBlob = null;
             switch (blobType)
@@ -153,62 +135,90 @@ namespace System
         /// Esegue il salvataggio asincrono di un file su Blob Storage
         /// </summary>
         /// <returns>url completa del file appena salvato</returns>
-        public static async Task<string> SaveAsync(this ABlobStorage blob)
+        public static async Task<string> SaveAsync(this IBlobStorage blob)
         {
             Type type = blob.GetType();
             (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(type);
             BlobValue blobValue = blobManager.Value(blob);
-            ICloudBlob cloudBlob = GetBlobReference(context, blobValue.DestinationFileName, blobType);
-            cloudBlob.Properties.ContentType = blobValue.BlobProperties.ContentType ?? MimeMapping.GetMimeMapping(blobValue.DestinationFileName);
-            if (blobValue.BlobProperties.CacheControl != null)
-                cloudBlob.Properties.CacheControl = blobValue.BlobProperties.CacheControl;
-            if (blobValue.BlobProperties.ContentDisposition != null)
-                cloudBlob.Properties.ContentDisposition = blobValue.BlobProperties.ContentDisposition;
-            if (blobValue.BlobProperties.ContentEncoding != null)
-                cloudBlob.Properties.ContentEncoding = blobValue.BlobProperties.ContentEncoding;
-            if (blobValue.BlobProperties.ContentLanguage != null)
-                cloudBlob.Properties.ContentLanguage = blobValue.BlobProperties.ContentLanguage;
-            if (blobValue.BlobProperties.ContentMD5 != null)
-                cloudBlob.Properties.ContentMD5 = blobValue.BlobProperties.ContentMD5;
+            ICloudBlob cloudBlob = await GetBlobReference(context, blobValue.DestinationFileName, blobType);
             using (Stream stream = blobValue.MemoryStream)
             {
-                await cloudBlob.UploadFromStreamAsync(stream);
+                switch (blobType)
+                {
+                    case BlobType.BlockBlob:
+                        await cloudBlob.UploadFromStreamAsync(stream);
+                        break;
+                    case BlobType.AppendBlob:
+                        try
+                        {
+                            await ((CloudAppendBlob)cloudBlob).AppendFromStreamAsync(stream);
+                        }
+                        catch (Exception er)
+                        {
+                            if (er.Message == "The specified blob does not exist.")
+                            {
+                                await ((CloudAppendBlob)cloudBlob).CreateOrReplaceAsync();
+                                await ((CloudAppendBlob)cloudBlob).AppendFromStreamAsync(stream);
+                            }
+                        }
+                        break;
+                    case BlobType.PageBlob:
+                        throw new NotImplementedException("Page blob not already implemented.");
+                    default:
+                        throw new NotImplementedException();
+                }
                 string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
-                await cloudBlob.SetPropertiesAsync();
-                await cloudBlob.FetchAttributesAsync();
+                if (CheckBlobProperty())
+                    await cloudBlob.SetPropertiesAsync();
                 return path;
             }
-        }
-        /// <summary>
-        /// Metodo asincrono per aggiungere una stringa ad un file già presente sul Blob.
-        /// Questa operazione è consentita solamente per Blob di tipo Append.
-        /// </summary>
-        /// <param name="destinationFileName">Nome del file da modificare</param>
-        /// <param name="text">stringa da appendere al file</param>
-        /// <returns>Oggetto <see cref="TBlob"/> che è stato modificato</returns>
-        public static async Task<bool> AppendTextAsync<TEntity>(this ABlobStorage blob, string text)
-            where TEntity : ABlobStorage
-        {
-            Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(text));
-            return await blob.AppendStreamAsync(stream);
-        }
-        public static async Task<bool> AppendStreamAsync(this ABlobStorage blob, Stream stream)
-        {
-            Type type = blob.GetType();
-            (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(type);
-            BlobValue blobValue = blobManager.Value(blob);
-            CloudAppendBlob cloudBlob = (CloudAppendBlob)GetBlobReference(context, blobValue.DestinationFileName, blobType);
-            await cloudBlob.AppendFromStreamAsync(stream);
-            return true;
+            bool CheckBlobProperty()
+            {
+                bool changeSomethingInProperty = false;
+                if (blobValue.BlobProperties != null)
+                {
+                    if (blobValue.BlobProperties.ContentType != cloudBlob.Properties.ContentType)
+                    {
+                        cloudBlob.Properties.ContentType = blobValue.BlobProperties.ContentType ?? MimeMapping.GetMimeMapping(blobValue.DestinationFileName);
+                        changeSomethingInProperty = true;
+                    }
+                    if (blobValue.BlobProperties.CacheControl != null && blobValue.BlobProperties.CacheControl != cloudBlob.Properties.CacheControl)
+                    {
+                        cloudBlob.Properties.CacheControl = blobValue.BlobProperties.CacheControl;
+                        changeSomethingInProperty = true;
+                    }
+                    if (blobValue.BlobProperties.ContentDisposition != null && blobValue.BlobProperties.ContentDisposition != cloudBlob.Properties.ContentDisposition)
+                    {
+                        cloudBlob.Properties.ContentDisposition = blobValue.BlobProperties.ContentDisposition;
+                        changeSomethingInProperty = true;
+                    }
+                    if (blobValue.BlobProperties.ContentEncoding != null && blobValue.BlobProperties.ContentEncoding != cloudBlob.Properties.ContentEncoding)
+                    {
+                        cloudBlob.Properties.ContentEncoding = blobValue.BlobProperties.ContentEncoding;
+                        changeSomethingInProperty = true;
+                    }
+                    if (blobValue.BlobProperties.ContentLanguage != null && blobValue.BlobProperties.ContentLanguage != cloudBlob.Properties.ContentLanguage)
+                    {
+                        cloudBlob.Properties.ContentLanguage = blobValue.BlobProperties.ContentLanguage;
+                        changeSomethingInProperty = true;
+                    }
+                    if (blobValue.BlobProperties.ContentMD5 != null && blobValue.BlobProperties.ContentMD5 != cloudBlob.Properties.ContentMD5)
+                    {
+                        cloudBlob.Properties.ContentMD5 = blobValue.BlobProperties.ContentMD5;
+                        changeSomethingInProperty = true;
+                    }
+                }
+                return changeSomethingInProperty;
+            }
         }
         /// <summary>
         /// Metodo per ottenere in modo asincrono il riferimento <see cref="TEntity"/> di un file presente su Blob Storage
         /// </summary>
         /// <returns>Oggetto <see cref="TBlob"/> che raccoglie tutte le proprietà del file recuperato da Blob Storage</returns>
-        public static async Task<ABlobStorage> GetAsync(this ABlobStorage blob, string name = null)
+        public static async Task<IBlobStorage> GetAsync(this IBlobStorage blob, string name = null)
         {
             (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
-            ICloudBlob cloudBlob = GetBlobReference(context, name ?? (name = blobManager.Value(blob)?.DestinationFileName), blobType);
+            ICloudBlob cloudBlob = await GetBlobReference(context, name ?? (name = blobManager.Value(blob)?.DestinationFileName), blobType);
             if (await cloudBlob.ExistsAsync())
             {
                 await cloudBlob.FetchAttributesAsync();
@@ -220,7 +230,7 @@ namespace System
                     BlobProperties = cloudBlob.Properties,
                     MemoryStream = new MemoryStream(fileByte),
                     DestinationFileName = name
-                });
+                }, blob.GetType());
             }
             return null;
         }
@@ -233,10 +243,10 @@ namespace System
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di <see cref="TBlob"/> selezionati in base al filtro di prefix</returns>
-        public static async Task<List<ABlobStorage>> ListAsync<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
-            where TEntity : ABlobStorage
+        public static async Task<List<IBlobStorage>> ListAsync<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+            where TEntity : IBlobStorage
         {
-            List<ABlobStorage> items = new List<ABlobStorage>();
+            List<IBlobStorage> items = new List<IBlobStorage>();
             BlobContinuationToken token = null;
             (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
             do
@@ -258,20 +268,20 @@ namespace System
         /// </summary>
         /// <param name="destinationFileName">nome del file da ricercare</param>
         /// <returns>esito della ricerca</returns>
-        public static async Task<bool> ExistsAsync(this ABlobStorage blob)
+        public static async Task<bool> ExistsAsync(this IBlobStorage blob)
         {
             (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
-            ICloudBlob cloudBlob = GetBlobReference(context, blobManager.Value(blob).DestinationFileName, blobType);
+            ICloudBlob cloudBlob = await GetBlobReference(context, blobManager.Value(blob).DestinationFileName, blobType);
             return await cloudBlob.ExistsAsync();
         }
         /// <summary>
         /// Metodo asincrono per cancellare un file presente nel Blob
         /// </summary>
         /// <returns>esito della ricerca</returns>
-        public static async Task<bool> DeleteAsync(this ABlobStorage blob)
+        public static async Task<bool> DeleteAsync(this IBlobStorage blob)
         {
             (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
-            ICloudBlob cloudBlob = GetBlobReference(context, blobManager.Value(blob).DestinationFileName, blobType);
+            ICloudBlob cloudBlob = await GetBlobReference(context, blobManager.Value(blob).DestinationFileName, blobType);
             await cloudBlob.DeleteAsync();
             return true;
         }
@@ -284,7 +294,7 @@ namespace System
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di url</returns>
-        public static async Task<List<string>> SearchAsync(this ABlobStorage blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+        public static async Task<List<string>> SearchAsync(this IBlobStorage blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
         {
             List<string> items = new List<string>();
             BlobContinuationToken token = null;
@@ -304,7 +314,7 @@ namespace System
         /// </summary>
         /// <param name="byteSequence">Sequenza di byte da ricercare</param>
         /// <returns>nome della prima occorrenza della ricerca e numero di file scansionati prima di trovarla</returns>
-        public static async Task<(string name, int count)> CheckIfByteSequenceExistsAsync(this ABlobStorage blob, byte[] byteSequence)
+        public static async Task<(string name, int count)> CheckIfByteSequenceExistsAsync(this IBlobStorage blob, byte[] byteSequence)
         {
             string name = String.Empty;
             int count = 0;

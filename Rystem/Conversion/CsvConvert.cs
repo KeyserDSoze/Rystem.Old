@@ -1,4 +1,5 @@
-﻿using Rystem.Interfaces.Utility;
+﻿using Rystem.Interfaces.Conversion;
+using Rystem.Interfaces.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using static System.FormattableString;
+using Rystem.Utility;
 
 namespace Rystem.Conversion
 {
@@ -72,7 +74,7 @@ namespace Rystem.Conversion
         {
             if (data == null) return separatorString;
             Type type = typeof(T);
-            if (!IsPrimitive(ref type))
+            if (!StringablePrimitive.CheckWithNull(type))
             {
                 string nameOfInstance = "";
                 if (type.IsAbstract || type.IsInterface)
@@ -87,34 +89,6 @@ namespace Rystem.Conversion
                 return Invariant($"{data}{separatorString}");
             }
         }
-        private static bool IsPrimitive(ref Type type)
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && type.GenericTypeArguments.Length > 0) type = type.GenericTypeArguments.FirstOrDefault();
-            return CheckPrimitiveList(type) || type.BaseType == typeof(Enum) || type == typeof(DateTime) || type == typeof(DateTimeOffset);
-        }
-        private static bool CheckPrimitiveList(Type typeR)
-        {
-            foreach (Type type in NormalTypes)
-                if (type == typeR) return true;
-            return false;
-        }
-        private static readonly List<Type> NormalTypes = new List<Type>
-        {
-            typeof(int),
-            typeof(bool),
-            typeof(char),
-            typeof(decimal),
-            typeof(double),
-            typeof(long),
-            typeof(byte),
-            typeof(sbyte),
-            typeof(float),
-            typeof(uint),
-            typeof(ulong),
-            typeof(short),
-            typeof(ushort),
-            typeof(string)
-        };
         public static T Deserialize<T>(string data, int separatorIndex = 0)
         {
             if (string.IsNullOrWhiteSpace(data)) return default(T);
@@ -183,7 +157,7 @@ namespace Rystem.Conversion
         private static T ForStringParsing<T>(string data, int separatorIndex)
         {
             Type propertyType = typeof(T);
-            if (!IsPrimitive(ref propertyType))
+            if (!StringablePrimitive.CheckWithNull(propertyType))
             {
                 return (T)typeof(CsvConvert).GetMethod("Deserialize").MakeGenericMethod(propertyType).Invoke(null, new object[2] { data, separatorIndex + 1 });
             }
@@ -201,8 +175,5 @@ namespace Rystem.Conversion
                 return (T)Enum.Parse(propertyType, data);
             }
         }
-    }
-    public class CsvIgnore : Attribute
-    {
     }
 }

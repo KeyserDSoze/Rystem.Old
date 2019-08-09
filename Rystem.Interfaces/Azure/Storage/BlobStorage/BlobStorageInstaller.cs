@@ -41,11 +41,11 @@ namespace Rystem.Azure.Storage
                 ConnectionString = connectionString,
                 Container = container,
                 BlobStorageType = blobStorageType,
-                BlobManager = blobManager
+                BlobManager = blobManager ?? new JsonBlobManager()
             };
         }
         public static void Configure<TEntry>(string connectionString, BlobStorageType blobStorageType = BlobStorageType.Unspecified, string container = null, IBlobManager blobManager = default(JsonBlobManager))
-            where TEntry : ABlobStorage
+            where TEntry : IBlobStorage
         {
             Type type = typeof(TEntry);
             if (!Contexts.ContainsKey(type.FullName))
@@ -58,9 +58,7 @@ namespace Rystem.Azure.Storage
                     BlobStorageType = blobStorageType != BlobStorageType.Unspecified ? blobStorageType :
                         (Default != null && Default.BlobStorageType != BlobStorageType.Unspecified ? Default.BlobStorageType
                             : BlobStorageType.BlockBlob),
-                    BlobManager = blobManager != null ? blobManager :
-                      (Default != null && Default.BlobManager != null ? Default.BlobManager
-                            : default(JsonBlobManager)),
+                    BlobManager = blobManager ?? Default?.BlobManager ?? new JsonBlobManager()
                 });
         }
         public static BlobConfiguration GetConnectionString(Type type)

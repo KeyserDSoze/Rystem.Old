@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Rystem.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,19 +20,13 @@ namespace Rystem.Cache
                     if (!PropertyInfoDictionary.ContainsKey(keyType.FullName))
                     {
                         PropertyInfoDictionary.Add(keyType.FullName, keyType.GetProperties().ToList().FindAll(x =>
-                                    x.GetCustomAttribute(NoKey) == null && CheckPrimitiveList(x.PropertyType)));
+                                    x.GetCustomAttribute(NoKey) == null && StringablePrimitive.Check(x.PropertyType)));
                         if (PropertyInfoDictionary[keyType.FullName].Count() == 0)
                             throw new ArgumentException($"{keyType.FullName} doesn't implement any primitive property to create the key as string.");
                     }
                 }
             }
             return PropertyInfoDictionary[keyType.FullName];
-        }
-        private static bool CheckPrimitiveList(Type type)
-        {
-            foreach (Type typeR in MultitonConst.NormalTypes)
-                if (typeR == type) return true;
-            return false;
         }
         public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
         {
@@ -41,36 +36,6 @@ namespace Rystem.Cache
         public const char Separator = '╬';
         public static readonly Type NoKey = typeof(NoMultitonKey);
         public static readonly Type MultitonKey = typeof(IMultitonKey);
-        public static readonly List<Type> NormalTypes = new List<Type>
-        {
-            typeof(int),
-            typeof(bool),
-            typeof(char),
-            typeof(decimal),
-            typeof(double),
-            typeof(long),
-            typeof(byte),
-            typeof(sbyte),
-            typeof(float),
-            typeof(uint),
-            typeof(ulong),
-            typeof(short),
-            typeof(ushort),
-            typeof(string),
-            typeof(int?),
-            typeof(bool?),
-            typeof(char?),
-            typeof(decimal?),
-            typeof(double?),
-            typeof(long?),
-            typeof(byte?),
-            typeof(sbyte?),
-            typeof(float?),
-            typeof(uint?),
-            typeof(ulong?),
-            typeof(short?),
-            typeof(ushort?),
-            typeof(Guid)
-        };
+       
     }
 }

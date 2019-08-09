@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem.Utility;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -13,17 +14,13 @@ namespace System
             return InternalCopy(original, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
         }
         private static readonly MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
-        public static bool IsPrimitive(this Type type)
-        {
-            if (type == typeof(string)) return true;
-            return (type.IsValueType & type.IsPrimitive);
-        }
+       
         private static Object InternalCopy(object originalObject, IDictionary<Object, Object> visited, params object[] args)
         {
             if (originalObject == null)
                 return null;
             Type typeToReflect = originalObject.GetType();
-            if (IsPrimitive(typeToReflect))
+            if (Primitive.Is(typeToReflect))
                 return originalObject;
             if (visited.ContainsKey(originalObject))
                 return visited[originalObject];
@@ -63,7 +60,7 @@ namespace System
         {
             foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
             {
-                if (IsPrimitive(fieldInfo.FieldType))
+                if (Primitive.Is(fieldInfo.FieldType))
                     continue;
                 object originalFieldValue = fieldInfo.GetValue(originalObject);
                 object clonedFieldValue = InternalCopy(originalFieldValue, visited);
@@ -77,7 +74,7 @@ namespace System
             {
                 try
                 {
-                    if (IsPrimitive(propertyInfo.PropertyType))
+                    if (Primitive.Is(propertyInfo.PropertyType))
                         continue;
                     if (propertyInfo.SetMethod == null)
                         continue;
