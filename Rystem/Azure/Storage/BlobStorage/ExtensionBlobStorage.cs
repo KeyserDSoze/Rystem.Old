@@ -222,8 +222,8 @@ namespace System
             if (await cloudBlob.ExistsAsync())
             {
                 await cloudBlob.FetchAttributesAsync();
-                var fileLenght = cloudBlob.Properties.Length;
-                byte[] fileByte = new byte[fileLenght];
+                var fileLength = cloudBlob.Properties.Length;
+                byte[] fileByte = new byte[fileLength];
                 await cloudBlob.DownloadToByteArrayAsync(fileByte, 0);
                 return blobManager.OnRetrieve(new BlobValue()
                 {

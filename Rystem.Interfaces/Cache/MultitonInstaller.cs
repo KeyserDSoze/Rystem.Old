@@ -18,8 +18,9 @@ namespace Rystem.Cache
             public int ExpireMultiton { get; set; }
             public Type KeyType { get; set; }
             public Type Type { get; set; }
+            public InCloudType InCloudType { get; set; }
         }
-        private static void Configure(Type keyType, Type type, string connectionString, int expireCache = 0, int expireMultiton = -1)
+        private static void Configure(Type keyType, Type type, InCloudType inCloudType, string connectionString, int expireCache = 0, int expireMultiton = -1)
         {
             if (!Contexts.ContainsKey(type.FullName) || !KeyContexts.ContainsKey(keyType.FullName))
             {
@@ -29,7 +30,8 @@ namespace Rystem.Cache
                     ExpireCache = expireCache,
                     ExpireMultiton = expireMultiton,
                     KeyType = keyType,
-                    Type = type
+                    Type = type,
+                    InCloudType = inCloudType
                 };
                 if (!Contexts.ContainsKey(type.FullName))
                     Contexts.Add(type.FullName, multitonConfiguration);
@@ -46,11 +48,11 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TKey, TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TKey, TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
             where TKey : IMultitonKey
             where TEntry : IMultiton
         {
-            Configure(typeof(TKey), typeof(TEntry), connectionString, (int)expireCache, (int)expireMultiton);
+            Configure(typeof(TKey), typeof(TEntry), inCloudType, connectionString, (int)expireCache, (int)expireMultiton);
         }
         /// <summary>
         /// Call on start of your application.
@@ -58,11 +60,11 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TKey, TEntry>(string connectionString, int expireCache = 0, int expireMultiton = -1)
+        public static void Configure<TKey, TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, int expireCache = 0, int expireMultiton = -1)
              where TKey : IMultitonKey
              where TEntry : IMultiton
         {
-            Configure(typeof(TKey), typeof(TEntry), connectionString, expireCache, expireMultiton);
+            Configure(typeof(TKey), typeof(TEntry), inCloudType, connectionString, expireCache, expireMultiton);
         }
         /// <summary>
         /// Call on start of your application.
@@ -70,11 +72,11 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TKey, TEntry>(string connectionString, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TKey, TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
             where TKey : IMultitonKey
             where TEntry : IMultiton
         {
-            Configure(typeof(TKey), typeof(TEntry), connectionString, expireCache, (int)expireMultiton);
+            Configure(typeof(TKey), typeof(TEntry), inCloudType, connectionString, expireCache, (int)expireMultiton);
         }
         /// <summary>
         /// Call on start of your application.
@@ -82,28 +84,28 @@ namespace Rystem.Cache
         /// <param name="connectionString">Cache o TableStorage connectionstring (default: null [no cache used])</param>
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
-        public static void Configure<TKey, TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
+        public static void Configure<TKey, TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
             where TKey : IMultitonKey
             where TEntry : IMultiton
         {
-            Configure(typeof(TKey), typeof(TEntry), connectionString, (int)expireCache, expireMultiton);
+            Configure(typeof(TKey), typeof(TEntry), inCloudType, connectionString, (int)expireCache, expireMultiton);
         }
-        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, CacheExpireTime expireCache = CacheExpireTime.Infinite, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
             where TEntry : IMulti
         {
-            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
+            Configure<TEntry>(connectionString, inCloudType, (int)expireCache, (int)expireMultiton);
         }
-        public static void Configure<TEntry>(string connectionString, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
+        public static void Configure<TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, int expireCache = 0, MultitonExpireTime expireMultiton = MultitonExpireTime.TurnOff)
            where TEntry : IMulti
         {
-            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
+            Configure<TEntry>(connectionString, inCloudType, (int)expireCache, (int)expireMultiton);
         }
-        public static void Configure<TEntry>(string connectionString, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
+        public static void Configure<TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, CacheExpireTime expireCache = CacheExpireTime.Infinite, int expireMultiton = -1)
            where TEntry : IMulti
         {
-            Configure<TEntry>(connectionString, (int)expireCache, (int)expireMultiton);
+            Configure<TEntry>(connectionString, inCloudType, (int)expireCache, (int)expireMultiton);
         }
-        public static void Configure<TEntry>(string connectionString, int expireCache = 0, int expireMultiton = -1)
+        public static void Configure<TEntry>(string connectionString, InCloudType inCloudType = InCloudType.RedisCache, int expireCache = 0, int expireMultiton = -1)
           where TEntry : IMulti
         {
             if (typeof(IMultiton).IsAssignableFrom(typeof(TEntry)))
@@ -113,7 +115,7 @@ namespace Rystem.Cache
                 Type keyType = Type.GetType(result);
                 if (keyType == null)
                     throw new ArgumentException($"{type.FullName} doesn't exist its multiton key class. Please create yourClass and yourClassKey in the same namespace and same assembly *pay attention to call them ClassName and ClassNameKey.");
-                Configure(keyType, type, connectionString, expireCache, expireMultiton);
+                Configure(keyType, type, inCloudType, connectionString, expireCache, expireMultiton);
             }
             else
             {
@@ -122,7 +124,7 @@ namespace Rystem.Cache
                 Type type = Type.GetType(result);
                 if (type == null)
                     throw new ArgumentException($"{type.FullName} doesn't exist its multiton class. Please create yourClass and yourClassKey in the same namespace and same assembly *pay attention to call them ClassName and ClassNameKey.");
-                Configure(keyType, type, connectionString, expireCache, expireMultiton);
+                Configure(keyType, type, inCloudType, connectionString, expireCache, expireMultiton);
             }
         }
         private static string ReplaceFirstOccurrence(string Source, string Find, string Replace)
@@ -238,5 +240,11 @@ namespace Rystem.Cache
         /// Data is stored in memory app for 360 days
         /// </summary>
         OneYear = 60 * 24 * 7 * 30 * 360
+    }
+    public enum InCloudType
+    {
+        RedisCache,
+        TableStorage,
+        BlobStorage
     }
 }

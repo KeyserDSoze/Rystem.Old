@@ -23,10 +23,20 @@ namespace Rystem.Cache
                 InMemory = new InMemory<T>(configuration);
             if (CloudIsActive = configuration.ExpireCache != (int)CacheExpireTime.TurnOff && !string.IsNullOrWhiteSpace(configuration.ConnectionString))
             {
-                if (configuration.ConnectionString.ToLower().Contains("redis.cache.windows.net"))
-                    InCloud = new InRedisCache<T>(configuration);
-                else
-                    InCloud = new InTableStorage<T>(configuration);
+                switch (configuration.InCloudType)
+                {
+                    case InCloudType.RedisCache:
+                        InCloud = new InRedisCache<T>(configuration);
+                        break;
+                    case InCloudType.TableStorage:
+                        InCloud = new InTableStorage<T>(configuration);
+                        break;
+                    case InCloudType.BlobStorage:
+                        InCloud = new InBlobStorage<T>(configuration);
+                        break;
+                    default:
+                        throw new NotImplementedException($"InCloudType not found {configuration.InCloudType}");
+                }
             }
         }
         public IMultiton Instance(IMultitonKey key)
@@ -40,9 +50,8 @@ namespace Rystem.Cache
                     {
                         if (!InMemory.Exists(keyString))
                         {
-                            string cloudKeyString = CloudKeyToString(keyString);
-                            if (CloudIsActive && InCloud.Exists(cloudKeyString))
-                                InMemory.Update(keyString, InCloud.Instance(cloudKeyString));
+                            if (CloudIsActive && InCloud.Exists(keyString))
+                                InMemory.Update(keyString, InCloud.Instance(keyString));
                             else
                                 Update(key, (T)CreationFunction.Invoke(key));
                         }
@@ -52,7 +61,6 @@ namespace Rystem.Cache
             }
             else
             {
-                keyString = CloudKeyToString(keyString);
                 if (!InCloud.Exists(keyString))
                     lock (TrafficLight)
                         if (!InCloud.Exists(keyString))
@@ -66,21 +74,21 @@ namespace Rystem.Cache
             if (value == null)
                 value = CreationFunction.Invoke(key);
             return (!MemoryIsActive || InMemory.Update(keyString, (T)value)) &&
-                (!CloudIsActive || InCloud.Update(CloudKeyToString(keyString), (T)value));
+                (!CloudIsActive || InCloud.Update(keyString, (T)value));
         }
 
         public bool Exists(IMultitonKey key)
         {
             string keyString = key.ToKeyString();
             return (!MemoryIsActive || InMemory.Exists(keyString))
-                   && (!CloudIsActive || InCloud.Exists(CloudKeyToString(keyString)));
+                   && (!CloudIsActive || InCloud.Exists(keyString));
         }
 
         public bool Delete(IMultitonKey key)
         {
             string keyString = key.ToKeyString();
             return (!MemoryIsActive || InMemory.Delete(keyString))
-                   && (!CloudIsActive || InCloud.Delete(CloudKeyToString(keyString)));
+                   && (!CloudIsActive || InCloud.Delete(keyString));
         }
 
         public IEnumerable<string> List()
@@ -91,7 +99,6 @@ namespace Rystem.Cache
                 return InMemory.List();
             return null;
         }
-        private static string CloudKeyToString(string keyString)
-            => $"{FullName}{MultitonConst.Separator}{keyString}";
+       
     }
 }

@@ -61,7 +61,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()
         {
-            MultitonInstaller.Configure<ServiceKey>(ConnectionString, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
+            MultitonInstaller.Configure<ServiceKey>(ConnectionString, InCloudType.RedisCache, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
         }
     }
     public class Service2Key : IMultitonKey
@@ -71,7 +71,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static Service2Key()
         {
-            MultitonInstaller.Configure<Service2Key, Service>(ConnectionString, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
+            MultitonInstaller.Configure<Service2Key, Service>(ConnectionString, InCloudType.RedisCache, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
         }
     }
     public class Service : IMultiton

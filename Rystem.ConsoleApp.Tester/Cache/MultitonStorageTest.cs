@@ -26,7 +26,9 @@ namespace Wonda.Engine.Library.Multiton
         public string CustomerId { get; set; }
         static LastBillingOkKey()
         {
-            MultitonInstaller.Configure<LastBillingOkKey, LastBillingOk>("DefaultEndpointsProtocol=https;AccountName=wondacustomerbase;AccountKey=+pSYUSkVNAn1t2CJXqd38o4XtN6bmBbEqtDxz7KS6kIxM6ZWD6fSckKEVFiLRDCG2y6BjoPRVOvjU0kDbV3WnA==;EndpointSuffix=core.windows.net",
+            MultitonInstaller.Configure<LastBillingOkKey, LastBillingOk>(
+                "DefaultEndpointsProtocol=https;AccountName=kynsexstorage;AccountKey=OCwrI4pGQtjc+HEfFetZ0TzExKfum2PrUfcao6cjQEyTfw1mJ15b2vNMWoBGYRkHsXwXJ/WqZXyy6BONehar+Q==;EndpointSuffix=core.windows.net",
+                InCloudType.TableStorage,
                  CacheExpireTime.Infinite, MultitonExpireTime.TurnOff);
         }
     }

@@ -26,68 +26,61 @@ namespace Rystem.Cache
         }
         internal override T Instance(string key)
         {
-            RystemCache cached = Exist(FullName, key);
-            return JsonConvert.DeserializeObject<T>(cached.Data, MultitonConst.JsonSettings);
+            TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
+            TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
+            return result.Result != null ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, MultitonConst.JsonSettings) : default(T);
         }
-        private static bool Set(string rowKey, string data)
+        internal override bool Update(string key, T value)
         {
             RystemCache rystemCache = new RystemCache()
             {
                 PartitionKey = FullName,
-                RowKey = rowKey,
-                Data = data
+                RowKey = key,
+                Data = JsonConvert.SerializeObject(value, MultitonConst.JsonSettings)
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);
             TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             return (esito.HttpStatusCode == 204);
         }
-        internal override bool Update(string key, T value) => Set(key, JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
         internal override bool Delete(string key)
         {
-            return Remove();
-            bool Remove()
+            RystemCache rystemCache = new RystemCache()
             {
-                RystemCache rystemCache = new RystemCache()
-                {
-                    PartitionKey = FullName,
-                    RowKey = key,
-                    ETag = "*"
-                };
-                TableOperation operation = TableOperation.Delete(rystemCache);
-                TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-                return (esito.HttpStatusCode == 204);
-            }
+                PartitionKey = FullName,
+                RowKey = key,
+                ETag = "*"
+            };
+            TableOperation operation = TableOperation.Delete(rystemCache);
+            TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
+            return (esito.HttpStatusCode == 204);
         }
-        internal override bool Exists(string key) => Exist(FullName, key) != null;
-        private static RystemCache Exist(string partitionKey, string rowKey)
+        internal override bool Exists(string key)
         {
-            TableOperation operation = TableOperation.Retrieve<RystemCache>(partitionKey, rowKey);
+            TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-            if (result.Result == null) return null;
+            if (result.Result == null)
+                return false;
             RystemCache cached = (RystemCache)result.Result;
-            if (ExpireCache > 0 && DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > TimeSpan.FromMinutes(ExpireCache).Ticks) return null;
-            return cached;
+            if (ExpireCache > 0 && DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > TimeSpan.FromMinutes(ExpireCache).Ticks)
+                return false;
+            return true;
         }
         internal override IEnumerable<string> List()
         {
-            return Listing();
-            IEnumerable<string> Listing()
+            TableQuery tableQuery = new TableQuery
             {
-                TableQuery tableQuery = new TableQuery
-                {
-                    FilterString = $"PartitionKey eq '{FullName}'"
-                };
-                TableContinuationToken tableContinuationToken = new TableContinuationToken();
-                List<string> keys = new List<string>();
-                do
-                {
-                    TableQuerySegment tableQuerySegment = Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).GetAwaiter().GetResult();
-                    IEnumerable<string> keysFromQuery = tableQuerySegment.Results.Select(x => x.RowKey);
-                    tableContinuationToken = tableQuerySegment.ContinuationToken;
-                    keys.AddRange(keysFromQuery);
-                } while (tableContinuationToken != null);
-                return keys;
-            }
+                FilterString = $"PartitionKey eq '{FullName}'"
+            };
+            TableContinuationToken tableContinuationToken = new TableContinuationToken();
+            List<string> keys = new List<string>();
+            do
+            {
+                TableQuerySegment tableQuerySegment = Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).GetAwaiter().GetResult();
+                IEnumerable<string> keysFromQuery = tableQuerySegment.Results.Select(x => x.RowKey);
+                tableContinuationToken = tableQuerySegment.ContinuationToken;
+                keys.AddRange(keysFromQuery);
+            } while (tableContinuationToken != null);
+            return keys;
         }
         private class RystemCache : TableEntity
         {

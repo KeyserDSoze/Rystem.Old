@@ -22,7 +22,7 @@ namespace Rystem.Cache
         }
         internal override T Instance(string key)
         {
-            string json = Cache.StringGet(key);
+            string json = Cache.StringGet(CloudKeyToString(key));
             return JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings()
             {
                 TypeNameHandling = TypeNameHandling.Auto
@@ -32,19 +32,13 @@ namespace Rystem.Cache
         {
             bool code = false;
             if (ExpireCache > 0)
-                code = Cache.StringSet(key, JsonConvert.SerializeObject(value, MultitonConst.JsonSettings), TimeSpan.FromMinutes(ExpireCache));
+                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings), TimeSpan.FromMinutes(ExpireCache));
             else
-                code = Cache.StringSet(key, JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
+                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
             return code;
         }
-        internal override bool Exists(string key)
-        {
-            return Cache.KeyExists(key);
-        }
-        internal override bool Delete(string key)
-        {
-            return Cache.KeyDelete(key);
-        }
+        internal override bool Exists(string key) => Cache.KeyExists(CloudKeyToString(key));
+        internal override bool Delete(string key) => Cache.KeyDelete(CloudKeyToString(key));
         internal override IEnumerable<string> List()
         {
             string toReplace = $"{FullName}{MultitonConst.Separator}";
@@ -54,5 +48,7 @@ namespace Rystem.Cache
                     keys.Add(redisKey.Replace(toReplace, string.Empty));
             return keys;
         }
+        private static string CloudKeyToString(string keyString)
+           => $"{FullName}{MultitonConst.Separator}{keyString}";
     }
 }
