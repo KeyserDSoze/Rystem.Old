@@ -46,10 +46,12 @@ namespace Rystem.Cache
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
             if (cloudBlob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult())
             {
-                cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                if (ExpireCache > 0 &&
-                    DateTime.UtcNow.Ticks - cloudBlob.Properties.LastModified.Value.UtcDateTime.Ticks > ExpireCache)
-                    return false;
+                if (ExpireCache > 0)
+                {
+                    cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                    if (DateTime.UtcNow.Ticks - cloudBlob.Properties.LastModified.Value.UtcDateTime.Ticks > ExpireCache)
+                        return false;
+                }
                 return true;
             }
             return false;
