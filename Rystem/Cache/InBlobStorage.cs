@@ -15,12 +15,12 @@ namespace Rystem.Cache
         where T : IMultiton
     {
         private static CloudBlobContainer Context;
-        private static int ExpireCache = 0;
+        private static long ExpireCache = 0;
         private const string ContainerName = "rystemcache";
-        private readonly static string FullName = typeof(T).FullName;
+        private readonly static string FullName = typeof(T).FullName + "/";
         internal InBlobStorage(MultitonInstaller.MultitonConfiguration configuration)
         {
-            ExpireCache = configuration.ExpireCache;
+            ExpireCache = TimeSpan.FromMinutes(configuration.ExpireCache).Ticks;
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             Context = Client.GetContainerReference(ContainerName);
@@ -29,11 +29,8 @@ namespace Rystem.Cache
         internal override T Instance(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
-            cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            var fileLength = cloudBlob.Properties.Length;
-            byte[] fileByte = new byte[fileLength];
-            cloudBlob.DownloadToByteArrayAsync(fileByte, 0);
-            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(fileByte), MultitonConst.JsonSettings);
+            using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ConfigureAwait(false).GetAwaiter().GetResult()))
+                return JsonConvert.DeserializeObject<T>(reader.ReadToEnd(), MultitonConst.JsonSettings);
         }
         internal override bool Update(string key, T value)
         {
@@ -50,7 +47,8 @@ namespace Rystem.Cache
             if (cloudBlob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult())
             {
                 cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                if (DateTime.UtcNow.Ticks - cloudBlob.Properties.LastModified.Value.ToUniversalTime().Ticks <= TimeSpan.FromMinutes(ExpireCache).Ticks)
+                if (ExpireCache > 0 &&
+                    DateTime.UtcNow.Ticks - cloudBlob.Properties.LastModified.Value.UtcDateTime.Ticks > ExpireCache)
                     return false;
                 return true;
             }
@@ -69,12 +67,12 @@ namespace Rystem.Cache
                 {
                     if (blobItem is CloudBlobDirectory)
                         continue;
-                    items.Add(((ICloudBlob)blobItem).Name);
+                    items.Add(((ICloudBlob)blobItem).Name.Replace(FullName, ""));
                 }
             } while (token != null);
             return items;
         }
         private static string CloudKeyToString(string keyString)
-           => $"{FullName}/{keyString}";
+           => $"{FullName}{keyString}";
     }
 }

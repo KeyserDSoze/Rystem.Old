@@ -137,7 +137,7 @@ namespace Rystem.Cache
         {
             if (Contexts.ContainsKey(type.FullName))
                 return Contexts[type.FullName];
-            throw new NotImplementedException("Please use Install static method in static constructor of your key class to set ConnectionString and parameters of caching and heap multiton.");
+            throw new NotImplementedException($"{type.FullName} didn't installed. Please use MultitonInstaller.Configure in static constructor of your key class to set ConnectionString and parameters of caching and heap multiton.");
         }
         public static Type GetKeyType(Type keyType) => KeyContexts[keyType.FullName].Type;
     }

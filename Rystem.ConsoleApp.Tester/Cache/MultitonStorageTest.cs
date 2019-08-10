@@ -1,49 +1,54 @@
 ﻿using Rystem.Cache;
-using Wonda.Engine.Library.Multiton;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Rystem.ConsoleApp.Tester.Cache
 {
-    public class MultitonStorageTest : ITest
+    public class MultitonTableStorageTest : ITest
     {
         public bool DoWork(string entry)
         {
-            LastBillingOk lastBillingOk = new LastBillingOkKey() { CustomerId = "222", ServiceId = "9"}.Instance();
-            new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Restore(new LastBillingOk() { LastEventTime = DateTime.UtcNow.Ticks });
-            new LastBillingOkKey() { CustomerId = "222", ServiceId = "9" }.Remove();
+            SmallTableKey smallTableKey = new SmallTableKey() { Id = 2 };
+            smallTableKey.Remove();
+            if (smallTableKey.IsPresent())
+                return false;
+            SmallTable smallTable = smallTableKey.Instance();
+            if (!smallTableKey.IsPresent())
+                return false;
+            smallTableKey.Restore(new SmallTable() { Id = 4 });
+            if (smallTableKey.Instance().Id != 4)
+                return false;
+            if (smallTableKey.AllKeys().Count != 1)
+                return false;
+            if (!smallTableKey.Remove())
+                return false;
+            if (smallTableKey.IsPresent())
+                return false;
+            if (smallTableKey.AllKeys().Count != 0)
+                return false;
             return true;
         }
     }
-    
-}
-namespace Wonda.Engine.Library.Multiton
-{
-    public class LastBillingOkKey : IMultitonKey
+    public class SmallTableKey : IMultitonKey
     {
-        public string ServiceId { get; set; }
-        public string CustomerId { get; set; }
-        static LastBillingOkKey()
+        public int Id { get; set; }
+        private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=kynsexstorage;AccountKey=OCwrI4pGQtjc+HEfFetZ0TzExKfum2PrUfcao6cjQEyTfw1mJ15b2vNMWoBGYRkHsXwXJ/WqZXyy6BONehar+Q==;EndpointSuffix=core.windows.net";
+        static SmallTableKey()
         {
-            MultitonInstaller.Configure<LastBillingOkKey, LastBillingOk>(
-                "DefaultEndpointsProtocol=https;AccountName=kynsexstorage;AccountKey=OCwrI4pGQtjc+HEfFetZ0TzExKfum2PrUfcao6cjQEyTfw1mJ15b2vNMWoBGYRkHsXwXJ/WqZXyy6BONehar+Q==;EndpointSuffix=core.windows.net",
-                InCloudType.TableStorage,
-                 CacheExpireTime.Infinite, MultitonExpireTime.TurnOff);
+            MultitonInstaller.Configure<SmallTableKey, SmallTable>(ConnectionString, InCloudType.TableStorage, CacheExpireTime.EightHour, MultitonExpireTime.TurnOff);
         }
     }
-    public class LastBillingOk : IMultiton
+    public class SmallTable : IMultiton
     {
-        public long LastEventTime { get; set; }
+        public int Id { get; set; }
         public IMultiton Fetch(IMultitonKey key)
         {
-            LastBillingOkKey lastBillingOkKey = (LastBillingOkKey)key;
-            LastBillingOk lastBillingOk = new LastBillingOk()
+            SmallTableKey smallBlobKey = (SmallTableKey)key;
+            return new SmallTable()
             {
-                LastEventTime = DateTime.UtcNow.Ticks
+                Id = smallBlobKey.Id
             };
-            lastBillingOkKey.Restore(lastBillingOk);
-            return lastBillingOk;
         }
     }
 }

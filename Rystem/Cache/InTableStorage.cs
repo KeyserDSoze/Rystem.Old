@@ -13,12 +13,12 @@ namespace Rystem.Cache
         where T : IMultiton
     {
         private static CloudTable Context;
-        private static int ExpireCache = 0;
+        private static long ExpireCache = 0;
         private const string TableName = "RystemCache";
         private readonly static string FullName = typeof(T).FullName;
         internal InTableStorage(MultitonInstaller.MultitonConfiguration configuration)
         {
-            ExpireCache = configuration.ExpireCache;
+            ExpireCache = TimeSpan.FromMinutes(configuration.ExpireCache).Ticks;
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             Context = tableClient.GetTableReference(TableName);
@@ -61,7 +61,7 @@ namespace Rystem.Cache
             if (result.Result == null)
                 return false;
             RystemCache cached = (RystemCache)result.Result;
-            if (ExpireCache > 0 && DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > TimeSpan.FromMinutes(ExpireCache).Ticks)
+            if (ExpireCache > 0 && DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > ExpireCache)
                 return false;
             return true;
         }
