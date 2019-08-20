@@ -7,6 +7,7 @@ namespace Rystem.Cache
 {
     public static class MultitonUtility
     {
+        public static bool ClearAllCache(string connectionString) => ClearAllCacheAsync(connectionString).ConfigureAwait(false).GetAwaiter().GetResult();
         public static async Task<bool> ClearAllCacheAsync(string connectionString)
         {
             ConnectionMultiplexer Connection = ConnectionMultiplexer.Connect(connectionString);
@@ -15,6 +16,7 @@ namespace Rystem.Cache
                 await cache.KeyDeleteAsync(redisKey);
             return true;
         }
+        public static bool ClearAllTableStorage(string connectionString) => ClearAllTableStorageAsync(connectionString).ConfigureAwait(false).GetAwaiter().GetResult();
         public static async Task<bool> ClearAllTableStorageAsync(string connectionString)
         {
             await Task.Delay(0);
