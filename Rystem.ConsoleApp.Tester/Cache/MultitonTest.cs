@@ -10,7 +10,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
     {
         public bool DoWork(string entry)
         {
-            MultitonUtility.ClearAllCache(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
+            MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
             ServiceKey serviceKey = new ServiceKey() { Id = 2 };
             if (serviceKey.IsPresent())
                 return false;
@@ -28,7 +28,7 @@ namespace Rystem.ConsoleApp.Tester.Cache
                 return false;
             if (serviceKey.AllKeys().Count != 0)
                 return false;
-            MultitonUtility.ClearAllCache(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
+            MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }
     }

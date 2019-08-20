@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Rystem.Interfaces.Utility.Crypting
+namespace Rystem.Utility.Crypting
 {
     public static class SHA256Helper
     {

@@ -17,8 +17,7 @@ namespace Rystem.Cache
         private readonly static string FullName = typeof(T).FullName;
         internal InRedisCache(MultitonInstaller.MultitonConfiguration configuration)
         {
-            if (configuration.ExpireCache > 0)
-                ExpireCache = TimeSpan.FromMinutes(configuration.ExpireCache);
+            ExpireCache = TimeSpan.FromMinutes(configuration.ExpireCache);
             Connection = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(configuration.ConnectionString));
         }
         internal override T Instance(string key)
@@ -32,7 +31,7 @@ namespace Rystem.Cache
         internal override bool Update(string key, T value)
         {
             bool code = false;
-            if (ExpireCache != null)
+            if (ExpireCache.Ticks > 0)
                 code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings), ExpireCache);
             else
                 code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
