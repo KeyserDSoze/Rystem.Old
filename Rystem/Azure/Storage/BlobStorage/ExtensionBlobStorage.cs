@@ -40,7 +40,7 @@ namespace System
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di <see cref="TBlob"/> selezionati in base al filtro di prefix</returns>
-        public static List<IBlobStorage> List<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+        public static IList<IBlobStorage> List<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
             where TEntity : IBlobStorage
         {
             return blob.ListAsync(prefix, takeCount, ct).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -243,10 +243,10 @@ namespace System
         /// <param name="takeCount">limite di elementi da selezionare</param>
         /// <param name="ct">Token per la cancellazione del thread</param>
         /// <returns>Lista di <see cref="TBlob"/> selezionati in base al filtro di prefix</returns>
-        public static async Task<List<IBlobStorage>> ListAsync<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
+        public static async Task<IList<IBlobStorage>> ListAsync<TEntity>(this TEntity blob, string prefix = null, int? takeCount = null, CancellationToken ct = default(CancellationToken))
             where TEntity : IBlobStorage
         {
-            List<IBlobStorage> items = new List<IBlobStorage>();
+            IList<IBlobStorage> items = new List<IBlobStorage>();
             BlobContinuationToken token = null;
             (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(blob.GetType());
             do

@@ -13,11 +13,11 @@ namespace Rystem.Azure.Storage
 {
     public class CsvBlobManager : IBlobManager
     {
-        private const string SplittedChar = ";";
+        private const char SplittedChar = ';';
         private const string InCaseOfSplittedChar = "\"{0}\"";
         private const string InNormalCase = "{0}";
         private static readonly string BreakLine = '\n'.ToString();
-        private static readonly Regex SplittedRegex = new Regex("(?<=^|" + SplittedChar + ")(\"(?:[^\"]|\"\")*\"|[^" + SplittedChar + "]*)");
+        private static readonly Regex SplittedRegex = new Regex("(?<=^" + SplittedChar + ")(\"(?:[^\"]|\"\")*\"|[^" + SplittedChar + "]*)");
         private static Type CsvIgnoreType = typeof(CsvIgnore);
         private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
         private static readonly object TrafficLight = new object();
@@ -42,13 +42,15 @@ namespace Rystem.Azure.Storage
             List<IBlobStorage> blobStorages = new List<IBlobStorage>();
             foreach (string singleLine in value.Split('\n'))
             {
+                if (string.IsNullOrWhiteSpace(singleLine))
+                    continue;
                 string[] splitting = SplittedRegex.Split(singleLine);
                 int count = 0;
                 foreach (PropertyInfo propertyInfo in Property(type))
                 {
                     if (count >= splitting.Length)
                         break;
-                    propertyInfo.SetValue(blobStorage, splitting[count]);
+                    propertyInfo.SetValue(blobStorage, Convert.ChangeType(splitting[count].Trim(SplittedChar), propertyInfo.PropertyType));
                     count++;
                 }
                 blobStorages.Add(blobStorage);
