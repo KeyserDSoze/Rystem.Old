@@ -16,8 +16,10 @@ namespace Rystem.Utility
             byte[] randomNumber = new byte[1];
             RNGCryptoServiceProvider gen = new RNGCryptoServiceProvider();
             gen.GetBytes(randomNumber);
-            int rand = Convert.ToInt32(randomNumber[0]);
-            return rand * maxNotIncluding / 255;
+            int rand = Convert.ToInt32(randomNumber[0]) * maxNotIncluding / 255;
+            if (rand == maxNotIncluding)
+                return rand - 1;
+            return rand;
         }
     }
 }
