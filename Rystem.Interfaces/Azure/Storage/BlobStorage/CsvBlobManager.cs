@@ -17,7 +17,7 @@ namespace Rystem.Azure.Storage
         private const string InCaseOfSplittedChar = "\"{0}\"";
         private const string InNormalCase = "{0}";
         private static readonly string BreakLine = '\n'.ToString();
-        private static readonly Regex SplittedRegex = new Regex("(?<=^" + SplittedChar + ")(\"(?:[^\"]|\"\")*\"|[^" + SplittedChar + "]*)");
+        private static readonly Regex SplittedRegex = new Regex("(\\;|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"] *) *)\"|([^\"\\;\\r\\n]*))");
         private static Type CsvIgnoreType = typeof(CsvIgnore);
         private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
         private static readonly object TrafficLight = new object();
@@ -37,25 +37,17 @@ namespace Rystem.Azure.Storage
         }
         private static IBlobStorage Deserialize(Type type, string value)
         {
-#warning Csv Deserializer on AppendBlob bugs
             IBlobStorage blobStorage = (IBlobStorage)Activator.CreateInstance(type);
-            List<IBlobStorage> blobStorages = new List<IBlobStorage>();
-            foreach (string singleLine in value.Split('\n'))
+            string[] splitting = SplittedRegex.Split(value).Where(x => !string.IsNullOrWhiteSpace(x) && x[0] != SplittedChar).ToArray();
+            int count = 0;
+            foreach (PropertyInfo propertyInfo in Property(type))
             {
-                if (string.IsNullOrWhiteSpace(singleLine))
-                    continue;
-                string[] splitting = SplittedRegex.Split(singleLine);
-                int count = 0;
-                foreach (PropertyInfo propertyInfo in Property(type))
-                {
-                    if (count >= splitting.Length)
-                        break;
-                    propertyInfo.SetValue(blobStorage, Convert.ChangeType(splitting[count].Trim(SplittedChar), propertyInfo.PropertyType));
-                    count++;
-                }
-                blobStorages.Add(blobStorage);
+                if (count >= splitting.Length)
+                    break;
+                propertyInfo.SetValue(blobStorage, Convert.ChangeType(splitting[count].Trim(SplittedChar), propertyInfo.PropertyType));
+                count++;
             }
-            return blobStorages.LastOrDefault();
+            return blobStorage;
         }
         private static string Serialize(IBlobStorage blobStorage)
         {

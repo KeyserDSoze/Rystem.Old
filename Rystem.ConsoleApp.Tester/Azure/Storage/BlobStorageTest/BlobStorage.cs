@@ -3,6 +3,7 @@ using Rystem.Azure.Storage;
 using Rystem.ConsoleApp.Tester;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.Storage.BlobStorageTest
@@ -20,10 +21,14 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Storage.BlobStorageTest
                 }
             };
             meatball.Delete();
+            meatball.A = 3;
             meatball.Save();
+            meatball.A = 5;
             meatball.Save();
+            meatball.A = 6;
+            meatball.B = "dsadsadsa";
             meatball.Save();
-            Meatball meatball2 = (Meatball)meatball.Get();
+            IList<Meatball> meatball2 = meatball.GetAppend().Select(x => (Meatball)x).ToList();
             return true;
         }
     }
