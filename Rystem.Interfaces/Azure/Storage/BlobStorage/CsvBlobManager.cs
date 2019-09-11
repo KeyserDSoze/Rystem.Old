@@ -13,14 +13,19 @@ namespace Rystem.Azure.Storage
 {
     public class CsvBlobManager : IBlobManager
     {
-        private const char SplittedChar = ';';
+        private char SplittingChar;
         private const string InCaseOfSplittedChar = "\"{0}\"";
         private const string InNormalCase = "{0}";
         private static readonly string BreakLine = '\n'.ToString();
-        private static readonly Regex SplittedRegex = new Regex("(\\;|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"] *) *)\"|([^\"\\;\\r\\n]*))");
+        private readonly Regex SplittingRegex;
         private static Type CsvIgnoreType = typeof(CsvIgnore);
         private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
         private static readonly object TrafficLight = new object();
+        public CsvBlobManager(char splittingChar = ',')
+        {
+            this.SplittingChar = splittingChar;
+            this.SplittingRegex = new Regex($"(\\{this.SplittingChar}|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"] *) *)\"|([^\"\\{this.SplittingChar}\\r\\n]*))");
+        }
         private static List<PropertyInfo> Property(Type type)
         {
             if (!Properties.ContainsKey(type.FullName))
@@ -35,21 +40,21 @@ namespace Rystem.Azure.Storage
             }
             return Properties[type.FullName];
         }
-        private static IBlobStorage Deserialize(Type type, string value)
+        private IBlobStorage Deserialize(Type type, string value)
         {
             IBlobStorage blobStorage = (IBlobStorage)Activator.CreateInstance(type);
-            string[] splitting = SplittedRegex.Split(value).Where(x => !string.IsNullOrWhiteSpace(x) && x[0] != SplittedChar).ToArray();
+            string[] splitting = SplittingRegex.Split(value).Where(x => !string.IsNullOrWhiteSpace(x) && x[0] != SplittingChar).ToArray();
             int count = 0;
             foreach (PropertyInfo propertyInfo in Property(type))
             {
                 if (count >= splitting.Length)
                     break;
-                propertyInfo.SetValue(blobStorage, Convert.ChangeType(splitting[count].Trim(SplittedChar), propertyInfo.PropertyType));
+                propertyInfo.SetValue(blobStorage, Convert.ChangeType(splitting[count].Trim(SplittingChar), propertyInfo.PropertyType));
                 count++;
             }
             return blobStorage;
         }
-        private static string Serialize(IBlobStorage blobStorage)
+        private string Serialize(IBlobStorage blobStorage)
         {
             StringBuilder stringBuilder = new StringBuilder();
             List<PropertyInfo> propertyInfos = Property(blobStorage.GetType());
@@ -57,13 +62,13 @@ namespace Rystem.Azure.Storage
             foreach (PropertyInfo propertyInfo in propertyInfos)
             {
                 string value = (propertyInfo.GetValue(blobStorage) ?? string.Empty).ToString();
-                if (value.Contains(SplittedChar))
+                if (value.Contains(SplittingChar))
                     value = string.Format(InCaseOfSplittedChar, value.Replace("\"", "\"\""));
                 else
                     value = string.Format(InNormalCase, value);
                 stringBuilder.Append(value);
                 if (count < propertyInfos.Count - 1)
-                    stringBuilder.Append(SplittedChar);
+                    stringBuilder.Append(SplittingChar);
                 count++;
             }
             return stringBuilder.ToString() + BreakLine;
