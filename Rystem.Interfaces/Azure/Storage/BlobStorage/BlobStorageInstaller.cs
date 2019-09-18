@@ -18,6 +18,7 @@ namespace Rystem.Azure.Storage
             public string Container { get; set; }
             public BlobStorageType BlobStorageType { get; set; }
             public IBlobManager BlobManager { get; set; }
+            public int MaximumAttempt { get; set; }
         }
         /// <summary>
         /// Installa la ConnectionString su tutte le Entity del progetto.

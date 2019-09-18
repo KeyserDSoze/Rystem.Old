@@ -112,47 +112,79 @@ namespace System
     }
     public static partial class ExtensionBlobStorage
     {
+        private static readonly object TrafficLight2 = new object();
         /// <summary>
         /// Esegue il salvataggio asincrono di un file su Blob Storage
         /// </summary>
         /// <returns>url completa del file appena salvato</returns>
-        public static async Task<string> SaveAsync(this IBlobStorage blob)
+        public static async Task<string> SaveAsync(this IBlobStorage blob, long offset = 0, long size = 0)
         {
             Type type = blob.GetType();
             (CloudBlobContainer context, BlobType blobType, IBlobManager blobManager) = GetContext(type);
+            //(CloudBlobContainer context, BlobType blobType, IBlobManager blobManager, BlobStorageInstaller.BlobConfiguration configuration) = GetContext(type);
             BlobValue blobValue = blobManager.Value(blob);
             ICloudBlob cloudBlob = GetBlobReference(context, blobValue.DestinationFileName, blobType);
-            using (Stream stream = blobValue.MemoryStream)
+            int maximumAttempt = 3;
+            switch (blobType)
             {
-                switch (blobType)
-                {
-                    case BlobType.BlockBlob:
-                        await cloudBlob.UploadFromStreamAsync(stream);
-                        break;
-                    case BlobType.AppendBlob:
+                case BlobType.BlockBlob:
+                    await cloudBlob.UploadFromStreamAsync(blobValue.MemoryStream);
+                    break;
+                case BlobType.AppendBlob:
+                    int attempt = 0;
+                    do
+                    {
                         try
                         {
-                            await ((CloudAppendBlob)cloudBlob).AppendFromStreamAsync(stream);
+                            await ((CloudAppendBlob)cloudBlob).AppendFromStreamAsync(blobValue.MemoryStream);
+                            //attempt = configuration.MaximumAttempt;
+                            attempt = maximumAttempt;
+                        }
+                        catch (AggregateException aggregateException)
+                        {
+                            await Task.Delay(20);
+                            if (attempt >= maximumAttempt)
+                                //if (attempt >= configuration.MaximumAttempt)
+                                throw aggregateException;
                         }
                         catch (Exception er)
                         {
                             if (er.Message == "The specified blob does not exist.")
-                            {
                                 await ((CloudAppendBlob)cloudBlob).CreateOrReplaceAsync();
-                                await ((CloudAppendBlob)cloudBlob).AppendFromStreamAsync(stream);
+                            else if (er.HResult == -2146233088)
+                            {
+                                //when the blob has 50000 block append
+                                throw er;
                             }
+                            else
+                                throw er;
                         }
-                        break;
-                    case BlobType.PageBlob:
-                        throw new NotImplementedException("Page blob not already implemented.");
-                    default:
-                        throw new NotImplementedException();
-                }
-                string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
-                if (CheckBlobProperty())
-                    await cloudBlob.SetPropertiesAsync();
-                return path;
+                        attempt++;
+                        //} while (attempt <= configuration.MaximumAttempt);
+                    } while (attempt <= maximumAttempt);
+                    break;
+                case BlobType.PageBlob:
+                    if (!await cloudBlob.ExistsAsync())
+                        lock (TrafficLight2)
+                            if (!cloudBlob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult())
+                                ((CloudPageBlob)cloudBlob).CreateAsync(size).ConfigureAwait(false).GetAwaiter().GetResult();
+                    long sized = 512 - blobValue.MemoryStream.Length;
+                    if (sized != 0)
+                    {
+                        byte[] baseMemoryStream = new BinaryReader(blobValue.MemoryStream).ReadBytes((int)blobValue.MemoryStream.Length);
+                        byte[] finalizingStream = new byte[512];
+                        for (int i = 0; i < 512; i++)
+                            finalizingStream[i] = i < blobValue.MemoryStream.Length ? baseMemoryStream[i] : (byte)0;
+                        await ((CloudPageBlob)cloudBlob).WritePagesAsync(new MemoryStream(finalizingStream), 512 * offset, null);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
+            string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
+            if (CheckBlobProperty())
+                await cloudBlob.SetPropertiesAsync();
+            return path;
             bool CheckBlobProperty()
             {
                 bool changeSomethingInProperty = false;
