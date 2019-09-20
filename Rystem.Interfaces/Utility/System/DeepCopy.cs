@@ -9,6 +9,7 @@ namespace System
 {
     public static class DeepCopyExtension
     {
+#warning Controllare che le proprietà siano oltre che in get anche in set, altrimenti non posso impostarle.
         public static dynamic DeepCopy(this object original, params object[] args)
         {
             return InternalCopy(original, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
