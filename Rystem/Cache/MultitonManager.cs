@@ -15,7 +15,6 @@ namespace Rystem.Cache
         private readonly static bool CloudIsActive = false;
         private readonly static string FullName = typeof(T).FullName;
         private readonly static object TrafficLight = new object();
-        private readonly static CreationFunction CreationFunction = ((IMultiton)Activator.CreateInstance(typeof(T))).Fetch;
         static MultitonManager()
         {
             MultitonInstaller.MultitonConfiguration configuration = MultitonInstaller.GetConfiguration(typeof(T));
@@ -53,7 +52,7 @@ namespace Rystem.Cache
                             if (CloudIsActive && InCloud.Exists(keyString))
                                 InMemory.Update(keyString, InCloud.Instance(keyString));
                             else
-                                Update(key, (T)CreationFunction.Invoke(key));
+                                Update(key, key.Fetch());
                         }
                     }
                 }
@@ -64,7 +63,7 @@ namespace Rystem.Cache
                 if (!InCloud.Exists(keyString))
                     lock (TrafficLight)
                         if (!InCloud.Exists(keyString))
-                            Update(key, (T)CreationFunction.Invoke(key));
+                            Update(key, key.Fetch());
                 return InCloud.Instance(keyString);
             }
         }
@@ -72,7 +71,7 @@ namespace Rystem.Cache
         {
             string keyString = key.ToKeyString();
             if (value == null)
-                value = CreationFunction.Invoke(key);
+                value = key.Fetch();
             return (!MemoryIsActive || InMemory.Update(keyString, (T)value)) &&
                 (!CloudIsActive || InCloud.Update(keyString, (T)value));
         }

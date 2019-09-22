@@ -14,11 +14,11 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             smallBlobKey.Remove();
             if (smallBlobKey.IsPresent())
                 return false;
-            SmallBlob smallBlob = smallBlobKey.Instance();
+            SmallBlob smallBlob = smallBlobKey.Instance() as SmallBlob;
             if (!smallBlobKey.IsPresent())
                 return false;
             smallBlobKey.Restore(new SmallBlob() { Id = 4 });
-            if (smallBlobKey.Instance().Id != 4)
+            if ((smallBlobKey.Instance() as SmallBlob).Id != 4)
                 return false;
             if (smallBlobKey.AllKeys().Count != 1)
                 return false;
@@ -39,17 +39,16 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         {
             MultitonInstaller.Configure<SmallBlobKey, SmallBlob>(ConnectionString, InCloudType.BlobStorage, CacheExpireTime.EightHour, MultitonExpireTime.TurnOff);
         }
+        public IMultiton Fetch()
+        {
+            return new SmallBlob()
+            {
+                Id = this.Id
+            };
+        }
     }
     public class SmallBlob : IMultiton
     {
         public int Id { get; set; }
-        public IMultiton Fetch(IMultitonKey key)
-        {
-            SmallBlobKey smallBlobKey = (SmallBlobKey)key;
-            return new SmallBlob()
-            {
-                Id = smallBlobKey.Id
-            };
-        }
     }
 }

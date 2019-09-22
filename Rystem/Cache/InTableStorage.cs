@@ -51,8 +51,17 @@ namespace Rystem.Cache
                 ETag = "*"
             };
             TableOperation operation = TableOperation.Delete(rystemCache);
-            TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-            return (esito.HttpStatusCode == 204);
+            try
+            {
+                TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
+                return (esito.HttpStatusCode == 204);
+            }
+            catch (StorageException er)
+            {
+                if (er.HResult == -2146233088)
+                    return true;
+                throw er;
+            }
         }
         internal override bool Exists(string key)
         {

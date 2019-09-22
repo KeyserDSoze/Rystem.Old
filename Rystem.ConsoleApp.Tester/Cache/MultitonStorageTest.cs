@@ -13,11 +13,11 @@ namespace Rystem.ConsoleApp.Tester.Cache
             smallTableKey.Remove();
             if (smallTableKey.IsPresent())
                 return false;
-            SmallTable smallTable = smallTableKey.Instance();
+            SmallTable smallTable = smallTableKey.Instance() as SmallTable;
             if (!smallTableKey.IsPresent())
                 return false;
             smallTableKey.Restore(new SmallTable() { Id = 4 });
-            if (smallTableKey.Instance().Id != 4)
+            if ((smallTableKey.Instance() as SmallTable).Id != 4)
                 return false;
             if (smallTableKey.AllKeys().Count != 1)
                 return false;
@@ -38,17 +38,16 @@ namespace Rystem.ConsoleApp.Tester.Cache
         {
             MultitonInstaller.Configure<SmallTableKey, SmallTable>(ConnectionString, InCloudType.TableStorage, CacheExpireTime.EightHour, MultitonExpireTime.TurnOff);
         }
+        public IMultiton Fetch()
+        {
+            return new SmallTable()
+            {
+                Id = this.Id
+            };
+        }
     }
     public class SmallTable : IMultiton
     {
         public int Id { get; set; }
-        public IMultiton Fetch(IMultitonKey key)
-        {
-            SmallTableKey smallBlobKey = (SmallTableKey)key;
-            return new SmallTable()
-            {
-                Id = smallBlobKey.Id
-            };
-        }
     }
 }

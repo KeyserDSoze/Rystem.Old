@@ -14,11 +14,11 @@ namespace Rystem.ConsoleApp.Tester.Cache
             ServiceKey serviceKey = new ServiceKey() { Id = 2 };
             if (serviceKey.IsPresent())
                 return false;
-            Service service = serviceKey.Instance();
+            Service service = serviceKey.Instance() as Service;
             if (!serviceKey.IsPresent())
                 return false;
             serviceKey.Restore(new Service() { A = "4", C = 0 });
-            if (serviceKey.Instance().A != "4")
+            if ((serviceKey.Instance() as Service).A != "4")
                 return false;
             if (serviceKey.AllKeys().Count != 1)
                 return false;
@@ -35,6 +35,14 @@ namespace Rystem.ConsoleApp.Tester.Cache
     public class ServiceKey : IMultitonKey
     {
         public int Id { get; set; }
+        public IMultiton Fetch()
+        {
+            return new Service()
+            {
+                A = Alea.GetTimedKey(),
+                C = Alea.GetNumber(100)
+            };
+        }
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()
         {
@@ -45,14 +53,6 @@ namespace Rystem.ConsoleApp.Tester.Cache
     {
         public string A { get; set; }
         public int C { get; set; }
-        public IMultiton Fetch(IMultitonKey key)
-        {
-            return new Service()
-            {
-                A = Alea.GetTimedKey(),
-                C = Alea.GetNumber(100)
-            };
-        }
     }
 }
 

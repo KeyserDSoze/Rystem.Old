@@ -31,7 +31,7 @@ namespace System
                     }
             return Managers[keyType.FullName];
         }
-        public static dynamic Instance<TEntry>(this TEntry entry)
+        public static IMultiton Instance<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey
         {
             return Manager(entry.GetType()).Instance(entry);
@@ -51,11 +51,11 @@ namespace System
         {
             return Manager(entry.GetType()).Exists(entry);
         }
-        public static List<TEntry> AllKeys<TEntry>(this TEntry entry)
+        public static IList<TEntry> AllKeys<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey, new()
         {
             Type keyType = typeof(TEntry);
-            List<TEntry> keys = new List<TEntry>();
+            IList<TEntry> keys = new List<TEntry>();
             foreach (string key in Manager(keyType).List())
             {
                 TEntry multitonKey = (TEntry)Activator.CreateInstance(keyType);
