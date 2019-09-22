@@ -117,6 +117,7 @@ namespace System
         /// Esegue il salvataggio asincrono di un file su Blob Storage
         /// </summary>
         /// <returns>url completa del file appena salvato</returns>
+        [Obsolete("Under refactoring")]
         public static async Task<string> SaveAsync(this IBlobStorage blob, long offset = 0, long size = 0)
         {
             Type type = blob.GetType();

@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Azure\Queue\QueueExtension.cs" />
+    <Compile Remove="Azure\Queue\QueueMessage.cs" />
     <Compile Remove="Azure\Storage\TableStorage\TableStorage.cs" />
   </ItemGroup>
 
