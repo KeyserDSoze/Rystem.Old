@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    internal delegate IMultiton CreationFunction(IMultitonKey key);
     internal class MultitonManager<T> : IMultitonManager
         where T : IMultiton
     {
