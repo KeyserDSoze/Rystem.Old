@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester
             crossTest.Update();
         }
     }
-    public class CrossTest : IServiceBus, ITableStorage, IMultiton
+    public class CrossTest : IServiceBus, INoSqlStorage, IMultiton
     {
         public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

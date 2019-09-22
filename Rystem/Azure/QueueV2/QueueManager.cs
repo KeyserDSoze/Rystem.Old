@@ -7,36 +7,26 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
 {
-    public interface IQueueManager
-    {
-        Task<bool> SendAsync(IQueueMessage message);
-        Task<long> SendScheduledAsync(IQueueMessage message, int delayInSeconds);
-        Task<bool> DeleteScheduledAsync(long messageId);
-        Task<bool> SendBatchAsync(IEnumerable<IQueueMessage> messages);
-        Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueueMessage> messages, int delayInSeconds);
-        Task<DebugMessage> DebugSendAsync(IQueueMessage message, int delayInSeconds = 0);
-        Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueueMessage> messages, int delayInSeconds = 0);
-    }
-    public class QueueManager<TEntity> : IQueueManager
+    internal class QueueManager<TEntity> : IQueueManager
         where TEntity : IQueueMessage
     {
         private readonly static IQueueIntegration Integration;
         static QueueManager()
         {
-            QueueProperty property = QueueInstaller.GetConfiguration<TEntity>();
-            switch (property.Type)
+            QueueConfiguration configuration = QueueInstaller.GetConfiguration<TEntity>();
+            switch (configuration.Type)
             {
                 case QueueType.QueueStorage:
-                    Integration = new QueueStorageIntegration(property);
+                    Integration = new QueueStorageIntegration(configuration);
                     break;
                 case QueueType.EventHub:
-                    Integration = new EventHubIntegration(property);
+                    Integration = new EventHubIntegration(configuration);
                     break;
                 case QueueType.ServiceBus:
-                    Integration = new ServiceBusIntegration(property);
+                    Integration = new ServiceBusIntegration(configuration);
                     break;
                 default:
-                    throw new InvalidOperationException($"Wrong type installed {property.Type}");
+                    throw new InvalidOperationException($"Wrong type installed {configuration.Type}");
             }
         }
         public async Task<bool> SendAsync(IQueueMessage message)

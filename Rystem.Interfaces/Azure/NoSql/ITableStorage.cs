@@ -1,12 +1,8 @@
 ﻿using System;
 
-namespace Rystem.Azure.Storage
+namespace Rystem.Azure.NoSql
 {
     public class NoTableStorageProperty : Attribute { }
-    public interface INoSqlStorage
-    {
-       
-    }
     public interface ITableStorage : INoSqlStorage
     {
         string PartitionKey { get; set; }

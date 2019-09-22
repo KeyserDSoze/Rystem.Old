@@ -9,7 +9,7 @@ namespace Rystem.Azure.Queue
     internal class EventHubIntegration : IQueueIntegration
     {
         private EventHubClient Client;
-        internal EventHubIntegration(QueueProperty property)
+        internal EventHubIntegration(QueueConfiguration property)
         {
             this.Client = EventHubClient.CreateFromConnectionString(
                      new EventHubsConnectionStringBuilder($"{property.ConnectionString};EntityPath={property.Name}").ToString());

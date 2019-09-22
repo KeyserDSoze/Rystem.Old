@@ -9,16 +9,16 @@ namespace Rystem.Azure.Queue
 {
     public static class QueueInstaller
     {
-        public static void ConfigureAsDefault(QueueProperty property)
-            => Installer<QueueProperty>.ConfigureAsDefault(property);
-        public static void Configure<Entity>(QueueProperty property)
+        public static void ConfigureAsDefault(QueueConfiguration configuration)
+            => Installer<QueueConfiguration>.ConfigureAsDefault(configuration);
+        public static void Configure<Entity>(QueueConfiguration configuration)
             where Entity : IQueueMessage
-            => Installer<QueueProperty, Entity>.Configure(property, Installation.Default);
-        public static QueueProperty GetConfiguration<Entity>()
+            => Installer<QueueConfiguration, Entity>.Configure(configuration, Installation.Default);
+        public static QueueConfiguration GetConfiguration<Entity>()
             where Entity : IQueueMessage
-            => Installer<QueueProperty, Entity>.GetConfiguration(Installation.Default);
+            => Installer<QueueConfiguration, Entity>.GetConfiguration(Installation.Default);
     }
-    public class QueueProperty
+    public class QueueConfiguration : IRystemConfiguration
     {
         public string ConnectionString { get; set; }
         public string Name { get; set; }

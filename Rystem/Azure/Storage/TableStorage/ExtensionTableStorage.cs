@@ -14,10 +14,6 @@ using Rystem.Azure.Storage;
 namespace System
 {
     /// <summary>
-    /// Dummy class
-    /// </summary>
-    internal class DummyTableStorage : TableEntity { }
-    /// <summary>
     /// Context class
     /// </summary>
     public static class ExtensionTableStorage
@@ -77,7 +73,7 @@ namespace System
                     if (!Contexts[type.FullName].ContainsKey(installation))
                     {
                         Dictionary<string, CloudTable> cloudContext = new Dictionary<string, CloudTable>();
-                        var (connectionString, tableNames) = TableStorageInstaller.GetConnectionStringAndTableNames(type, installation);
+                        var (connectionString, tableNames) = NoSqlInstaller.GetConnectionStringAndTableNames(type, installation);
                         foreach (string name in tableNames)
                             cloudContext.Add(name, CreateContext(connectionString, name));
                         PropertyExists(type);
@@ -118,14 +114,14 @@ namespace System
 
         #region Async Methods
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
-            where TEntity : ITableStorage
+            where TEntity : INoSqlStorage
         {
             TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entity.PartitionKey, entity.RowKey);
             TableResult result = await GetContext(entity.GetType(), installation, tableName).ExecuteAsync(operation);
             return result.Result != null;
         }
         public static async Task<List<TEntity>> FetchAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default, string tableName = "", CancellationToken ct = default(CancellationToken), Action<IList<TEntity>> onProgress = null)
-            where TEntity : ITableStorage
+            where TEntity : INoSqlStorage
         {
             Type type = entity.GetType();
             List<TEntity> items = new List<TEntity>();
@@ -144,7 +140,7 @@ namespace System
         }
 
         public static async Task<bool> UpdateAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
-            where TEntity : ITableStorage
+            where TEntity : INoSqlStorage
         {
             Type type = entity.GetType();
             Dictionary<string, CloudTable> pairs = GetContextList(type, installation, tableName);
@@ -155,7 +151,7 @@ namespace System
             return returnCode;
         }
         public static async Task<bool> DeleteAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
-             where TEntity : ITableStorage
+             where TEntity : INoSqlStorage
         {
             Type type = entity.GetType();
             TableOperation operation = TableOperation.Delete(new DummyTableStorage()
@@ -180,7 +176,7 @@ namespace System
             NullValueHandling = NullValueHandling.Ignore
         };
         private static TEntity ReadEntity<TEntity>(this DynamicTableEntity dynamicTableEntity, Type entityType)
-            where TEntity : ITableStorage
+            where TEntity : INoSqlStorage
         {
             TEntity entity = (TEntity)Activator.CreateInstance(entityType);
             entity.PartitionKey = dynamicTableEntity.PartitionKey;
@@ -238,7 +234,7 @@ namespace System
         }
         private static DateTime DateTimeDefault = default;
         private static DynamicTableEntity WriteEntity<TEntity>(this TEntity entity)
-            where TEntity : ITableStorage
+            where TEntity : INoSqlStorage
         {
             Type type = entity.GetType();
             DynamicTableEntity dummy = new DynamicTableEntity();
@@ -261,27 +257,27 @@ namespace System
 
         #region Sync Methods
         public static bool Exists<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
-             where TEntity : ITableStorage
+             where TEntity : INoSqlStorage
         {
             return entity.ExistsAsync(installation, tableName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         public static List<TEntity> Fetch<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default, string tableName = "", CancellationToken ct = default(CancellationToken), Action<IList<TEntity>> onProgress = null)
-             where TEntity : ITableStorage
+             where TEntity : INoSqlStorage
         {
             return entity.FetchAsync(expression, takeCount, installation, tableName, ct, onProgress).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         public static bool Delete<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
-             where TEntity : ITableStorage
+             where TEntity : INoSqlStorage
         {
             return entity.DeleteAsync(installation, tableName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         public static bool Update<TEntity>(this TEntity entity, Installation installation = Installation.Default, string tableName = "")
-             where TEntity : ITableStorage
+             where TEntity : INoSqlStorage
         {
             return entity.UpdateAsync(installation, tableName).ConfigureAwait(false).GetAwaiter().GetResult();
         }
         public static List<string> ListOfTables<TEntity>(this TEntity entity, Installation installation = Installation.Default)
-           where TEntity : ITableStorage
+           where TEntity : INoSqlStorage
         {
             Dictionary<string, CloudTable> pairs = GetContextList(entity.GetType(), installation);
             return pairs.Select(x => x.Value.Name).ToList();

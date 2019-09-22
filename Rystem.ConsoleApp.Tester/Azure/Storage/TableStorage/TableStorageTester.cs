@@ -40,8 +40,8 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
         };
         public bool DoWork(string entry)
         {
-            TableStorageInstaller.Configure<Testone>(ConnectionString, Installation.Inst0);
-            TableStorageInstaller.Configure<Testone>(ConnectionString + "++2", Installation.Inst1);
+            NoSqlInstaller.Configure<Testone>(ConnectionString, Installation.Inst0);
+            NoSqlInstaller.Configure<Testone>(ConnectionString + "++2", Installation.Inst1);
             var x = new Testone().Fetch(installation: Installation.Inst0);
             var y = new Testone().Fetch(installation: Installation.Inst1);
             Testone testone = new Testone()
@@ -93,7 +93,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
             }
         }
     }
-    public class Testone : ITableStorage
+    public class Testone : INoSqlStorage
     {
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
@@ -105,7 +105,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
     {
         static UserAction()
         {
-            TableStorageInstaller.Configure<UserAction>(TableStorageTester.ConnectionString, Rystem.Enums.Installation.Default, $"{nameof(UserAction)}Log");
+            NoSqlInstaller.Configure<UserAction>(TableStorageTester.ConnectionString, Rystem.Enums.Installation.Default, $"{nameof(UserAction)}Log");
         }
 
         public UserAction() : base()
@@ -116,7 +116,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
         public int ServiceID { get; set; }
         public string Annotation { get; set; }
     }
-    public abstract class ALog : ITableStorage
+    public abstract class ALog : INoSqlStorage
     {
         public bool Success { get; set; }
         public string Operator { get; set; }
@@ -126,17 +126,17 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
         public DateTime Timestamp { get; set; }
         public string ETag { get; set; }
     }
-    public abstract class Coso : ITableStorage
+    public abstract class Coso : INoSqlStorage
     {
-        static Coso() => TableStorageInstaller.ConfigureAsDefault(TableStorageTester.ConnectionString);
+        static Coso() => NoSqlInstaller.ConfigureAsDefault(TableStorageTester.ConnectionString);
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTime Timestamp { get; set; }
         public string ETag { get; set; }
     }
-    public class Example : ITableStorage
+    public class Example : INoSqlStorage
     {
-        static Example() => TableStorageInstaller.ConfigureAsDefault(TableStorageTester.ConnectionString);
+        static Example() => NoSqlInstaller.ConfigureAsDefault(TableStorageTester.ConnectionString);
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTime Timestamp { get; set; }
@@ -148,7 +148,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Storage.TableStorage
     {
         public int A { get; set; }
     }
-    public class MsiteId : ITableStorage
+    public class MsiteId : INoSqlStorage
     {
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }

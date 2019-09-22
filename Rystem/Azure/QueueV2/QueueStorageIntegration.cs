@@ -11,7 +11,7 @@ namespace Rystem.Azure.Queue
     internal class QueueStorageIntegration : IQueueIntegration
     {
         private CloudQueue Client;
-        internal QueueStorageIntegration(QueueProperty property)
+        internal QueueStorageIntegration(QueueConfiguration property)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(property.ConnectionString);
             CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();

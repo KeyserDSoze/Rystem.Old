@@ -11,7 +11,7 @@ namespace Rystem.Azure.Queue
     internal class ServiceBusIntegration : IQueueIntegration
     {
         private QueueClient QueueClient;
-        internal ServiceBusIntegration(QueueProperty property) =>
+        internal ServiceBusIntegration(QueueConfiguration property) =>
             this.QueueClient = new QueueClient(
                 new ServiceBusConnectionStringBuilder(
                     $"{property.ConnectionString};EntityPath={property.Name}"),
