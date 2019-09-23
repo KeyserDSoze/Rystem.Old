@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Rystem.Azure.DataLake
 {
-    public interface IDataLakeReader
+    public interface IDataLakeReader<TEntity>
     {
-        dynamic Read(Stream stream);
+        TEntity Read(DataLakeDummy dummy);
     }
 }

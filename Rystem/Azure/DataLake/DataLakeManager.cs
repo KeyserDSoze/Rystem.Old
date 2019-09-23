@@ -12,11 +12,11 @@ namespace Rystem.Azure.DataLake
         private readonly static IDataLakeIntegration Integration;
         static DataLakeManager()
         {
-            DataLakeConfiguration configuration = DataLakeInstaller.GetConfiguration<TEntity>();
+            DataLakeConfiguration<TEntity> configuration = DataLakeInstaller.GetConfiguration<TEntity>();
             switch (configuration.Type)
             {
                 case DataLakeType.BlockBlob:
-                    Integration = new BlockBlobStorageIntegration(configuration);
+                    Integration = new BlockBlobStorageIntegration<TEntity>(configuration);
                     break;
                 case DataLakeType.AppendBlob:
                     //Integration = new TableStorageIntegration<TEntity>(configuration);
@@ -37,17 +37,15 @@ namespace Rystem.Azure.DataLake
         public async Task<IDataLake> FetchAsync(IDataLake entity)
             => await Integration.FetchAsync(entity);
 
-        public Task<IList<IDataLake>> ListAsync(IDataLake entity)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<IList<IDataLake>> ListAsync(IDataLake entity, string prefix = null, int? takeCount = null)
+            => await Integration.ListAsync(entity, prefix, takeCount);
 
-        public Task<IList<string>> SearchAsync(IDataLake entity)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<IList<string>> SearchAsync(IDataLake entity, string prefix = null, int? takeCount = null)
+            => await Integration.SearchAsync(entity, prefix, takeCount);
 
-        public async Task<bool> UpdateAsync(IDataLake entity)
-            => await Integration.UpdateAsync(entity);
+        public async Task<bool> AppendAsync(IDataLake entity)
+            => await Integration.AppendAsync(entity);
+        public async Task<string> WriteAsync(IDataLake entity)
+            => await Integration.WriteAsync(entity);
     }
 }

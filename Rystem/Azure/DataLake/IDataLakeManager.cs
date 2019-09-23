@@ -10,9 +10,10 @@ namespace Rystem.Azure.DataLake
     {
         Task<bool> ExistsAsync(IDataLake entity);
         Task<IDataLake> FetchAsync(IDataLake entity);
-        Task<bool> UpdateAsync(IDataLake entity);
+        Task<string> WriteAsync(IDataLake entity);
+        Task<bool> AppendAsync(IDataLake entity);
         Task<bool> DeleteAsync(IDataLake entity);
-        Task<IList<IDataLake>> ListAsync(IDataLake entity);
-        Task<IList<string>> SearchAsync(IDataLake entity);
+        Task<IList<IDataLake>> ListAsync(IDataLake entity, string prefix = null, int? takeCount = null);
+        Task<IList<string>> SearchAsync(IDataLake entity, string prefix = null, int? takeCount = null);
     }
 }

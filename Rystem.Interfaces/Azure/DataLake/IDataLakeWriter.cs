@@ -6,6 +6,6 @@ namespace Rystem.Azure.DataLake
 {
     public interface IDataLakeWriter
     {
-        void Write(IDataLake entity);
+        DataLakeDummy Write(IDataLake entity);
     }
 }

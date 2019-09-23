@@ -6,6 +6,7 @@ namespace Rystem.Azure.DataLake
 {
     public interface IDataLake
     {
-
+        string Name { get; set; }
+        LakeProperties Properties { get; set; }
     }
 }
