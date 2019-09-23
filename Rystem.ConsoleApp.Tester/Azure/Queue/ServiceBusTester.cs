@@ -24,11 +24,23 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 myServiceBus
             };
             long messageId = myServiceBus.SendScheduled(120);
-            myServiceBus.DeleteScheduled(messageId);
+            if (messageId <= 0)
+                return false;
+            bool returned = myServiceBus.DeleteScheduled(messageId);
+            if (!returned)
+                return false;
             messageId = myServiceBuses.SendScheduledBatch(120)[0];
-            myServiceBus.DeleteScheduled(messageId);
+            if (messageId <= 0)
+                return false;
+            returned = myServiceBus.DeleteScheduled(messageId);
+            if (!returned)
+                return false;
             DebugMessage debugMessage = myServiceBus.DebugSend();
+            if (!debugMessage.ServiceBusMessage.Contains("dsad"))
+                return false;
             DebugMessage debugMessage2 = myServiceBuses.DebugSendBatch();
+            if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
+                return false;
             //ServiceBusMessage connectionMessage = new ServiceBusMessage()
             //{
             //    Attempt = 0,
@@ -60,7 +72,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
         {
             QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
             {
-                ConnectionString = "Endpoint=sb://kynsextest2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=qxzmuricdYps0NufDo6rBaqMKVM1ZsgRo2htlfeItqw="
+                ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
+                Type = QueueType.ServiceBus,
+                Name = "dario"
             });
         }
 

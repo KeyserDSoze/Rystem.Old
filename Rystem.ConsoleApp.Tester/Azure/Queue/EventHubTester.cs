@@ -23,22 +23,13 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 myEventHub,
                 myEventHub
             };
-            myEventHub.Send();
-            myAbstractionEventHubs.SendBatch();
+            if (!myEventHub.Send())
+                return false;
+            if (!myAbstractionEventHubs.SendBatch())
+                return false;
             DebugMessage debugMessage = myEventHub.DebugSend();
             DebugMessage debugMessages = myAbstractionEventHubs.DebugSendBatch();
-            //EventHubMessage connectionMessage = new EventHubMessage()
-            //{
-            //    Attempt = 0,
-            //    Container = myEventHub,
-            //    Flow = Enums.FlowType.Flow0,
-            //    Version = Enums.VersionType.V0,
-            //};
-            //myEventHub = connectionMessage.ToObject<MyEventHub>();
-            //string jsonSent = connectionMessage.ToJson();
-            //connectionMessage = jsonSent.ToEventHubMessage();
-            //myEventHub = connectionMessage.ToObject<MyEventHub>();
-            //connectionMessage.SendFurther(30);
+
             return true;
         }
     }
@@ -54,7 +45,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
         {
             QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
             {
-                ConnectionString = "Endpoint=sb://kynsextest.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=9CAVSQGOLEmlKziA3xmK4mM6Oc6SOLCQ+FBmzVL1+54="
+                ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
+                Name = "queue",
+                Type = QueueType.EventHub
             });
         }
         public class MyObject

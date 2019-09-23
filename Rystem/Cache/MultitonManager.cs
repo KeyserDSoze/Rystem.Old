@@ -8,13 +8,13 @@ namespace Rystem.Cache
     internal class MultitonManager<T> : IMultitonManager
         where T : IMultiton
     {
-        private readonly static AMultitonIntegration<T> InMemory;
-        private readonly static bool MemoryIsActive = false;
-        private readonly static AMultitonIntegration<T> InCloud;
-        private readonly static bool CloudIsActive = false;
+        private readonly AMultitonIntegration<T> InMemory;
+        private readonly bool MemoryIsActive = false;
+        private readonly AMultitonIntegration<T> InCloud;
+        private readonly bool CloudIsActive = false;
         private readonly static string FullName = typeof(T).FullName;
         private readonly static object TrafficLight = new object();
-        static MultitonManager()
+        public MultitonManager()
         {
             MultitonInstaller.MultitonConfiguration configuration = MultitonInstaller.GetConfiguration(typeof(T));
             if (MemoryIsActive = configuration.ExpireMultiton != (int)MultitonExpireTime.TurnOff)

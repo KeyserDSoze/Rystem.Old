@@ -25,15 +25,19 @@ namespace System
                     }
             return Managers[messageType.FullName];
         }
+
         public static string ToJson(this IQueueMessage message)
             => JsonConvert.SerializeObject(message, ExternalLibrarySettings.JsonSettings);
         public static byte[] ToSendable(this IQueueMessage message)
             => Encoding.UTF8.GetBytes(message.ToJson());
+
         public static string ToJson(this IEnumerable<IQueueMessage> messages)
             => JsonConvert.SerializeObject(messages, ExternalLibrarySettings.JsonSettings);
         public static byte[] ToSendable(this IEnumerable<IQueueMessage> messages)
             => Encoding.UTF8.GetBytes(messages.ToJson());
-        public static async Task<bool> SendAsync(this IQueueMessage message)
+
+        public static async Task<bool> SendAsync<TEntity>(this TEntity message)
+            where TEntity : IQueueMessage
             => await Manager(message.GetType()).SendAsync(message);
         public static async Task<long> SendScheduledAsync(this IQueueMessage message, int delayInSeconds)
             => await Manager(message.GetType()).SendScheduledAsync(message, delayInSeconds);
@@ -47,6 +51,7 @@ namespace System
             => await Manager(message.GetType()).DebugSendAsync(message, delayInSeconds);
         public static async Task<DebugMessage> DebugSendBatchAsync(this IEnumerable<IQueueMessage> messages, int delayInSeconds = 0)
             => await Manager(messages.FirstOrDefault()?.GetType()).DebugSendBatchAsync(messages, delayInSeconds);
+
         public static bool Send(this IQueueMessage message)
            => message.SendAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         public static long SendScheduled(this IQueueMessage message, int delayInSeconds)

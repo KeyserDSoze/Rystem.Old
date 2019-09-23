@@ -26,9 +26,8 @@ namespace Rystem.Azure.AggregatedData.Integration
             this.SplittingChar = splittingChar;
             this.SplittingRegex = new Regex($"(\\{this.SplittingChar}|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"] *) *)\"|([^\"\\{this.SplittingChar}\\r\\n]*))");
         }
-        private static List<PropertyInfo> Property()
+        private static List<PropertyInfo> Property(Type type)
         {
-            Type type = typeof(TEntity);
             if (!Properties.ContainsKey(type.FullName))
             {
                 lock (TrafficLight)
@@ -46,7 +45,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             TEntity dataLake = (TEntity)Activator.CreateInstance(typeof(TEntity));
             string[] splitting = SplittingRegex.Split(value).Where(x => !string.IsNullOrWhiteSpace(x) && x[0] != SplittingChar).ToArray();
             int count = 0;
-            foreach (PropertyInfo propertyInfo in Property())
+            foreach (PropertyInfo propertyInfo in Property(dataLake.GetType()))
             {
                 if (count >= splitting.Length)
                     break;
@@ -58,7 +57,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         private string Serialize(IAggregatedData dataLake)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            List<PropertyInfo> propertyInfos = Property();
+            List<PropertyInfo> propertyInfos = Property(dataLake.GetType());
             int count = 0;
             foreach (PropertyInfo propertyInfo in propertyInfos)
             {

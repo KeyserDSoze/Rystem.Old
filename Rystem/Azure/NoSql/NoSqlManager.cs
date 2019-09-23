@@ -10,8 +10,8 @@ namespace Rystem.Azure.NoSql
     internal class NoSqlManager<TEntity> : INoSqlManager
         where TEntity : INoSqlStorage
     {
-        private readonly static INoSqlIntegration<TEntity> Integration;
-        static NoSqlManager()
+        private readonly INoSqlIntegration<TEntity> Integration;
+        public NoSqlManager()
         {
             NoSqlConfiguration configuration = NoSqlInstaller.GetConfiguration<TEntity>();
             switch (configuration.Type)

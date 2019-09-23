@@ -34,7 +34,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class SmallBlobKey : IMultitonKey
     {
         public int Id { get; set; }
-        private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=kynsexstorage;AccountKey=OCwrI4pGQtjc+HEfFetZ0TzExKfum2PrUfcao6cjQEyTfw1mJ15b2vNMWoBGYRkHsXwXJ/WqZXyy6BONehar+Q==;EndpointSuffix=core.windows.net";
+        private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         static SmallBlobKey()
         {
             MultitonInstaller.Configure<SmallBlobKey, SmallBlob>(ConnectionString, InCloudType.BlobStorage, CacheExpireTime.EightHour, MultitonExpireTime.TurnOff);

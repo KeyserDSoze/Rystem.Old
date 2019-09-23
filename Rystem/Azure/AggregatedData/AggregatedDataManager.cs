@@ -10,8 +10,8 @@ namespace Rystem.Azure.AggregatedData
     internal class AggregatedDataManager<TEntity> : IAggregatedDataManager
         where TEntity : IAggregatedData
     {
-        private readonly static IAggregatedDataIntegration<TEntity> Integration;
-        static AggregatedDataManager()
+        private readonly IAggregatedDataIntegration<TEntity> Integration;
+        public AggregatedDataManager()
         {
             DataAggregationConfiguration<TEntity> configuration = AggregatedDataInstaller.GetConfiguration<TEntity>();
             switch (configuration.Type)

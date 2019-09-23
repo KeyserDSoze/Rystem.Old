@@ -26,8 +26,8 @@ namespace Rystem.Azure.Queue
     }
     public enum QueueType
     {
-        QueueStorage,
         EventHub,
+        QueueStorage,
         ServiceBus
     }
 }

@@ -12,33 +12,35 @@ namespace System
     {
         private static Dictionary<string, IAggregatedDataManager> Managers = new Dictionary<string, IAggregatedDataManager>();
         private readonly static object TrafficLight = new object();
-        private static IAggregatedDataManager Manager<TEntity>(Type messageType)
-            where TEntity : IAggregatedData
+        private static IAggregatedDataManager Manager(Type dataType)
         {
-            if (!Managers.ContainsKey(messageType.FullName))
+            if (!Managers.ContainsKey(dataType.FullName))
                 lock (TrafficLight)
-                    if (!Managers.ContainsKey(messageType.FullName))
-                        Managers.Add(messageType.FullName, new AggregatedDataManager<TEntity>());
-            return Managers[messageType.FullName];
+                    if (!Managers.ContainsKey(dataType.FullName))
+                    {
+                        Type genericType = typeof(AggregatedDataManager<>).MakeGenericType(dataType);
+                        Managers.Add(dataType.FullName, (IAggregatedDataManager)Activator.CreateInstance(genericType));
+                    }
+            return Managers[dataType.FullName];
         }
         public static async Task<bool> AppendAsync<TEntity>(this TEntity entity, long offset = 0)
             where TEntity : IAggregatedData
-           => await Manager<TEntity>(entity.GetType()).AppendAsync(entity, offset);
+           => await Manager(entity.GetType()).AppendAsync(entity, offset);
         public static async Task<string> WriteAsync<TEntity>(this TEntity entity)
         where TEntity : IAggregatedData
-       => await Manager<TEntity>(entity.GetType()).WriteAsync(entity);
+       => await Manager(entity.GetType()).WriteAsync(entity);
         public static async Task<bool> DeleteAsync<TEntity>(this TEntity entity)
             where TEntity : IAggregatedData
-           => await Manager<TEntity>(entity.GetType()).DeleteAsync(entity);
+           => await Manager(entity.GetType()).DeleteAsync(entity);
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity)
             where TEntity : IAggregatedData
-           => await Manager<TEntity>(entity.GetType()).ExistsAsync(entity);
+           => await Manager(entity.GetType()).ExistsAsync(entity);
         public static async Task<IEnumerable<TEntity>> ListAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null)
             where TEntity : IAggregatedData
-           => (await Manager<TEntity>(entity.GetType()).ListAsync<TEntity>(entity, prefix, takeCount));
+           => (await Manager(entity.GetType()).ListAsync<TEntity>(entity, prefix, takeCount));
         public static async Task<IList<string>> SearchAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null)
             where TEntity : IAggregatedData
-           => (await Manager<TEntity>(entity.GetType()).SearchAsync(entity, prefix, takeCount));
+           => (await Manager(entity.GetType()).SearchAsync(entity, prefix, takeCount));
 
         public static bool Append<TEntity>(this TEntity entity, long offset = 0)
             where TEntity : IAggregatedData

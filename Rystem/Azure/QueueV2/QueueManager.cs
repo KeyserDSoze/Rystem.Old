@@ -1,7 +1,9 @@
-﻿using Rystem.Debug;
+﻿using Microsoft.Azure.EventHubs;
+using Rystem.Debug;
 using Rystem.Enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,8 +12,8 @@ namespace Rystem.Azure.Queue
     internal class QueueManager<TEntity> : IQueueManager
         where TEntity : IQueueMessage
     {
-        private readonly static IQueueIntegration Integration;
-        static QueueManager()
+        private readonly IQueueIntegration Integration;
+        public QueueManager()
         {
             QueueConfiguration configuration = QueueInstaller.GetConfiguration<TEntity>();
             switch (configuration.Type)
@@ -41,11 +43,13 @@ namespace Rystem.Azure.Queue
             => await Integration.SendScheduledBatchAsync(messages, delayInSeconds);
         public async Task<DebugMessage> DebugSendAsync(IQueueMessage message, int delayInSeconds = 0)
         {
-            throw new NotImplementedException();
+            await Task.Delay(0);
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = message.ToJson(), EventDatas = new EventData[1] { new EventData(message.ToSendable()) } };
         }
         public async Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueueMessage> messages, int delayInSeconds = 0)
         {
-            throw new NotImplementedException();
+            await Task.Delay(0);
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.ToJson(), EventDatas = messages.Select(x => new EventData(x.ToSendable())).ToArray() };
         }
     }
 }
