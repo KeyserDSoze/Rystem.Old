@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.ConsoleApp.Tester.Cache
+namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonTest : ITest
     {

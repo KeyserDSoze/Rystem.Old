@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace Rystem.Azure.NoSql
     internal class NoSqlManager<TEntity> : INoSqlManager
         where TEntity : INoSqlStorage
     {
-        private readonly static INoSqlIntegration Integration;
+        private readonly static INoSqlIntegration<TEntity> Integration;
         static NoSqlManager()
         {
             NoSqlConfiguration configuration = NoSqlInstaller.GetConfiguration<TEntity>();
@@ -26,8 +27,9 @@ namespace Rystem.Azure.NoSql
             => await Integration.DeleteAsync(entity);
         public async Task<bool> ExistsAsync(INoSqlStorage entity)
             => await Integration.ExistsAsync(entity);
-        public async Task<IList<INoSqlStorage>> FetchAsync(INoSqlStorage entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null)
-            => await Integration.GetAsync(entity, expression, takeCount);
+        public async Task<IEnumerable<TNoSqlEntity>> FetchAsync<TNoSqlEntity>(INoSqlStorage entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null)
+            where TNoSqlEntity : INoSqlStorage
+            => (await Integration.GetAsync(entity, expression, takeCount)).Select(x => (TNoSqlEntity)(INoSqlStorage)x);
         public async Task<bool> UpdateAsync(INoSqlStorage entity)
             => await Integration.UpdateAsync(entity);
     }

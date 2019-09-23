@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.NoSql
 {
     public class NoTableStorageProperty : Attribute { }
-    internal class TableStorageIntegration<TEntity> : INoSqlIntegration
+    internal class TableStorageIntegration<TEntity> : INoSqlIntegration<TEntity>
         where TEntity : INoSqlStorage
     {
         private CloudTable Context;
@@ -58,9 +58,9 @@ namespace Rystem.Azure.NoSql
             return result.Result != null;
         }
 
-        public async Task<IList<INoSqlStorage>> GetAsync(INoSqlStorage entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null)
+        public async Task<IList<TEntity>> GetAsync(INoSqlStorage entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null)
         {
-            List<INoSqlStorage> items = new List<INoSqlStorage>();
+            List<TEntity> items = new List<TEntity>();
             TableContinuationToken token = null;
             string query = ToQuery(expression?.Body);
             do
@@ -74,9 +74,9 @@ namespace Rystem.Azure.NoSql
 
             string ToQuery(Expression expressionAsExpression = null)
             {
-                if (expression == null)
+                if (expressionAsExpression == null)
                     return string.Empty;
-                string result = QueryStrategy.Create(expression);
+                string result = QueryStrategy.Create(expressionAsExpression);
                 if (!string.IsNullOrWhiteSpace(result))
                     return result;
                 BinaryExpression binaryExpression = (BinaryExpression)expressionAsExpression;
@@ -109,7 +109,7 @@ namespace Rystem.Azure.NoSql
             return dummy;
         }
         private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);
-        private INoSqlStorage ReadEntity(DynamicTableEntity dynamicTableEntity)
+        private TEntity ReadEntity(DynamicTableEntity dynamicTableEntity)
         {
             TEntity entity = (TEntity)Activator.CreateInstance(typeof(TEntity));
             entity.PartitionKey = dynamicTableEntity.PartitionKey;

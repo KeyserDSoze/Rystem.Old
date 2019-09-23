@@ -45,7 +45,7 @@ namespace Rystem.ConsoleApp.Tester
             if (types.Count == 0) types = Assembly.GetExecutingAssembly().GetTypes().ToList().FindAll(ø => ø.GetInterface("ITest") != null);
             foreach (Type t in types)
             {
-                Console.WriteLine("For " + t.Namespace.Split('.').LastOrDefault() + "." + t.Name + " use " + value.ToString());
+                Console.WriteLine("For " + t.Namespace.Replace("Rystem.ZConsoleApp.Tester.", "") + "." + t.Name + " use " + value.ToString());
                 value++;
             }
             Console.WriteLine("'exit' if you want to close this app.");

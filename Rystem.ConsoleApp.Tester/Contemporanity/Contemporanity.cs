@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.ZConsoleApp.Tester
+namespace Rystem.ZConsoleApp.Tester.Utility
 {
     public class Contemporanity
     {

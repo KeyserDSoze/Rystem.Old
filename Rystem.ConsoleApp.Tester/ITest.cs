@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.ConsoleApp.Tester
+namespace Rystem.ZConsoleApp.Tester
 {
     public interface ITest
     {

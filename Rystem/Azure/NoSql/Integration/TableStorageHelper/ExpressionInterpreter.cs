@@ -50,6 +50,56 @@ namespace Rystem.Azure.NoSql
     {
         internal static string Create(Expression expression)
         {
+            //if (expression is BinaryExpression)
+            //    return null;
+            //else if (expression is BlockExpression)
+            //    return null;
+            //else if (expression is ConditionalExpression)
+            //    return null;
+            //else if (expression is ConstantExpression)
+            //    return null;
+            //else if (expression is DebugInfoExpression)
+            //    return null;
+            //else if (expression is DefaultExpression)
+            //    return null;
+            //else if (expression is DynamicExpression)
+            //    return null;
+            //else if (expression is GotoExpression)
+            //    return null;
+            //else if (expression is IndexExpression)
+            //    return null;
+            //else if (expression is InvocationExpression)
+            //    return null;
+            //else if (expression is LabelExpression)
+            //    return null;
+            //else if (expression is LambdaExpression)
+            //    return (expression as LambdaExpression).Compile().DynamicInvoke();
+            //else if (expression is ListInitExpression)
+            //    return null;
+            //else if (expression is LoopExpression)
+            //    return null;
+            //else if (expression is MemberExpression)
+            //    return null;
+            //else if (expression is MemberInitExpression)
+            //    return null;
+            //else if (expression is MethodCallExpression)
+            //    return null;
+            //else if (expression is NewArrayExpression)
+            //    return null;
+            //else if (expression is NewExpression)
+            //    return null;
+            //else if (expression is ParameterExpression)
+            //    return null;
+            //else if (expression is RuntimeVariablesExpression)
+            //    return null;
+            //else if (expression is SwitchExpression)
+            //    return null;
+            //else if (expression is TryExpression)
+            //    return null;
+            //else if (expression is TypeBinaryExpression)
+            //    return null;
+            //else if (expression is UnaryExpression)
+            //    return null;
             IExpressionStrategy expressionFactory = new BinaryExpressionStrategy();
             if (expression is MethodCallExpression)
             {
@@ -63,6 +113,10 @@ namespace Rystem.Azure.NoSql
             {
                 expressionFactory = new MemberExpressionStrategy();
             }
+            //else if (expression is LambdaExpression)
+            //{
+            //    expression = (expression as LambdaExpression).Body;
+            //}
             return expressionFactory.Convert(expression);
         }
         internal static string ValueToString(object value)

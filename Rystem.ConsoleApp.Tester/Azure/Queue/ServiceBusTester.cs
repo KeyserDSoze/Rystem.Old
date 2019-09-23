@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.ConsoleApp.Tester.Azure.Queue
+namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class ServiceBusTester : ITest
     {
@@ -23,9 +23,9 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
                 myServiceBus,
                 myServiceBus
             };
-            long messageId = myServiceBus.Send(120);
+            long messageId = myServiceBus.SendScheduled(120);
             myServiceBus.DeleteScheduled(messageId);
-            messageId = myServiceBuses.SendBatch(120);
+            messageId = myServiceBuses.SendScheduledBatch(120)[0];
             myServiceBus.DeleteScheduled(messageId);
             DebugMessage debugMessage = myServiceBus.DebugSend();
             DebugMessage debugMessage2 = myServiceBuses.DebugSendBatch();
@@ -45,7 +45,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
             return true;
         }
     }
-    public abstract class MyAbstractionOfServiceBus: IServiceBus
+    public abstract class MyAbstractionOfServiceBus : IQueueMessage
     {
         public string A { get; set; }
         public MyObject B { get; set; }
@@ -58,9 +58,11 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
     {
         static MyServiceBus()
         {
-            ServiceBusInstaller.Configure<MyServiceBus>(
-                "Endpoint=sb://kynsextest2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=qxzmuricdYps0NufDo6rBaqMKVM1ZsgRo2htlfeItqw=");
+            QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
+            {
+                ConnectionString = "Endpoint=sb://kynsextest2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=qxzmuricdYps0NufDo6rBaqMKVM1ZsgRo2htlfeItqw="
+            });
         }
-       
+
     }
 }

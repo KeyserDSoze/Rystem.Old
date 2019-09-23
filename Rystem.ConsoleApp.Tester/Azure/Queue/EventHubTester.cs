@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.ConsoleApp.Tester.Azure.Queue
+namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class EventHubTester : ITest
     {
@@ -42,7 +42,7 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
             return true;
         }
     }
-    public abstract class MyAbstractionEventHub : IEventHub
+    public abstract class MyAbstractionEventHub : IQueueMessage
     {
 
     }
@@ -52,8 +52,10 @@ namespace Rystem.ConsoleApp.Tester.Azure.Queue
         public MyObject B { get; set; }
         static MyEventHub()
         {
-            EventHubInstaller.Configure<MyEventHub>(
-                "Endpoint=sb://kynsextest.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=9CAVSQGOLEmlKziA3xmK4mM6Oc6SOLCQ+FBmzVL1+54=");
+            QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
+            {
+                ConnectionString = "Endpoint=sb://kynsextest.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=9CAVSQGOLEmlKziA3xmK4mM6Oc6SOLCQ+FBmzVL1+54="
+            });
         }
         public class MyObject
         {

@@ -24,7 +24,7 @@ namespace Rystem
         private static IDictionary<Installation, TConfiguration> Contexts = new Dictionary<Installation, TConfiguration>();
         internal static void Configure(TConfiguration configuration, Installation installation)
         {
-            configuration.Name = configuration.Name ?? typeof(TEntity).FullName;
+            configuration.Name = configuration.Name ?? typeof(TEntity).Name;
             if (!Contexts.ContainsKey(installation))
                 Contexts.Add(installation, configuration);
             else
