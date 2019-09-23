@@ -1,5 +1,5 @@
-﻿using Rystem.Azure.Queue;
-using Rystem.Azure.Storage;
+﻿using Rystem.Azure.NoSql;
+using Rystem.Azure.Queue;
 using Rystem.Cache;
 using System;
 using System.Collections.Generic;
@@ -15,12 +15,13 @@ namespace Rystem.ZConsoleApp.Tester
             crossTest.Update();
         }
     }
-    public class CrossTest : IServiceBus, INoSqlStorage, IMultiton
+    public class CrossTest : IQueueMessage, INoSqlStorage, IMultiton
     {
         public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public DateTime Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public string ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string Tag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public IMultiton Fetch(IMultitonKey key)
         {

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Rystem.Azure.DataLake
+namespace Rystem.Azure.AggregatedData
 {
-    public sealed class DataLakeDummy
+    public sealed class AggregatedDataDummy
     {
         public Stream Stream { get; set; }
         public string Name { get; set; }
-        public LakeProperties Properties { get; set; }
+        public AggregatedDataProperties Properties { get; set; }
     }
 }

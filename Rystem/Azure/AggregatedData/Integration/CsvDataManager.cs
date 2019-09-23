@@ -1,17 +1,17 @@
-﻿using System;
+﻿using Rystem.Interfaces.Conversion;
+using Rystem.Utility;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Interfaces.Conversion;
-using Rystem.Utility;
 
-namespace Rystem.Azure.Storage
+namespace Rystem.Azure.AggregatedData.Integration
 {
-    public class CsvBlobManager : IBlobManager
+    internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IDataLakeWriter
+          where TEntity : IAggregatedData
     {
         private char SplittingChar;
         private const string InCaseOfSplittedChar = "\"{0}\"";
@@ -21,13 +21,14 @@ namespace Rystem.Azure.Storage
         private static Type CsvIgnoreType = typeof(CsvIgnore);
         private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
         private static readonly object TrafficLight = new object();
-        public CsvBlobManager(char splittingChar = ',')
+        public CsvDataManager(char splittingChar = ',')
         {
             this.SplittingChar = splittingChar;
             this.SplittingRegex = new Regex($"(\\{this.SplittingChar}|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"] *) *)\"|([^\"\\{this.SplittingChar}\\r\\n]*))");
         }
-        private static List<PropertyInfo> Property(Type type)
+        private static List<PropertyInfo> Property()
         {
+            Type type = typeof(TEntity);
             if (!Properties.ContainsKey(type.FullName))
             {
                 lock (TrafficLight)
@@ -40,28 +41,28 @@ namespace Rystem.Azure.Storage
             }
             return Properties[type.FullName];
         }
-        private IBlobStorage Deserialize(Type type, string value)
+        private TEntity Deserialize(string value)
         {
-            IBlobStorage blobStorage = (IBlobStorage)Activator.CreateInstance(type);
+            TEntity dataLake = (TEntity)Activator.CreateInstance(typeof(TEntity));
             string[] splitting = SplittingRegex.Split(value).Where(x => !string.IsNullOrWhiteSpace(x) && x[0] != SplittingChar).ToArray();
             int count = 0;
-            foreach (PropertyInfo propertyInfo in Property(type))
+            foreach (PropertyInfo propertyInfo in Property())
             {
                 if (count >= splitting.Length)
                     break;
-                propertyInfo.SetValue(blobStorage, Convert.ChangeType(splitting[count].Trim(SplittingChar), propertyInfo.PropertyType));
+                propertyInfo.SetValue(dataLake, Convert.ChangeType(splitting[count].Trim(SplittingChar), propertyInfo.PropertyType));
                 count++;
             }
-            return blobStorage;
+            return dataLake;
         }
-        private string Serialize(IBlobStorage blobStorage)
+        private string Serialize(IAggregatedData dataLake)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            List<PropertyInfo> propertyInfos = Property(blobStorage.GetType());
+            List<PropertyInfo> propertyInfos = Property();
             int count = 0;
             foreach (PropertyInfo propertyInfo in propertyInfos)
             {
-                string value = (propertyInfo.GetValue(blobStorage) ?? string.Empty).ToString();
+                string value = (propertyInfo.GetValue(dataLake) ?? string.Empty).ToString();
                 if (value.Contains(SplittingChar))
                     value = string.Format(InCaseOfSplittedChar, value.Replace("\"", "\"\""));
                 else
@@ -73,23 +74,29 @@ namespace Rystem.Azure.Storage
             }
             return stringBuilder.ToString() + BreakLine;
         }
-        public IBlobStorage OnRetrieve(BlobValue blobValue, Type blobStorageType)
+        public IList<TEntity> Read(AggregatedDataDummy dummy)
         {
-            using (StreamReader sr = new StreamReader(blobValue.MemoryStream))
+            IList<TEntity> dataLakes = new List<TEntity>();
+            using (StreamReader sr = new StreamReader(dummy.Stream))
             {
-                IBlobStorage blobStorage = Deserialize(blobStorageType, sr.ReadToEnd());
-                blobStorage.BlobProperties = blobValue.BlobProperties;
-                blobStorage.Name = blobValue.DestinationFileName;
-                return blobStorage;
+                while (sr.EndOfStream)
+                {
+                    TEntity dataLake = Deserialize(sr.ReadLine());
+                    dataLake.Properties = dummy.Properties;
+                    dataLake.Name = dummy.Name;
+                    dataLakes.Add(dataLake);
+                }
             }
+            return dataLakes;
         }
-        public BlobValue Value(IBlobStorage blob)
+
+        public AggregatedDataDummy Write(IAggregatedData entity)
         {
-            return new BlobValue()
+            return new AggregatedDataDummy()
             {
-                BlobProperties = blob.BlobProperties ?? new BlobProperties() { ContentType = "text/csv" },
-                DestinationFileName = blob.Name,
-                MemoryStream = new MemoryStream(Encoding.UTF8.GetBytes(Serialize(blob)))
+                Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/csv" },
+                Name = entity.Name,
+                Stream = new MemoryStream(Encoding.UTF8.GetBytes(Serialize(entity)))
             };
         }
     }

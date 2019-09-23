@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace System
 {
-    public static class NoSqlExtension
+    public static class NoSqlExtensions
     {
         private static Dictionary<string, INoSqlManager> Managers = new Dictionary<string, INoSqlManager>();
         private readonly static object TrafficLight = new object();
@@ -35,5 +35,19 @@ namespace System
         public static async Task<IEnumerable<TEntity>> GetAsync<TEntity>(this TEntity entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null)
             where TEntity : INoSqlStorage
            => (await Manager(entity.GetType()).FetchAsync(entity, expression, takeCount)).Select(x => (TEntity)x);
+
+        public static bool Update<TEntity>(this TEntity entity)
+           where TEntity : INoSqlStorage
+          => UpdateAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool Delete<TEntity>(this TEntity entity)
+            where TEntity : INoSqlStorage
+           => DeleteAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool Exists<TEntity>(this TEntity entity)
+            where TEntity : INoSqlStorage
+           => ExistsAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static IEnumerable<TEntity> Get<TEntity>(this TEntity entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null)
+            where TEntity : INoSqlStorage
+           => GetAsync(entity, expression, takeCount).ConfigureAwait(false).GetAwaiter().GetResult();
+#warning Fare la stessa cosa fatta per AggregatedData
     }
 }

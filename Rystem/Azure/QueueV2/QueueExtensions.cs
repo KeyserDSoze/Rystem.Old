@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace System
 {
-    public static class QueueExtension
+    public static class QueueExtensions
     {
         private static Dictionary<string, IQueueManager> Managers = new Dictionary<string, IQueueManager>();
         private readonly static object TrafficLight = new object();

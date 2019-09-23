@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.DataLake
+namespace Rystem.Azure.AggregatedData
 {
-    public sealed class LakeProperties
+    public sealed class AggregatedDataProperties
     {
-        public LakeProperties() { }
+        public AggregatedDataProperties() { }
         public DateTimeOffset? BlobTierLastModifiedTime { get; }
         public bool? BlobTierInferred { get; }
         public bool IsIncrementalCopy { get; }

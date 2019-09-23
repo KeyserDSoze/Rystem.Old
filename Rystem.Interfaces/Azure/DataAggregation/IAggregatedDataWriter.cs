@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.DataLake
+namespace Rystem.Azure.AggregatedData
 {
     public interface IDataLakeWriter
     {
-        DataLakeDummy Write(IDataLake entity);
+        AggregatedDataDummy Write(IAggregatedData entity);
     }
 }
