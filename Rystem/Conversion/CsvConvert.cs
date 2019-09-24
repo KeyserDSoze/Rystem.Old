@@ -25,6 +25,7 @@ namespace Rystem.Conversion
         private static readonly Type IListType = typeof(IList);
         private static readonly Type IDictionaryType = typeof(IDictionary);
         public static string Serialize<T>(T data, int separatorIndex = 0)
+            where T : new()
         {
             if (data == null) return string.Empty;
             string separator = Separator[separatorIndex].ToString();
@@ -71,6 +72,7 @@ namespace Rystem.Conversion
             return result.Substring(0, result.Length - 1);
         }
         private static string ForStringBuilder<T>(T data, int separatorIndex, string separatorString)
+            where T : new()
         {
             if (data == null) return separatorString;
             Type type = typeof(T);
@@ -90,6 +92,7 @@ namespace Rystem.Conversion
             }
         }
         public static T Deserialize<T>(string data, int separatorIndex = 0)
+            where T : new()
         {
             if (string.IsNullOrWhiteSpace(data)) return default(T);
             Type type = typeof(T);
@@ -121,7 +124,8 @@ namespace Rystem.Conversion
                             foreach (string s in splittedData[counter].Split(SeparatorForList))
                             {
                                 string[] dictionaryEntry = s.Split(SeparatorForDictionary);
-                                if (dictionaryEntry.Count() < 2) continue;
+                                if (dictionaryEntry.Count() < 2)
+                                    continue;
                                 object key = typeof(CsvConvert).GetMethod("ForStringParsing", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(types[0]).Invoke(null, new object[2] { dictionaryEntry[0], separatorIndex });
                                 object value = typeof(CsvConvert).GetMethod("ForStringParsing", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(types[0]).Invoke(null, new object[2] { dictionaryEntry[1], separatorIndex });
                                 dictionary.Add(key, value);
@@ -155,6 +159,7 @@ namespace Rystem.Conversion
             return entity;
         }
         private static T ForStringParsing<T>(string data, int separatorIndex)
+            where T : new()
         {
             Type propertyType = typeof(T);
             if (!StringablePrimitive.CheckWithNull(propertyType))
