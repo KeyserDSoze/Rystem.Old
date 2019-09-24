@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Interfaces.Conversion
+namespace Rystem.Conversion
 {
     public class CsvIgnore : Attribute
     {
