@@ -75,18 +75,18 @@ namespace Rystem.Azure.AggregatedData.Integration
         }
         public IList<TEntity> Read(AggregatedDataDummy dummy)
         {
-            IList<TEntity> dataLakes = new List<TEntity>();
+            IList<TEntity> aggregatedDatas = new List<TEntity>();
             using (StreamReader sr = new StreamReader(dummy.Stream))
             {
-                while (sr.EndOfStream)
+                while (!sr.EndOfStream)
                 {
-                    TEntity dataLake = Deserialize(sr.ReadLine());
-                    dataLake.Properties = dummy.Properties;
-                    dataLake.Name = dummy.Name;
-                    dataLakes.Add(dataLake);
+                    TEntity aggregatedData = Deserialize(sr.ReadLine());
+                    aggregatedData.Properties = dummy.Properties;
+                    aggregatedData.Name = dummy.Name;
+                    aggregatedDatas.Add(aggregatedData);
                 }
             }
-            return dataLakes;
+            return aggregatedDatas;
         }
 
         public AggregatedDataDummy Write(IAggregatedData entity)

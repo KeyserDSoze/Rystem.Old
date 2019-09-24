@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Rystem.Utility;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -72,13 +73,14 @@ namespace Rystem.Azure.AggregatedData.Integration
                 await cloudBlob.SetPropertiesAsync();
             return changeSomethingInProperty;
         }
-        public static async Task<byte[]> ReadAsync(ICloudBlob cloudBlob)
+        public static async Task<Stream> ReadAsync(ICloudBlob cloudBlob)
         {
             await cloudBlob.FetchAttributesAsync();
             var fileLength = cloudBlob.Properties.Length;
             byte[] fileByte = new byte[fileLength];
             await cloudBlob.DownloadToByteArrayAsync(fileByte, 0);
-            return fileByte;
+            Stream stream = new MemoryStream(fileByte);
+            return stream;
         }
     }
 }

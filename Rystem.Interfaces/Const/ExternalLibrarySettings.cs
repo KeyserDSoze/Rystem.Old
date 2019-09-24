@@ -9,7 +9,8 @@ namespace Rystem.Interfaces.Const
     {
         public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
         {
-            TypeNameHandling = TypeNameHandling.Auto
+            TypeNameHandling = TypeNameHandling.Auto,
+            NullValueHandling = NullValueHandling.Ignore
         };
     }
 }

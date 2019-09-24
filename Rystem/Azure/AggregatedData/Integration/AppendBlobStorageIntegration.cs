@@ -42,7 +42,7 @@ namespace Rystem.Azure.AggregatedData
             return this.ListReader.Read(new AggregatedDataDummy()
             {
                 Name = cloudBlob.Name,
-                Stream = new MemoryStream(await BlobStorageBaseIntegration.ReadAsync(cloudBlob)),
+                Stream = await BlobStorageBaseIntegration.ReadAsync(cloudBlob),
 #warning Aggiungere anche tutte le altre proprietà in set nel costruttore
                 Properties = new AggregatedDataProperties()
                 {

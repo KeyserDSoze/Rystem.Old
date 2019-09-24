@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Rystem.ZConsoleApp.Tester.Azure.NoSql.DataAggregation
+namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 {
-    public class BlobStorageTest : ITest
+    public class AppendBlobStorageTest : ITest
     {
         public bool DoWork(string entry)
         {
@@ -29,6 +29,15 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql.DataAggregation
             meatball.B = "dsadsadsa";
             meatball.Append();
             IList<Meatball> meatball2 = meatball.List().ToList();
+            if (meatball2.Count != 3)
+                return false;
+            if (!meatball.Delete())
+                return false;
+            if (meatball.Exists())
+                return false;
+            meatball2 = meatball.List().ToList();
+            if (meatball2.Count != 0)
+                return false;
             return true;
         }
     }

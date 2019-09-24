@@ -33,7 +33,7 @@ namespace Rystem.ConsoleApp.Tester
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.InnerException?.InnerException?.Message ?? ex.InnerException?.Message ?? ex.Message);
                     Console.Write("Press any button to continue");
                     Console.ReadLine();
                 }
