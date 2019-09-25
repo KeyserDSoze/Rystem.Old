@@ -7,9 +7,9 @@ namespace Rystem.Conversion
 {
     internal class PrimitiveConverter : Converter
     {
-        public PrimitiveConverter(IConverterFactory factory, int index) : base(factory, index) { }
+        public PrimitiveConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
 
-        internal override dynamic Deserialize(Type type, string value, IDictionary<int, string> antiAbstractionInterfaceDictionary)
+        internal override dynamic Deserialize(Type type, string value)
         {
             if (value == null)
                 return default;
@@ -28,7 +28,7 @@ namespace Rystem.Conversion
             }
         }
 
-        internal override string Serialize(object value, IDictionary<string, int> abstractionInterfaceDictionary)
+        internal override string Serialize(object value)
         {
             return value.ToString();
         }

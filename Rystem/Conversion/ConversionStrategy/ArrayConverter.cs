@@ -6,26 +6,26 @@ namespace Rystem.Conversion
 {
     internal class ArrayConverter : Converter
     {
-        public ArrayConverter(IConverterFactory factory, int index) : base(factory, index) { }
+        public ArrayConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
 
-        internal override dynamic Deserialize(Type type, string value, IDictionary<int, string> antiAbstractionInterfaceDictionary)
+        internal override dynamic Deserialize(Type type, string value)
         {
             Type elementType = type.GetElementType();
-            string[] splitted = value.ToMyIndexSplit(ConverterConstant.ArrayLength);
+            string[] splitted = value.Split(this.ArrayLength);
             Array array = Array.CreateInstance(elementType, int.Parse(splitted[0]));
-            string[] values = splitted[1].ToMySplit(ConverterConstant.Enumerable);
+            string[] values = splitted[1].Split(this.Enumerable);
             for (int i = 0; i < array.Length; i++)
             {
                 if (i >= values.Length)
                     break;
-                array.SetValue(this.Factory.GetConverter(elementType, this.Index).Deserialize(elementType, values[i], antiAbstractionInterfaceDictionary), i);
+                array.SetValue(this.HelpToDeserialize(elementType, values[i]), i);
             }
             return array;
         }
 
-        internal override string Serialize(object value, IDictionary<string, int> abstractionInterfaceDictionary)
+        internal override string Serialize(object value)
         {
-            return $"{(value as Array).Length}{ConverterConstant.ArrayLength}{new EnumerableConverter(this.Factory, this.Index).Serialize(value, abstractionInterfaceDictionary)}";
+            return $"{(value as Array).Length}{this.ArrayLength}{new EnumerableConverter(this.Factory, this.Index, this.AbstractionInterfaceMapping).Serialize(value)}";
         }
     }
 }

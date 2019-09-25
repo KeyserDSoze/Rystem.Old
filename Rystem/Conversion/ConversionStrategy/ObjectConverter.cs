@@ -8,31 +8,32 @@ namespace Rystem.Conversion
 {
     internal class ObjectConverter : Converter
     {
-        public ObjectConverter(IConverterFactory factory, int index) : base(factory, index) { }
+        public ObjectConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
         private static readonly Type Ignore = typeof(CsvIgnore);
-        internal override string Serialize(object value, IDictionary<string, int> abstractionInterfaceDictionary)
+        internal override string Serialize(object value)
         {
             if (value == null)
                 return string.Empty;
             StringBuilder stringBuilder = new StringBuilder();
             foreach (PropertyInfo property in Properties.Fetch(value.GetType(), Ignore))
-                stringBuilder.Append($"{this.Factory.GetConverter(property.PropertyType, this.Index).Serialize(property.GetValue(value), abstractionInterfaceDictionary)}{(char)this.Index}");
-            return stringBuilder.ToString().Trim((char)this.Index);
+                stringBuilder.Append($"{this.HelpToSerialize(property.PropertyType, property.GetValue(value))}{this.IndexAsChar}");
+            return stringBuilder.ToString().Trim(this.IndexAsChar);
         }
 
-        internal override dynamic Deserialize(Type type, string value, IDictionary<int, string> antiAbstractionInterfaceDictionary)
+        internal override dynamic Deserialize(Type type, string value)
         {
             if (value == null)
                 return default;
             dynamic startValue = Activator.CreateInstance(type);
             int count = 0;
-            string[] values = value.Split((char)this.Index);
+            string[] values = value.Split(this.IndexAsChar);
             foreach (PropertyInfo property in Properties.Fetch(type, Ignore))
             {
                 if (count >= values.Length)
                     break;
-                property.SetValue(startValue, this.Factory.GetConverter(property.PropertyType, this.Index).Deserialize(property.PropertyType, values[count], antiAbstractionInterfaceDictionary));
+                property.SetValue(startValue, this.HelpToDeserialize(property.PropertyType, values[count]));
                 count++;
+#warning mettere ++ nel values sopra
             }
             return startValue;
         }

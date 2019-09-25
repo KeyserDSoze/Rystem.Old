@@ -7,6 +7,6 @@ namespace Rystem.Conversion
 
     internal interface IConverterFactory
     {
-        Converter GetConverter(Type valueType, int index, bool comeFromAbstract = false);
+        Converter GetConverter(Type valueType, int index, Converter caller);
     }
 }

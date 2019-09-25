@@ -7,24 +7,25 @@ namespace Rystem.Conversion
 {
     internal class AbstractInterfaceConverter : Converter
     {
-        public AbstractInterfaceConverter(IConverterFactory factory, int index) : base(factory, index) { }
-        private static string AbstractionInterface = ConverterConstant.AbstractionInterface.ToString();
-        internal override dynamic Deserialize(Type type, string value, IDictionary<int, string> antiAbstractionInterfaceDictionary)
+        public AbstractInterfaceConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
+        internal override dynamic Deserialize(Type type, string value)
         {
-            string[] values = value.ToMyIndexSplit(ConverterConstant.AbstractionInterface);
-            Type toCreate = Type.GetType(antiAbstractionInterfaceDictionary[int.Parse(values[0])]);
-            return this.Factory.GetConverter(toCreate, this.Index, true).Deserialize(toCreate, values[1], antiAbstractionInterfaceDictionary);
+            string[] values = value.Split(this.AbstractionInterface);
+            return this.HelpToDeserialize(this.GetAbstractionInterfaceImplementation(values[0]), values[1]);
         }
 
-        internal override string Serialize(object value, IDictionary<string, int> abstractionInterfaceDictionary)
+        internal override string Serialize(object value)
+            => $"{this.SetAbstractionInterface(value.GetType())}{(this.AbstractionInterface)}{this.HelpToSerialize(value.GetType(), value)}";
+        private string SetAbstractionInterface(Type type)
         {
-            StringBuilder builder = new StringBuilder();
-            string assemblyName = value.GetType().AssemblyQualifiedName;
-            if (!abstractionInterfaceDictionary.ContainsKey(assemblyName))
-                abstractionInterfaceDictionary.Add(assemblyName, abstractionInterfaceDictionary.Count);
-            builder.Append($"{abstractionInterfaceDictionary[assemblyName]}{ConverterConstant.AbstractionInterface}");
-            builder.Append(this.Factory.GetConverter(value.GetType(), this.Index, true).Serialize(value, abstractionInterfaceDictionary));
-            return builder.ToString();
+            string assemblyName = type.AssemblyQualifiedName;
+            if (!this.AbstractionInterfaceMapping.ContainsKey(assemblyName))
+                this.AbstractionInterfaceMapping.Add(assemblyName, this.AbstractionInterfaceMapping.Count.ToString());
+            return this.AbstractionInterfaceMapping[assemblyName];
+        }
+        private Type GetAbstractionInterfaceImplementation(string value)
+        {
+            return Type.GetType(this.AbstractionInterfaceMapping[value]);
         }
     }
 }
