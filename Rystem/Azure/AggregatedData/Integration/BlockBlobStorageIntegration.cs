@@ -44,16 +44,7 @@ namespace Rystem.Azure.AggregatedData
             {
                 Name = cloudBlob.Name,
                 Stream = await BlobStorageBaseIntegration.ReadAsync(cloudBlob),
-#warning Aggiungere anche tutte le altre proprietà in set nel costruttore
-                Properties = new AggregatedDataProperties()
-                {
-                    CacheControl = cloudBlob.Properties.CacheControl,
-                    ContentDisposition = cloudBlob.Properties.ContentDisposition,
-                    ContentEncoding = cloudBlob.Properties.ContentEncoding,
-                    ContentLanguage = cloudBlob.Properties.ContentLanguage,
-                    ContentMD5 = cloudBlob.Properties.ContentMD5,
-                    ContentType = cloudBlob.Properties.ContentType,
-                }
+                Properties = cloudBlob.Properties.ToAggregatedDataProperties()
             });
         }
 

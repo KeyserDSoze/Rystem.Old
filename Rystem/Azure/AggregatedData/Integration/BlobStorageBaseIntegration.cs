@@ -82,5 +82,32 @@ namespace Rystem.Azure.AggregatedData.Integration
             Stream stream = new MemoryStream(fileByte);
             return stream;
         }
+        internal static AggregatedDataProperties ToAggregatedDataProperties(this BlobProperties blobProperties)
+        {
+            return new AggregatedDataProperties(blobProperties.BlobTierLastModifiedTime,
+                blobProperties.BlobTierInferred,
+                blobProperties.IsIncrementalCopy,
+                blobProperties.IsServerEncrypted,
+                blobProperties.AppendBlobCommittedBlockCount,
+                blobProperties.PageBlobSequenceNumber,
+                (int)blobProperties.LeaseDuration,
+                (int)blobProperties.LeaseState,
+                (int)blobProperties.LeaseStatus,
+                blobProperties.LastModified,
+                blobProperties.Created,
+                blobProperties.ETag,
+                blobProperties.DeletedTime,
+                blobProperties.Length,
+                blobProperties.RemainingDaysBeforePermanentDelete
+                )
+            {
+                CacheControl = blobProperties.CacheControl,
+                ContentDisposition = blobProperties.ContentDisposition,
+                ContentEncoding = blobProperties.ContentEncoding,
+                ContentLanguage = blobProperties.ContentLanguage,
+                ContentMD5 = blobProperties.ContentMD5,
+                ContentType = blobProperties.ContentType,
+            };
+        }
     }
 }

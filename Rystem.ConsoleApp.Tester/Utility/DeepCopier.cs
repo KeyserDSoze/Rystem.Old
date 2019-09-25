@@ -11,26 +11,34 @@ namespace Rystem.ZConsoleApp.Tester.Utility
         {
             try
             {
-                //Test test = new Test("Bird")
-                //{
-                //    Bird = new Bird(new List<Test>() { new Test("A"), new Test("B") })
-                //    {
-                //        X = 4
-                //    },
-                   
-                //};
-                //Test test2 = test.DeepCopy();
-                //Console.WriteLine(test.Bird.Tests == test2.Bird.Tests);
-                //Console.WriteLine(test.Bird.Tests == test.Bird.Tests);
-                //Console.WriteLine(test2.Bird.Tests == test2.Bird.Tests);
+                Test test = new Test("Bird")
+                {
+                    Bird = new Bird(new List<Test>() { new Test("A"), new Test("B") })
+                    {
+                        X = 4
+                    },
+
+                };
+                Test test2 = test.DeepCopy();
+                if (test.Bird.Tests == test2.Bird.Tests)
+                    return false;
+                if (test.Bird.Tests != test.Bird.Tests)
+                    return false;
+                if (test2.Bird.Tests != test2.Bird.Tests)
+                    return false;
                 Dafne dafne = new Dafne()
                 {
                     Dictionary = new Dictionary<string, string>() { { "A", "B" } }
                 };
                 Dafne dafne2 = dafne.DeepCopy();
-                Console.WriteLine(dafne.Ale == dafne2.Ale);
-                Console.WriteLine(dafne.Ale == dafne.Ale);
-                Console.WriteLine(dafne2.Ale == dafne2.Ale);
+                if (dafne.Ale != dafne2.Ale)
+                    return false;
+                if (dafne.Dictionary == dafne2.Dictionary)
+                    return false;
+                if (dafne.Dictionary != dafne.Dictionary)
+                    return false;
+                if (dafne2.Dictionary != dafne2.Dictionary)
+                    return false;
             }
             catch (Exception er)
             {

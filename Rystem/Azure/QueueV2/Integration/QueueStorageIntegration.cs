@@ -20,6 +20,7 @@ namespace Rystem.Azure.Queue
         }
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
+            await Task.Delay(0);
             throw new NotImplementedException("Storage queue doesn't allow this operation.");
         }
 
@@ -37,11 +38,13 @@ namespace Rystem.Azure.Queue
 
         public async Task<long> SendScheduledAsync(IQueueMessage message, int delayInSeconds)
         {
+            await Task.Delay(0);
             throw new NotImplementedException("Storage queue doesn't allow this operation.");
         }
 
         public async Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueueMessage> messages, int delayInSeconds)
         {
+            await Task.Delay(0);
             throw new NotImplementedException("Storage queue doesn't allow this operation.");
         }
     }

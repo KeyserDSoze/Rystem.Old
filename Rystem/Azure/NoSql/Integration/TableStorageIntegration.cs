@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.NoSql
 {
-    public class NoTableStorageProperty : Attribute { }
     internal class TableStorageIntegration<TEntity> : INoSqlIntegration<TEntity>
         where TEntity : INoSqlStorage
     {

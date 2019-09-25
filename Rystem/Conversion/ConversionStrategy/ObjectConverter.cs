@@ -31,9 +31,7 @@ namespace Rystem.Conversion
             {
                 if (count >= values.Length)
                     break;
-                property.SetValue(startValue, this.HelpToDeserialize(property.PropertyType, values[count]));
-                count++;
-#warning mettere ++ nel values sopra
+                property.SetValue(startValue, this.HelpToDeserialize(property.PropertyType, values[count++]));
             }
             return startValue;
         }
