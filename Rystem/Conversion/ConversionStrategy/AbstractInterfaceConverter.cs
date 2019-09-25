@@ -11,10 +11,9 @@ namespace Rystem.Conversion
         private static string AbstractionInterface = ConverterConstant.AbstractionInterface.ToString();
         internal override dynamic Deserialize(Type type, string value, IDictionary<int, string> antiAbstractionInterfaceDictionary)
         {
-            string[] values = value.Split(ConverterConstant.AbstractionInterface);
+            string[] values = value.ToMyIndexSplit(ConverterConstant.AbstractionInterface);
             Type toCreate = Type.GetType(antiAbstractionInterfaceDictionary[int.Parse(values[0])]);
-            string remains = string.Join(AbstractionInterface, values.Skip(1));
-            return this.Factory.GetConverter(toCreate, this.Index, true).Deserialize(toCreate, remains, antiAbstractionInterfaceDictionary);
+            return this.Factory.GetConverter(toCreate, this.Index, true).Deserialize(toCreate, values[1], antiAbstractionInterfaceDictionary);
         }
 
         internal override string Serialize(object value, IDictionary<string, int> abstractionInterfaceDictionary)

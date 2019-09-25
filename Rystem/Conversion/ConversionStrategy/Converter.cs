@@ -32,7 +32,7 @@ namespace Rystem.Conversion
         internal abstract dynamic Deserialize(Type type, string value, IDictionary<int, string> antiAbstractionInterfaceDictionary);
         public dynamic StartDeserialization(Type type, string value)
         {
-            string[] values = value.Split(ConverterConstant.AbstractionInterfaceDictionary);
+            string[] values = value.ToMySplit(ConverterConstant.AbstractionInterfaceDictionary);
             IDictionary<int, string> antiAbstractionInterfaceDictionary = new Dictionary<int, string>();
             if (values.Length > 1)
                 antiAbstractionInterfaceDictionary = (new DictionaryConverter(this.Factory, this.Index).Deserialize(typeof(Dictionary<string, int>), values[1], antiAbstractionInterfaceDictionary) as IDictionary<string, int>).ToDictionary(x => x.Value, x => x.Key);

@@ -6,11 +6,11 @@ namespace Rystem.Conversion
 {
     internal static class ConverterConstant
     {
-        internal static char AbstractionInterfaceDictionary = (char)65535;
-        internal static char AbstractionInterface = (char)65534;
-        internal static char Enumerable = (char)65533;
-        internal static char Dictionarable = (char)65532;
-        internal static char ArrayLength = (char)65531;
-        internal static char Start = (char)60000;
+        internal static int AbstractionInterfaceDictionary = 65535;
+        internal static int AbstractionInterface = 64900;
+        internal static int Enumerable = 64800;
+        internal static int Dictionarable = 64700;
+        internal static int ArrayLength = 64600;
+        internal static int Start = 60000;
     }
 }

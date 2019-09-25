@@ -13,9 +13,9 @@ namespace Rystem.Conversion
         {
             IDictionary dictionary = (IDictionary)Activator.CreateInstance(type);
             Type[] keyValueType = type.GetGenericArguments();
-            foreach (string val in value.Split(ConverterConstant.Enumerable))
+            foreach (string val in value.ToMySplit(ConverterConstant.Enumerable))
             {
-                string[] keyValue = val.Split(ConverterConstant.Dictionarable);
+                string[] keyValue = val.ToMySplit(ConverterConstant.Dictionarable);
                 dictionary.Add(
                     this.Factory.GetConverter(keyValueType[0], this.Index).Deserialize(keyValueType[0], keyValue[0], antiAbstractionInterfaceDictionary),
                     this.Factory.GetConverter(keyValueType[1], this.Index).Deserialize(keyValueType[1], keyValue[1], antiAbstractionInterfaceDictionary)
@@ -33,7 +33,7 @@ namespace Rystem.Conversion
                 string value = this.Factory.GetConverter(entry.Value.GetType(), this.Index).Serialize(entry.Value, abstractionInterfaceDictionary);
                 stringBuilder.Append($"{key}{ConverterConstant.Dictionarable}{value}{ConverterConstant.Enumerable}");
             }
-            return stringBuilder.ToString().Trim(ConverterConstant.Enumerable);
+            return stringBuilder.ToString().ToMyTrim(ConverterConstant.Enumerable);
         }
     }
 }

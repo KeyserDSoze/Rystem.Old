@@ -16,7 +16,7 @@ namespace Rystem.Conversion
                 return new DictionaryConverter(this.Factory, this.Index).Deserialize(type, value, antiAbstractionInterfaceDictionary);
             IList list = (IList)Activator.CreateInstance(type);
             Type genericType = type.GetGenericArguments().First();
-            foreach (string val in value.Split(ConverterConstant.Enumerable))
+            foreach (string val in value.ToMySplit(ConverterConstant.Enumerable))
                 list.Add(this.Factory.GetConverter(genericType, this.Index).Deserialize(genericType, val, antiAbstractionInterfaceDictionary));
             return list;
         }
@@ -30,7 +30,7 @@ namespace Rystem.Conversion
             {
                 stringBuilder.Append($"{this.Factory.GetConverter(value.GetType(), this.Index).Serialize(value, abstractionInterfaceDictionary)}{ConverterConstant.Enumerable}");
             }
-            return stringBuilder.ToString().Trim(ConverterConstant.Enumerable);
+            return stringBuilder.ToString().ToMyTrim(ConverterConstant.Enumerable);
         }
     }
 }

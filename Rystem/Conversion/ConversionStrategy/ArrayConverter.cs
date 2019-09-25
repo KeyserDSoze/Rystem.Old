@@ -11,9 +11,9 @@ namespace Rystem.Conversion
         internal override dynamic Deserialize(Type type, string value, IDictionary<int, string> antiAbstractionInterfaceDictionary)
         {
             Type elementType = type.GetElementType();
-            string[] splitted = value.Split(ConverterConstant.ArrayLength);
-            Array array = (Array)Array.CreateInstance(elementType, int.Parse(splitted[0]));
-            string[] values = splitted[1].Split(ConverterConstant.Enumerable);
+            string[] splitted = value.ToMyIndexSplit(ConverterConstant.ArrayLength);
+            Array array = Array.CreateInstance(elementType, int.Parse(splitted[0]));
+            string[] values = splitted[1].ToMySplit(ConverterConstant.Enumerable);
             for (int i = 0; i < array.Length; i++)
             {
                 if (i >= values.Length)
