@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem.Interfaces</id>
-    <version>3.8.1</version>
+    <version>4.0.0</version>
     <title>Rystem Interfaces</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -10,15 +10,15 @@
     <projectUrl>http://icon.com</projectUrl>
     <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Interfaces of Rystem</description>
+    <description>
+      Interfaces for Rystem, to prevent installation of Rystem when you need only the interfaces to use it.
+      You need to implemente Rystem only when the rystem engine works.
+    </description>
     <releaseNotes>
-      - First Release.
+      - Fourth Release.
     </releaseNotes>
-    <copyright>Copyright 2019</copyright>
-    <tags>Rystem Cache Conversion Csv</tags>
-    <dependencies>
-      <dependency id="WindowsAzure.Storage" version="9.3.3" />
-    </dependencies>
+    <copyright>Copyright 2019-2026</copyright>
+    <tags>Rystem Interfaces</tags>
     <references>
       <reference file="Rystem.Interfaces.dll" />
     </references>

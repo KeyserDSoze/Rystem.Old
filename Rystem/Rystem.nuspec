@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem</id>
-    <version>3.8.1</version>
+    <version>4.0.0</version>
     <title>Rystem</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -10,17 +10,28 @@
     <projectUrl>http://icon.com</projectUrl>
     <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Utility to implement: Multiton with Redis Cache or Table Storage, Csv conversion as Newtonsoft, EventHub and ServiceBus.</description>
+    <description>
+      Multiton-Cache with RedisCache, TableStorage or BlobStorage.
+      Csv conversion like Newtonsoft for json.
+      EventHub sending simplifier.
+      ServiceBus sending simplifier.
+      QueueStorage sending simplifier.
+      Manage of aggregated data through BlobStorage (BlockBlob, AppendBlob, and PageBlob).
+      NoSql simplifier with TableStorage.
+      Framework for azure function to implement your own special StreamAnalytics.
+      Utility: Real random number, All types in assembler ran, Mime mapping, Deep copy, Latency and Properties Manager for Reflection.
+      Crypting: Aes helper, Sha256 helper.
+    </description>
     <releaseNotes>
-      - Third Release.
+      - Fourth Release.
     </releaseNotes>
-    <copyright>Copyright 2019</copyright>
-    <tags>Rystem Cache Conversion Csv</tags>
+    <copyright>Copyright 2019-2026</copyright>
+    <tags>Rystem Cache Multiton Azure Utility Stream Analytics Crypting</tags>
     <dependencies>
-      <dependency id="Rystem.Interfaces" version="3.8.1" />
-      <dependency id="Newtonsoft.Json" version="10.0.2" />
-      <dependency id="Microsoft.Azure.EventHubs" version="3.0.0" />
-      <dependency id="Microsoft.Azure.ServiceBus" version="3.4.0" />
+      <dependency id="Rystem.Interfaces" version="4.0.0" />
+      <dependency id="Newtonsoft.Json" version="10.0.3" />
+      <dependency id="Microsoft.Azure.EventHubs" version="4.1.0" />
+      <dependency id="Microsoft.Azure.ServiceBus" version="4.0.0" />
       <dependency id="StackExchange.Redis" version="2.0.601" />
       <dependency id="WindowsAzure.Storage" version="9.3.3" />
     </dependencies>
