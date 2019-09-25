@@ -37,6 +37,21 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                     A = "AHalo2",
                     C = 45,
                     D = 4
+                },
+                Array = new Halo2[2]
+                {
+                    new Halo2()
+                    {
+                        A = "dddddd4",
+                        C = 9001,
+                        D = 99001
+                    },
+                    new Halo2()
+                    {
+                        A = "dddddd5",
+                        C = 9005,
+                        D = 99005
+                    }
                 }
             };
             string salo = CsvConvert.Serialize(halo);
@@ -57,6 +72,7 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
         public IHalo2 Halo2 { get; set; }
         public IList<int> Integers { get; set; }
         public IDictionary<int, IHalo2> Halos2 { get; set; }
+        public IHalo2[] Array { get; set; }
     }
     public interface IHalo2
     {

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public class AbstractInterfaceConverter : Converter
+    internal class AbstractInterfaceConverter : Converter
     {
         public AbstractInterfaceConverter(IConverterFactory factory, int index) : base(factory, index) { }
         private static string AbstractionInterface = ConverterConstant.AbstractionInterface.ToString();

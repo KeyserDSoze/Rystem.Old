@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public class SerializerFactory : IConverterFactory
+    internal class SerializerFactory : IConverterFactory
     {
         public Converter GetConverter(Type objectType, int index, bool comeFromAbstract = false)
         {
@@ -14,6 +14,8 @@ namespace Rystem.Conversion
                 return new PrimitiveConverter(this, index - 1);
             else if (!comeFromAbstract && (objectType.IsAbstract || objectType.IsInterface || objectType.GetInterfaces().Length > 0 || objectType.BaseType.IsAbstract))
                 return new AbstractInterfaceConverter(this, index);
+            else if (objectType.IsArray)
+                return new ArrayConverter(this, index - 1);
             else if (typeof(IEnumerable).IsAssignableFrom(objectType))
                 return new EnumerableConverter(this, index - 1);
             else

@@ -5,7 +5,7 @@ using System.Text;
 namespace Rystem.Conversion
 {
 
-    public interface IConverterFactory
+    internal interface IConverterFactory
     {
         Converter GetConverter(Type valueType, int index, bool comeFromAbstract = false);
     }

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public class EnumerableConverter : Converter
+    internal class EnumerableConverter : Converter
     {
         public EnumerableConverter(IConverterFactory factory, int index) : base(factory, index) { }
 

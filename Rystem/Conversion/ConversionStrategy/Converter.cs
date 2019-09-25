@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public abstract class Converter
+    internal abstract class Converter
     {
         private protected IConverterFactory Factory;
         private protected int Index;

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public class PrimitiveConverter : Converter
+    internal class PrimitiveConverter : Converter
     {
         public PrimitiveConverter(IConverterFactory factory, int index) : base(factory, index) { }
 

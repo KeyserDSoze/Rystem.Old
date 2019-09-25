@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public class DictionaryConverter : Converter
+    internal class DictionaryConverter : Converter
     {
         public DictionaryConverter(IConverterFactory factory, int index) : base(factory, index) { }
 

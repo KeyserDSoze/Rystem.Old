@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public class ObjectConverter : Converter
+    internal class ObjectConverter : Converter
     {
         public ObjectConverter(IConverterFactory factory, int index) : base(factory, index) { }
         private static readonly Type Ignore = typeof(CsvIgnore);
