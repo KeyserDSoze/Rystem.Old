@@ -35,6 +35,9 @@ namespace System
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity)
             where TEntity : IAggregatedData
            => await Manager(entity.GetType()).ExistsAsync(entity);
+        public static async Task<TEntity> FetchAsync<TEntity>(this TEntity entity)
+            where TEntity : IAggregatedData
+           => await Manager(entity.GetType()).FetchAsync<TEntity>(entity);
         public static async Task<IEnumerable<TEntity>> ListAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null)
             where TEntity : IAggregatedData
            => (await Manager(entity.GetType()).ListAsync<TEntity>(entity, prefix, takeCount));
@@ -48,6 +51,9 @@ namespace System
         public static string Write<TEntity>(this TEntity entity)
         where TEntity : IAggregatedData
        => WriteAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static TEntity Fetch<TEntity>(this TEntity entity)
+       where TEntity : IAggregatedData
+      => FetchAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();
         public static bool Delete<TEntity>(this TEntity entity)
             where TEntity : IAggregatedData
            => DeleteAsync(entity).ConfigureAwait(false).GetAwaiter().GetResult();

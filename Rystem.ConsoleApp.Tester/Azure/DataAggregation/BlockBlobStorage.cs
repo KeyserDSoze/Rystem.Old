@@ -37,6 +37,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             meatball.A = 6;
             meatball.B = "dsadsadsa";
             meatball.Write();
+            if (meatball.Fetch().A != meatball.A)
+                return false;
             IList<Meatball2> meatball2 = meatball.List().ToList();
             if (meatball2.Count != 1)
                 return false;
