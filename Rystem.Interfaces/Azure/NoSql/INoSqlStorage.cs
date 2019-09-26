@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure.NoSql
 {
-    public interface INoSqlStorage
+    public interface INoSql
     {
         string PartitionKey { get; set; }
         string RowKey { get; set; }

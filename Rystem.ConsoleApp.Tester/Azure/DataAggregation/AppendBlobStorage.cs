@@ -47,7 +47,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         static Meatball()
         {
             AggregatedDataInstaller.Configure(
-                new DataAggregationConfiguration<Meatball>()
+                new AggregatedDataConfiguration<Meatball>()
                 {
 
                     ConnectionString = StorageConnectionString,

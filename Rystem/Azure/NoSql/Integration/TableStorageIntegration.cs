@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.NoSql
 {
     internal class TableStorageIntegration<TEntity> : INoSqlIntegration<TEntity>
-        where TEntity : INoSqlStorage
+        where TEntity : INoSql
     {
         private CloudTable Context;
         private IList<PropertyInfo> Properties = new List<PropertyInfo>();
@@ -39,7 +39,7 @@ namespace Rystem.Azure.NoSql
             }
         }
         private class DummyTableStorage : TableEntity { }
-        public async Task<bool> DeleteAsync(INoSqlStorage entity)
+        public async Task<bool> DeleteAsync(INoSql entity)
         {
             TableOperation operation = TableOperation.Delete(new DummyTableStorage()
             {
@@ -50,14 +50,14 @@ namespace Rystem.Azure.NoSql
             return (await this.Context.ExecuteAsync(operation)).HttpStatusCode == 204;
         }
 
-        public async Task<bool> ExistsAsync(INoSqlStorage entity)
+        public async Task<bool> ExistsAsync(INoSql entity)
         {
             TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entity.PartitionKey, entity.RowKey);
             TableResult result = await this.Context.ExecuteAsync(operation);
             return result.Result != null;
         }
 
-        public async Task<IList<TEntity>> GetAsync(INoSqlStorage entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null)
+        public async Task<IList<TEntity>> GetAsync(INoSql entity, Expression<Func<INoSql, bool>> expression = null, int? takeCount = null)
         {
             List<TEntity> items = new List<TEntity>();
             TableContinuationToken token = null;
@@ -83,13 +83,13 @@ namespace Rystem.Azure.NoSql
             }
         }
 
-        public async Task<bool> UpdateAsync(INoSqlStorage entity)
+        public async Task<bool> UpdateAsync(INoSql entity)
         {
             TableOperation operation = TableOperation.InsertOrReplace(WriteEntity(entity));
             return (await this.Context.ExecuteAsync(operation)).HttpStatusCode == 204;
         }
         private static DateTime DateTimeDefault = default;
-        private DynamicTableEntity WriteEntity(INoSqlStorage entity)
+        private DynamicTableEntity WriteEntity(INoSql entity)
         {
             DynamicTableEntity dummy = new DynamicTableEntity();
             dummy.PartitionKey = entity.PartitionKey;

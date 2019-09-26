@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.NoSql
 {
     internal interface INoSqlIntegration<TEntity>
-        where TEntity : INoSqlStorage
+        where TEntity : INoSql
     {
-        Task<bool> ExistsAsync(INoSqlStorage entity);
-        Task<IList<TEntity>> GetAsync(INoSqlStorage entity, Expression<Func<INoSqlStorage, bool>> expression = null, int? takeCount = null);
-        Task<bool> UpdateAsync(INoSqlStorage entity);
-        Task<bool> DeleteAsync(INoSqlStorage entity);
+        Task<bool> ExistsAsync(INoSql entity);
+        Task<IList<TEntity>> GetAsync(INoSql entity, Expression<Func<INoSql, bool>> expression = null, int? takeCount = null);
+        Task<bool> UpdateAsync(INoSql entity);
+        Task<bool> DeleteAsync(INoSql entity);
     }
 }

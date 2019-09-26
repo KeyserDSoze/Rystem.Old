@@ -14,9 +14,9 @@ namespace Rystem.Azure.AggregatedData
         where TEntity : IAggregatedData
     {
         private CloudBlobContainer Context;
-        private IDataLakeWriter Writer;
+        private IAggregatedDataWriter<TEntity> Writer;
         private IAggregatedDataListReader<TEntity> ListReader;
-        internal PageBlobStorageIntegration(DataAggregationConfiguration<TEntity> configuration)
+        internal PageBlobStorageIntegration(AggregatedDataConfiguration<TEntity> configuration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
@@ -73,7 +73,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<bool> AppendAsync(IAggregatedData entity, long offset = 0)
         {
             CloudPageBlob pageBlob = this.Context.GetPageBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write(entity);
+            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
             if (!await pageBlob.ExistsAsync())
                 lock (TrafficLight)
                     if (!pageBlob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult())
@@ -94,7 +94,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<string> WriteAsync(IAggregatedData entity)
         {
             ICloudBlob cloudBlob = this.Context.GetBlockBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write(entity);
+            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
             await cloudBlob.UploadFromStreamAsync(dummy.Stream);
             string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
             await BlobStorageBaseIntegration.SetBlobPropertyIfNecessary(entity, cloudBlob, dummy);

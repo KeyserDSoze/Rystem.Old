@@ -14,10 +14,10 @@ namespace Rystem.Azure.AggregatedData
         where TEntity : IAggregatedData
     {
         private CloudBlobContainer Context;
-        private IDataLakeWriter Writer;
+        private IAggregatedDataWriter<TEntity> Writer;
         private IAggregatedDataListReader<TEntity> ListReader;
         private const int MaximumAttempt = 3;
-        internal AppendBlobStorageIntegration(DataAggregationConfiguration<TEntity> configuration)
+        internal AppendBlobStorageIntegration(AggregatedDataConfiguration<TEntity> configuration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
@@ -73,7 +73,7 @@ namespace Rystem.Azure.AggregatedData
         {
             int attempt = 0;
             CloudAppendBlob appendBlob = this.Context.GetAppendBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write(entity);
+            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
             do
             {
                 try
@@ -110,7 +110,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<string> WriteAsync(IAggregatedData entity)
         {
             ICloudBlob cloudBlob = this.Context.GetBlockBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write(entity);
+            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
             await cloudBlob.UploadFromStreamAsync(dummy.Stream);
             string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
             await BlobStorageBaseIntegration.SetBlobPropertyIfNecessary(entity, cloudBlob, dummy);

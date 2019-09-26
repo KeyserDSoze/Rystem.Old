@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
-    internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IDataLakeWriter
+    internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
           where TEntity : IAggregatedData
     {
         private char SplittingChar;
@@ -89,7 +89,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             return aggregatedDatas;
         }
 
-        public AggregatedDataDummy Write(IAggregatedData entity)
+        public AggregatedDataDummy Write(TEntity entity)
         {
             return new AggregatedDataDummy()
             {

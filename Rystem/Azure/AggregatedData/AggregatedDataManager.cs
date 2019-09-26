@@ -13,7 +13,7 @@ namespace Rystem.Azure.AggregatedData
         private readonly IAggregatedDataIntegration<TEntity> Integration;
         public AggregatedDataManager()
         {
-            DataAggregationConfiguration<TEntity> configuration = AggregatedDataInstaller.GetConfiguration<TEntity>();
+            AggregatedDataConfiguration<TEntity> configuration = AggregatedDataInstaller.GetConfiguration<TEntity>();
             switch (configuration.Type)
             {
                 case AggregatedDataType.BlockBlob:

@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             crossTest.Update();
         }
     }
-    public class CrossTest : IQueueMessage, INoSqlStorage, IMultiton
+    public class CrossTest : IQueue, INoSql, IMultiton
     {
         public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

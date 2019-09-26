@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure.Queue
 {
-    public interface IQueueMessage
+    public interface IQueue
     {
 
     }

@@ -15,8 +15,8 @@ namespace Rystem.Azure.AggregatedData
     {
         private CloudBlobContainer Context;
         private IAggregatedDataReader<TEntity> Reader;
-        private IDataLakeWriter Writer;
-        internal BlockBlobStorageIntegration(DataAggregationConfiguration<TEntity> configuration)
+        private IAggregatedDataWriter<TEntity> Writer;
+        internal BlockBlobStorageIntegration(AggregatedDataConfiguration<TEntity> configuration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
@@ -79,7 +79,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<string> WriteAsync(IAggregatedData entity)
         {
             ICloudBlob cloudBlob = this.Context.GetBlockBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write(entity);
+            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
             await cloudBlob.UploadFromStreamAsync(dummy.Stream);
             string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
             await BlobStorageBaseIntegration.SetBlobPropertyIfNecessary(entity, cloudBlob, dummy);

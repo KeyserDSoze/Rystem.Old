@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Azure.AggregatedData
 {
-    public class DataAggregationConfiguration<Entity> : IRystemConfiguration
+    public class AggregatedDataConfiguration<Entity> : IRystemConfiguration
         where Entity : IAggregatedData
     {
         public string ConnectionString { get; set; }
@@ -13,19 +13,19 @@ namespace Rystem.Azure.AggregatedData
         public AggregatedDataType Type { get; set; }
         public IAggregatedDataReader<Entity> Reader { get; set; }
         public IAggregatedDataListReader<Entity> ListReader { get; set; }
-        public IDataLakeWriter Writer { get; set; }
+        public IAggregatedDataWriter<Entity> Writer { get; set; }
     }
     public static class AggregatedDataInstaller
     {
-        public static void Configure<TEntity>(DataAggregationConfiguration<TEntity> configuration)
+        public static void Configure<TEntity>(AggregatedDataConfiguration<TEntity> configuration)
             where TEntity : IAggregatedData
         {
-            Installer<DataAggregationConfiguration<TEntity>, TEntity>.Configure(configuration, Installation.Default);
+            Installer<AggregatedDataConfiguration<TEntity>, TEntity>.Configure(configuration, Installation.Default);
         }
-        public static DataAggregationConfiguration<TEntity> GetConfiguration<TEntity>()
+        public static AggregatedDataConfiguration<TEntity> GetConfiguration<TEntity>()
             where TEntity : IAggregatedData
         {
-            return Installer<DataAggregationConfiguration<TEntity>, TEntity>.GetConfiguration(Installation.Default);
+            return Installer<AggregatedDataConfiguration<TEntity>, TEntity>.GetConfiguration(Installation.Default);
         }
     }
     public enum AggregatedDataType

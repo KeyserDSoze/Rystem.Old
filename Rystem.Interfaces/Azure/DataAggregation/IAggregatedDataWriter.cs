@@ -4,8 +4,9 @@ using System.Text;
 
 namespace Rystem.Azure.AggregatedData
 {
-    public interface IDataLakeWriter
+    public interface IAggregatedDataWriter<TEntity>
+        where TEntity : IAggregatedData
     {
-        AggregatedDataDummy Write(IAggregatedData entity);
+        AggregatedDataDummy Write(TEntity entity);
     }
 }

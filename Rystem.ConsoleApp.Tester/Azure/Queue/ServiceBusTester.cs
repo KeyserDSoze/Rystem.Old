@@ -57,7 +57,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             return true;
         }
     }
-    public abstract class MyAbstractionOfServiceBus : IQueueMessage
+    public abstract class MyAbstractionOfServiceBus : IQueue
     {
         public string A { get; set; }
         public MyObject B { get; set; }

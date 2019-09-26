@@ -24,25 +24,25 @@ namespace Rystem.Azure.Queue
             throw new NotImplementedException("Storage queue doesn't allow this operation.");
         }
 
-        public async Task<bool> SendAsync(IQueueMessage message)
+        public async Task<bool> SendAsync(IQueue message)
         {
             await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToJson()));
             return true;
         }
 
-        public async Task<bool> SendBatchAsync(IEnumerable<IQueueMessage> messages)
+        public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages)
         {
             await this.Client.AddMessageAsync(new CloudQueueMessage(messages.ToJson()));
             return true;
         }
 
-        public async Task<long> SendScheduledAsync(IQueueMessage message, int delayInSeconds)
+        public async Task<long> SendScheduledAsync(IQueue message, int delayInSeconds)
         {
             await Task.Delay(0);
             throw new NotImplementedException("Storage queue doesn't allow this operation.");
         }
 
-        public async Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueueMessage> messages, int delayInSeconds)
+        public async Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds)
         {
             await Task.Delay(0);
             throw new NotImplementedException("Storage queue doesn't allow this operation.");

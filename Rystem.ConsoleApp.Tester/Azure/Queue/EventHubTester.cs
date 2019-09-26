@@ -33,7 +33,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             return true;
         }
     }
-    public abstract class MyAbstractionEventHub : IQueueMessage
+    public abstract class MyAbstractionEventHub : IQueue
     {
 
     }

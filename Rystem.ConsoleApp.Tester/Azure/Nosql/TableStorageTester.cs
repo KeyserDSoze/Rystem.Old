@@ -43,7 +43,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             return true;
         }
     }
-    public class Example : INoSqlStorage
+    public class Example : INoSql
     {
         static Example() => NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
         public string PartitionKey { get; set; }

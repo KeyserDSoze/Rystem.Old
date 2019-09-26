@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
-    internal class JsonDataManager<TEntity> : IAggregatedDataReader<TEntity>, IDataLakeWriter
+    internal class JsonDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
         where TEntity : IAggregatedData
     {
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
@@ -24,7 +24,7 @@ namespace Rystem.Azure.AggregatedData.Integration
                 return dataLake;
             }
         }
-        public AggregatedDataDummy Write(IAggregatedData entity)
+        public AggregatedDataDummy Write(TEntity entity)
         {
             return new AggregatedDataDummy()
             {
