@@ -16,7 +16,8 @@ namespace Rystem.Interfaces
             if (!DefaultContexts.ContainsKey(installerType.FullName))
             {
                 List<string> namesAsList = names?.ToList();
-                if (namesAsList.Count == 0) namesAsList.Add(installerType.Name);
+                if (namesAsList.Count == 0)
+                    namesAsList.Add(installerType.Name);
                 DefaultContexts.Add(installerType.FullName, new InternalConnection()
                 {
                     ConnectionString = connectionString,

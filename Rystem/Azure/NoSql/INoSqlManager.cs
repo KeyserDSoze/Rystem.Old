@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
@@ -8,11 +9,11 @@ namespace Rystem.Azure.NoSql
 {
     internal interface INoSqlManager
     {
-        Task<bool> ExistsAsync(INoSql entity);
-        Task<IEnumerable<TNoSqlEntity>> FetchAsync<TNoSqlEntity>(INoSql entity, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
+        Task<bool> ExistsAsync(INoSql entity, Installation installation);
+        Task<IEnumerable<TNoSqlEntity>> FetchAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
             where TNoSqlEntity : INoSql;
-        Task<bool> UpdateAsync(INoSql entity);
-        Task<bool> DeleteAsync(INoSql entity);
-        string GetName();
+        Task<bool> UpdateAsync(INoSql entity, Installation installation);
+        Task<bool> DeleteAsync(INoSql entity, Installation installation);
+        string GetName(Installation installation);
     }
 }

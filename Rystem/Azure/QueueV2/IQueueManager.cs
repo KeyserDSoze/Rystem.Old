@@ -1,4 +1,5 @@
 ﻿using Rystem.Debug;
+using Rystem.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,13 +9,13 @@ namespace Rystem.Azure.Queue
 {
     internal interface IQueueManager
     {
-        Task<bool> SendAsync(IQueue message);
-        Task<long> SendScheduledAsync(IQueue message, int delayInSeconds);
-        Task<bool> DeleteScheduledAsync(long messageId);
-        Task<bool> SendBatchAsync(IEnumerable<IQueue> messages);
-        Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds);
-        Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds = 0);
-        Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds = 0);
-        string GetName();
+        Task<bool> SendAsync(IQueue message, Installation installation = Installation.Default);
+        Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, Installation installation = Installation.Default);
+        Task<bool> DeleteScheduledAsync(long messageId, Installation installation = Installation.Default);
+        Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, Installation installation = Installation.Default);
+        Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation = Installation.Default);
+        Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds = 0, Installation installation = Installation.Default);
+        Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds = 0, Installation installation = Installation.Default);
+        string GetName(Installation installation = Installation.Default);
     }
 }

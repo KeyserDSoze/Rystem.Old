@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -10,45 +11,47 @@ namespace Rystem.Azure.AggregatedData
     internal class AggregatedDataManager<TEntity> : IAggregatedDataManager
         where TEntity : IAggregatedData
     {
-        private readonly IAggregatedDataIntegration<TEntity> Integration;
-        private readonly AggregatedDataConfiguration<TEntity> AggregatedDataConfiguration;
+        private readonly IDictionary<Installation, IAggregatedDataIntegration<TEntity>> Integrations;
+        private readonly IDictionary<Installation, AggregatedDataConfiguration<TEntity>> AggregatedDataConfiguration;
         public AggregatedDataManager()
         {
+            Integrations = new Dictionary<Installation, IAggregatedDataIntegration<TEntity>>();
             AggregatedDataConfiguration = AggregatedDataInstaller.GetConfiguration<TEntity>();
-            switch (AggregatedDataConfiguration.Type)
-            {
-                case AggregatedDataType.BlockBlob:
-                    Integration = new BlockBlobStorageIntegration<TEntity>(AggregatedDataConfiguration);
-                    break;
-                case AggregatedDataType.AppendBlob:
-                    Integration = new AppendBlobStorageIntegration<TEntity>(AggregatedDataConfiguration);
-                    break;
-                case AggregatedDataType.PageBlob:
-                    Integration = new PageBlobStorageIntegration<TEntity>(AggregatedDataConfiguration);
-                    break;
-                case AggregatedDataType.DataLakeV2:
-                    throw new NotImplementedException("DataLake V2 not implemented.");
-                default:
-                    throw new InvalidOperationException($"Wrong type installed {AggregatedDataConfiguration.Type}");
-            }
+            foreach (KeyValuePair<Installation, AggregatedDataConfiguration<TEntity>> configuration in AggregatedDataConfiguration)
+                switch (configuration.Value.Type)
+                {
+                    case AggregatedDataType.BlockBlob:
+                        Integrations.Add(configuration.Key, new BlockBlobStorageIntegration<TEntity>(configuration.Value));
+                        break;
+                    case AggregatedDataType.AppendBlob:
+                        Integrations.Add(configuration.Key, new AppendBlobStorageIntegration<TEntity>(configuration.Value));
+                        break;
+                    case AggregatedDataType.PageBlob:
+                        Integrations.Add(configuration.Key, new PageBlobStorageIntegration<TEntity>(configuration.Value));
+                        break;
+                    case AggregatedDataType.DataLakeV2:
+                        throw new NotImplementedException("DataLake V2 not implemented.");
+                    default:
+                        throw new InvalidOperationException($"Wrong type installed {configuration.Value.Type}");
+                }
         }
-        public async Task<bool> DeleteAsync(IAggregatedData entity)
-            => await Integration.DeleteAsync(entity);
-        public async Task<bool> ExistsAsync(IAggregatedData entity)
-            => await Integration.ExistsAsync(entity);
-        public async Task<TEntityLake> FetchAsync<TEntityLake>(IAggregatedData entity)
+        public async Task<bool> DeleteAsync(IAggregatedData entity, Installation installation)
+            => await Integrations[installation].DeleteAsync(entity);
+        public async Task<bool> ExistsAsync(IAggregatedData entity, Installation installation)
+            => await Integrations[installation].ExistsAsync(entity);
+        public async Task<TEntityLake> FetchAsync<TEntityLake>(IAggregatedData entity, Installation installation)
             where TEntityLake : IAggregatedData
-            => (TEntityLake)(IAggregatedData)(await Integration.FetchAsync(entity));
-        public async Task<IEnumerable<TEntityLake>> ListAsync<TEntityLake>(IAggregatedData entity, string prefix = null, int? takeCount = null)
+            => (TEntityLake)(IAggregatedData)(await Integrations[installation].FetchAsync(entity));
+        public async Task<IEnumerable<TEntityLake>> ListAsync<TEntityLake>(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null)
             where TEntityLake : IAggregatedData
-            => (await Integration.ListAsync(entity, prefix, takeCount)).Select(x => (TEntityLake)(IAggregatedData)x);
-        public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix = null, int? takeCount = null)
-            => await Integration.SearchAsync(entity, prefix, takeCount);
-        public async Task<bool> AppendAsync(IAggregatedData entity, long offset = 0)
-            => await Integration.AppendAsync(entity, offset);
-        public async Task<string> WriteAsync(IAggregatedData entity)
-            => await Integration.WriteAsync(entity);
-        public string GetName()
-            => this.AggregatedDataConfiguration.Name;
+            => (await Integrations[installation].ListAsync(entity, prefix, takeCount)).Select(x => (TEntityLake)(IAggregatedData)x);
+        public async Task<IList<string>> SearchAsync(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null)
+            => await Integrations[installation].SearchAsync(entity, prefix, takeCount);
+        public async Task<bool> AppendAsync(IAggregatedData entity, Installation installation, long offset = 0)
+            => await Integrations[installation].AppendAsync(entity, offset);
+        public async Task<string> WriteAsync(IAggregatedData entity, Installation installation)
+            => await Integrations[installation].WriteAsync(entity);
+        public string GetName(Installation installation)
+            => this.AggregatedDataConfiguration[installation].Name;
     }
 }

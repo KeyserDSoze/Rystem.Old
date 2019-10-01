@@ -30,12 +30,12 @@ namespace Rystem
             else
                 throw new InvalidOperationException($"It already exists an installation for {FullName} in {installation}.");
         }
-        internal static TConfiguration GetConfiguration(Installation installation)
+        internal static IDictionary<Installation, TConfiguration> GetConfiguration()
         {
-            if (Contexts.ContainsKey(installation))
-                return Contexts[installation];
+            if (Contexts.Count > 0)
+                return Contexts;
             else if (Installer<TConfiguration>.DefaultConfiguration != null)
-                return Installer<TConfiguration>.DefaultConfiguration;
+                return new Dictionary<Installation, TConfiguration>() { { Installation.Default, Installer<TConfiguration>.DefaultConfiguration } };
             else
                 throw new NotImplementedException($"{FullName} never installed. Please use Install static method in static constructor of your class to set ConnectionString and names of table.");
             //throw new NotImplementedException($"Wrong installation type used {installation} instead {string.Join(",", Contexts[installerType.FullName][entity.FullName].Select(x => x.Key))}.");

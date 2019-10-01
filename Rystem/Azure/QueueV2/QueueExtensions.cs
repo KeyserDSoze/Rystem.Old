@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Rystem.Azure.Queue;
 using Rystem.Debug;
+using Rystem.Enums;
 using Rystem.Interfaces.Const;
 using System;
 using System.Collections.Generic;
@@ -38,37 +39,37 @@ namespace System
         public static byte[] ToSendable(this IEnumerable<IQueue> messages)
             => Encoding.UTF8.GetBytes(messages.ToJson());
 
-        public static async Task<bool> SendAsync<TEntity>(this TEntity message)
+        public static async Task<bool> SendAsync<TEntity>(this TEntity message, Installation installation = Installation.Default)
             where TEntity : IQueue
-            => await Manager(message.GetType()).SendAsync(message);
-        public static async Task<long> SendScheduledAsync(this IQueue message, int delayInSeconds)
-            => await Manager(message.GetType()).SendScheduledAsync(message, delayInSeconds);
-        public static async Task<bool> DeleteScheduledAsync(this IQueue message, long messageId)
-            => await Manager(message.GetType()).DeleteScheduledAsync(messageId);
-        public static async Task<bool> SendBatchAsync(this IEnumerable<IQueue> messages)
-            => await Manager(messages.FirstOrDefault()?.GetType()).SendBatchAsync(messages);
-        public static async Task<IList<long>> SendScheduledBatchAsync(this IEnumerable<IQueue> messages, int delayInSeconds)
-            => await Manager(messages.FirstOrDefault()?.GetType()).SendScheduledBatchAsync(messages, delayInSeconds);
-        public static async Task<DebugMessage> DebugSendAsync(this IQueue message, int delayInSeconds = 0)
-            => await Manager(message.GetType()).DebugSendAsync(message, delayInSeconds);
-        public static async Task<DebugMessage> DebugSendBatchAsync(this IEnumerable<IQueue> messages, int delayInSeconds = 0)
-            => await Manager(messages.FirstOrDefault()?.GetType()).DebugSendBatchAsync(messages, delayInSeconds);
+            => await Manager(message.GetType()).SendAsync(message, installation);
+        public static async Task<long> SendScheduledAsync(this IQueue message, int delayInSeconds, Installation installation = Installation.Default)
+            => await Manager(message.GetType()).SendScheduledAsync(message, delayInSeconds, installation);
+        public static async Task<bool> DeleteScheduledAsync(this IQueue message, long messageId, Installation installation = Installation.Default)
+            => await Manager(message.GetType()).DeleteScheduledAsync(messageId, installation);
+        public static async Task<bool> SendBatchAsync(this IEnumerable<IQueue> messages, Installation installation = Installation.Default)
+            => await Manager(messages.FirstOrDefault()?.GetType()).SendBatchAsync(messages, installation);
+        public static async Task<IList<long>> SendScheduledBatchAsync(this IEnumerable<IQueue> messages, int delayInSeconds, Installation installation = Installation.Default)
+            => await Manager(messages.FirstOrDefault()?.GetType()).SendScheduledBatchAsync(messages, delayInSeconds, installation);
+        public static async Task<DebugMessage> DebugSendAsync(this IQueue message, int delayInSeconds = 0, Installation installation = Installation.Default)
+            => await Manager(message.GetType()).DebugSendAsync(message, delayInSeconds, installation);
+        public static async Task<DebugMessage> DebugSendBatchAsync(this IEnumerable<IQueue> messages, int delayInSeconds = 0, Installation installation = Installation.Default)
+            => await Manager(messages.FirstOrDefault()?.GetType()).DebugSendBatchAsync(messages, delayInSeconds, installation);
 
-        public static bool Send(this IQueue message)
-           => message.SendAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        public static long SendScheduled(this IQueue message, int delayInSeconds)
-            => message.SendScheduledAsync(delayInSeconds).ConfigureAwait(false).GetAwaiter().GetResult();
-        public static bool DeleteScheduled(this IQueue message, long messageId)
-            => message.DeleteScheduledAsync(messageId).ConfigureAwait(false).GetAwaiter().GetResult();
-        public static bool SendBatch(this IEnumerable<IQueue> messages)
-            => messages.SendBatchAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        public static IList<long> SendScheduledBatch(this IEnumerable<IQueue> messages, int delayInSeconds)
-            => messages.SendScheduledBatchAsync(delayInSeconds).ConfigureAwait(false).GetAwaiter().GetResult();
-        public static DebugMessage DebugSend(this IQueue message, int delayInSeconds = 0)
-            => message.DebugSendAsync(delayInSeconds).ConfigureAwait(false).GetAwaiter().GetResult();
-        public static DebugMessage DebugSendBatch(this IEnumerable<IQueue> messages, int delayInSeconds = 0)
-            => messages.DebugSendBatchAsync(delayInSeconds).ConfigureAwait(false).GetAwaiter().GetResult();
-        public static string GetName(this IQueue message)
-            => Manager(message.GetType()).GetName();
+        public static bool Send(this IQueue message, Installation installation = Installation.Default)
+           => message.SendAsync(installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static long SendScheduled(this IQueue message, int delayInSeconds, Installation installation = Installation.Default)
+            => message.SendScheduledAsync(delayInSeconds, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool DeleteScheduled(this IQueue message, long messageId, Installation installation = Installation.Default)
+            => message.DeleteScheduledAsync(messageId, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool SendBatch(this IEnumerable<IQueue> messages, Installation installation = Installation.Default)
+            => messages.SendBatchAsync(installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static IList<long> SendScheduledBatch(this IEnumerable<IQueue> messages, int delayInSeconds, Installation installation = Installation.Default)
+            => messages.SendScheduledBatchAsync(delayInSeconds, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static DebugMessage DebugSend(this IQueue message, int delayInSeconds = 0, Installation installation = Installation.Default)
+            => message.DebugSendAsync(delayInSeconds, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static DebugMessage DebugSendBatch(this IEnumerable<IQueue> messages, int delayInSeconds = 0, Installation installation = Installation.Default)
+            => messages.DebugSendBatchAsync(delayInSeconds, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static string GetName(this IQueue message, Installation installation = Installation.Default)
+            => Manager(message.GetType()).GetName(installation);
     }
 }

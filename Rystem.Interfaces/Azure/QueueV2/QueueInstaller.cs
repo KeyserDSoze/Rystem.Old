@@ -11,12 +11,12 @@ namespace Rystem.Azure.Queue
     {
         public static void ConfigureAsDefault(QueueConfiguration configuration)
             => Installer<QueueConfiguration>.ConfigureAsDefault(configuration);
-        public static void Configure<Entity>(QueueConfiguration configuration)
+        public static void Configure<Entity>(QueueConfiguration configuration, Installation installation = Installation.Default)
             where Entity : IQueue
-            => Installer<QueueConfiguration, Entity>.Configure(configuration, Installation.Default);
-        public static QueueConfiguration GetConfiguration<Entity>()
+            => Installer<QueueConfiguration, Entity>.Configure(configuration, installation);
+        public static IDictionary<Installation, QueueConfiguration> GetConfiguration<Entity>()
             where Entity : IQueue
-            => Installer<QueueConfiguration, Entity>.GetConfiguration(Installation.Default);
+            => Installer<QueueConfiguration, Entity>.GetConfiguration();
     }
     public class QueueConfiguration : IRystemConfiguration
     {

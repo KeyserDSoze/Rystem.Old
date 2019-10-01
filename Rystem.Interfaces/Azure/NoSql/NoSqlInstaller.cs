@@ -17,15 +17,15 @@ namespace Rystem.Azure.NoSql
         {
             Installer<NoSqlConfiguration>.ConfigureAsDefault(configuration);
         }
-        public static void Configure<Entity>(NoSqlConfiguration configuration)
+        public static void Configure<Entity>(NoSqlConfiguration configuration, Installation installation = Installation.Default)
             where Entity : INoSql
         {
-            Installer<NoSqlConfiguration, Entity>.Configure(configuration, Installation.Default);
+            Installer<NoSqlConfiguration, Entity>.Configure(configuration, installation);
         }
-        public static NoSqlConfiguration GetConfiguration<Entity>()
+        public static IDictionary<Installation, NoSqlConfiguration> GetConfiguration<Entity>()
             where Entity : INoSql
         {
-            return Installer<NoSqlConfiguration, Entity>.GetConfiguration(Installation.Default);
+            return Installer<NoSqlConfiguration, Entity>.GetConfiguration();
         }
     }
     public enum NoSqlType

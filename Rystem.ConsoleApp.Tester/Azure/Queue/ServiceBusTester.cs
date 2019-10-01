@@ -35,12 +35,32 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             returned = myServiceBus.DeleteScheduled(messageId);
             if (!returned)
                 return false;
-            DebugMessage debugMessage = myServiceBus.DebugSend();
+            DebugMessage debugMessage = myServiceBus.DebugSend(120);
             if (!debugMessage.ServiceBusMessage.Contains("dsad"))
                 return false;
-            DebugMessage debugMessage2 = myServiceBuses.DebugSendBatch();
+            DebugMessage debugMessage2 = myServiceBuses.DebugSendBatch(120);
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
+
+            messageId = myServiceBus.SendScheduled(120, Enums.Installation.Inst0);
+            if (messageId <= 0)
+                return false;
+            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst0);
+            if (!returned)
+                return false;
+            messageId = myServiceBuses.SendScheduledBatch(120, Enums.Installation.Inst0)[0];
+            if (messageId <= 0)
+                return false;
+            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst0);
+            if (!returned)
+                return false;
+            debugMessage = myServiceBus.DebugSend(120, Enums.Installation.Inst0);
+            if (!debugMessage.ServiceBusMessage.Contains("dsad"))
+                return false;
+            debugMessage2 = myServiceBuses.DebugSendBatch(120, Enums.Installation.Inst0);
+            if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
+                return false;
+
             //ServiceBusMessage connectionMessage = new ServiceBusMessage()
             //{
             //    Attempt = 0,
@@ -76,6 +96,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 Type = QueueType.ServiceBus,
                 Name = "dario"
             });
+            QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
+            {
+                ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
+                Type = QueueType.ServiceBus,
+                Name = "aloa"
+            }, Enums.Installation.Inst0);
         }
 
     }

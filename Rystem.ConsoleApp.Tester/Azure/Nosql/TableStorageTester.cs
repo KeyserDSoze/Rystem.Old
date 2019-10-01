@@ -40,12 +40,38 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd");
             if (examples.Count() != 0)
                 return false;
+
+            try
+            {
+                example.Delete(Installation.Inst0);
+            }
+            catch { }
+            if (!example.Update(Installation.Inst0))
+                return false;
+            examples = example.Get(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd", installation: Installation.Inst0);
+            //IEnumerable<Example> examples = example.Get(x => x.PartitionKey.GreaterThan("A"));
+            if (examples.Count() != 1)
+                return false;
+            if (!example.Exists(Installation.Inst0))
+                return false;
+            if (!example.Delete(Installation.Inst0))
+                return false;
+            if (example.Exists(Installation.Inst0))
+                return false;
+            examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd", installation: Installation.Inst0);
+            if (examples.Count() != 0)
+                return false;
+
             return true;
         }
     }
     public class Example : ITableStorage
     {
-        static Example() => NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
+        static Example()
+        {
+            NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
+            NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger" }, Installation.Inst0);
+        }
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTime Timestamp { get; set; }
