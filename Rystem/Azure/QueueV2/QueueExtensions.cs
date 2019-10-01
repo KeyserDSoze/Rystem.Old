@@ -66,5 +66,7 @@ namespace System
             => message.DebugSendAsync(delayInSeconds).ConfigureAwait(false).GetAwaiter().GetResult();
         public static DebugMessage DebugSendBatch(this IEnumerable<IQueue> messages, int delayInSeconds = 0)
             => messages.DebugSendBatchAsync(delayInSeconds).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static string GetName(this IQueue message)
+            => Manager(message.GetType()).GetName();
     }
 }

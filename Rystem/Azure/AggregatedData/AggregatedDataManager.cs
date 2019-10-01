@@ -11,24 +11,25 @@ namespace Rystem.Azure.AggregatedData
         where TEntity : IAggregatedData
     {
         private readonly IAggregatedDataIntegration<TEntity> Integration;
+        private readonly AggregatedDataConfiguration<TEntity> AggregatedDataConfiguration;
         public AggregatedDataManager()
         {
-            AggregatedDataConfiguration<TEntity> configuration = AggregatedDataInstaller.GetConfiguration<TEntity>();
-            switch (configuration.Type)
+            AggregatedDataConfiguration = AggregatedDataInstaller.GetConfiguration<TEntity>();
+            switch (AggregatedDataConfiguration.Type)
             {
                 case AggregatedDataType.BlockBlob:
-                    Integration = new BlockBlobStorageIntegration<TEntity>(configuration);
+                    Integration = new BlockBlobStorageIntegration<TEntity>(AggregatedDataConfiguration);
                     break;
                 case AggregatedDataType.AppendBlob:
-                    Integration = new AppendBlobStorageIntegration<TEntity>(configuration);
+                    Integration = new AppendBlobStorageIntegration<TEntity>(AggregatedDataConfiguration);
                     break;
                 case AggregatedDataType.PageBlob:
-                    Integration = new PageBlobStorageIntegration<TEntity>(configuration);
+                    Integration = new PageBlobStorageIntegration<TEntity>(AggregatedDataConfiguration);
                     break;
                 case AggregatedDataType.DataLakeV2:
                     throw new NotImplementedException("DataLake V2 not implemented.");
                 default:
-                    throw new InvalidOperationException($"Wrong type installed {configuration.Type}");
+                    throw new InvalidOperationException($"Wrong type installed {AggregatedDataConfiguration.Type}");
             }
         }
         public async Task<bool> DeleteAsync(IAggregatedData entity)
@@ -47,5 +48,7 @@ namespace Rystem.Azure.AggregatedData
             => await Integration.AppendAsync(entity, offset);
         public async Task<string> WriteAsync(IAggregatedData entity)
             => await Integration.WriteAsync(entity);
+        public string GetName()
+            => this.AggregatedDataConfiguration.Name;
     }
 }

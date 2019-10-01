@@ -9,9 +9,9 @@ namespace Rystem.Azure.NoSql
     internal interface INoSqlIntegration<TEntity>
         where TEntity : INoSql
     {
-        Task<bool> ExistsAsync(INoSql entity);
-        Task<IList<TEntity>> GetAsync(INoSql entity, Expression<Func<INoSql, bool>> expression = null, int? takeCount = null);
-        Task<bool> UpdateAsync(INoSql entity);
-        Task<bool> DeleteAsync(INoSql entity);
+        Task<bool> ExistsAsync(TEntity entity);
+        Task<IList<TEntity>> GetAsync(TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null);
+        Task<bool> UpdateAsync(TEntity entity);
+        Task<bool> DeleteAsync(TEntity entity);
     }
 }

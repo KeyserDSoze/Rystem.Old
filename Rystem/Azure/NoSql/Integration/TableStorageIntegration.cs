@@ -39,25 +39,27 @@ namespace Rystem.Azure.NoSql
             }
         }
         private class DummyTableStorage : TableEntity { }
-        public async Task<bool> DeleteAsync(INoSql entity)
+        public async Task<bool> DeleteAsync(TEntity entity)
         {
+            ITableStorage entityStorage = entity as ITableStorage;
             TableOperation operation = TableOperation.Delete(new DummyTableStorage()
             {
-                PartitionKey = entity.PartitionKey,
-                RowKey = entity.RowKey,
+                PartitionKey = entityStorage.PartitionKey,
+                RowKey = entityStorage.RowKey,
                 ETag = "*"
             });
             return (await this.Context.ExecuteAsync(operation)).HttpStatusCode == 204;
         }
 
-        public async Task<bool> ExistsAsync(INoSql entity)
+        public async Task<bool> ExistsAsync(TEntity entity)
         {
-            TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entity.PartitionKey, entity.RowKey);
+            ITableStorage entityStorage = entity as ITableStorage;
+            TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entityStorage.PartitionKey, entityStorage.RowKey);
             TableResult result = await this.Context.ExecuteAsync(operation);
             return result.Result != null;
         }
 
-        public async Task<IList<TEntity>> GetAsync(INoSql entity, Expression<Func<INoSql, bool>> expression = null, int? takeCount = null)
+        public async Task<IList<TEntity>> GetAsync(TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null)
         {
             List<TEntity> items = new List<TEntity>();
             TableContinuationToken token = null;
@@ -83,19 +85,20 @@ namespace Rystem.Azure.NoSql
             }
         }
 
-        public async Task<bool> UpdateAsync(INoSql entity)
+        public async Task<bool> UpdateAsync(TEntity entity)
         {
             TableOperation operation = TableOperation.InsertOrReplace(WriteEntity(entity));
             return (await this.Context.ExecuteAsync(operation)).HttpStatusCode == 204;
         }
         private static DateTime DateTimeDefault = default;
-        private DynamicTableEntity WriteEntity(INoSql entity)
+        private DynamicTableEntity WriteEntity(TEntity entity)
         {
+            ITableStorage entityStorage = entity as ITableStorage;
             DynamicTableEntity dummy = new DynamicTableEntity();
-            dummy.PartitionKey = entity.PartitionKey;
-            dummy.RowKey = entity.RowKey = entity.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"));
-            dummy.Timestamp = entity.Timestamp > DateTimeDefault ? entity.Timestamp : (entity.Timestamp = DateTime.UtcNow);
-            dummy.ETag = entity.Tag = entity.Tag ?? "*";
+            dummy.PartitionKey = entityStorage.PartitionKey;
+            dummy.RowKey = entityStorage.RowKey = entityStorage.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"));
+            dummy.Timestamp = entityStorage.Timestamp > DateTimeDefault ? entityStorage.Timestamp : (entityStorage.Timestamp = DateTime.UtcNow);
+            dummy.ETag = entityStorage.ETag = entityStorage.ETag ?? "*";
             foreach (PropertyInfo pi in this.Properties)
             {
                 dynamic value = pi.GetValue(entity);
@@ -110,7 +113,7 @@ namespace Rystem.Azure.NoSql
         private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);
         private TEntity ReadEntity(DynamicTableEntity dynamicTableEntity)
         {
-            TEntity entity = (TEntity)Activator.CreateInstance(typeof(TEntity));
+            ITableStorage entity = Activator.CreateInstance(typeof(TEntity)) as ITableStorage;
             entity.PartitionKey = dynamicTableEntity.PartitionKey;
             entity.RowKey = dynamicTableEntity.RowKey;
             entity.Timestamp = dynamicTableEntity.Timestamp.DateTime.ToUniversalTime();
@@ -123,7 +126,7 @@ namespace Rystem.Azure.NoSql
                     dynamic value = JsonConvertDeserializeMethod.MakeGenericMethod(pi.PropertyType).Invoke(null, new object[2] { dynamicTableEntity.Properties[pi.Name].StringValue, JsonSettings });
                     pi.SetValue(entity, value);
                 }
-            return entity;
+            return (TEntity)entity;
             void SetValue(EntityProperty entityProperty, PropertyInfo pi)
             {
                 switch (entityProperty.PropertyType)

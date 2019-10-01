@@ -66,5 +66,8 @@ namespace System
         public static IList<string> Search<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null)
             where TEntity : IAggregatedData
            => SearchAsync(entity, prefix, takeCount).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static string GetName<TEntity>(this TEntity entity)
+           where TEntity : IAggregatedData
+       => Manager(entity.GetType()).GetName();
     }
 }

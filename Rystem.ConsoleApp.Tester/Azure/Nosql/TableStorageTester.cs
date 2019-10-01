@@ -27,7 +27,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             catch { }
             if (!example.Update())
                 return false;
-            IEnumerable<Example> examples = example.Get(x => x.Timestamp >= new DateTime(1970, 1, 1));
+            IEnumerable<Example> examples = example.Get(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd");
             //IEnumerable<Example> examples = example.Get(x => x.PartitionKey.GreaterThan("A"));
             if (examples.Count() != 1)
                 return false;
@@ -37,19 +37,19 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
                 return false;
             if (example.Exists())
                 return false;
-            examples = example.Get(x => x.PartitionKey.GreaterThan("A"));
+            examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd");
             if (examples.Count() != 0)
                 return false;
             return true;
         }
     }
-    public class Example : INoSql
+    public class Example : ITableStorage
     {
         static Example() => NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTime Timestamp { get; set; }
-        public string Tag { get; set; }
+        public string ETag { get; set; }
         public string Alo { get; set; }
         public Lazlo Lazlo { get; set; }
     }

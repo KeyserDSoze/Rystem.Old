@@ -13,22 +13,23 @@ namespace Rystem.Azure.Queue
         where TEntity : IQueue
     {
         private readonly IQueueIntegration Integration;
+        private readonly QueueConfiguration QueueConfiguration;
         public QueueManager()
         {
-            QueueConfiguration configuration = QueueInstaller.GetConfiguration<TEntity>();
-            switch (configuration.Type)
+            QueueConfiguration = QueueInstaller.GetConfiguration<TEntity>();
+            switch (QueueConfiguration.Type)
             {
                 case QueueType.QueueStorage:
-                    Integration = new QueueStorageIntegration(configuration);
+                    Integration = new QueueStorageIntegration(QueueConfiguration);
                     break;
                 case QueueType.EventHub:
-                    Integration = new EventHubIntegration(configuration);
+                    Integration = new EventHubIntegration(QueueConfiguration);
                     break;
                 case QueueType.ServiceBus:
-                    Integration = new ServiceBusIntegration(configuration);
+                    Integration = new ServiceBusIntegration(QueueConfiguration);
                     break;
                 default:
-                    throw new InvalidOperationException($"Wrong type installed {configuration.Type}");
+                    throw new InvalidOperationException($"Wrong type installed {QueueConfiguration.Type}");
             }
         }
         public async Task<bool> SendAsync(IQueue message)
@@ -51,5 +52,6 @@ namespace Rystem.Azure.Queue
             await Task.Delay(0);
             return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.ToJson(), EventDatas = messages.Select(x => new EventData(x.ToSendable())).ToArray() };
         }
+        public string GetName() => QueueConfiguration.Name;
     }
 }

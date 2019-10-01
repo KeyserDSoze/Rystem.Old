@@ -11,26 +11,29 @@ namespace Rystem.Azure.NoSql
         where TEntity : INoSql
     {
         private readonly INoSqlIntegration<TEntity> Integration;
+        private readonly NoSqlConfiguration NoSqlConfiguration;
         public NoSqlManager()
         {
-            NoSqlConfiguration configuration = NoSqlInstaller.GetConfiguration<TEntity>();
-            switch (configuration.Type)
+            NoSqlConfiguration = NoSqlInstaller.GetConfiguration<TEntity>();
+            switch (NoSqlConfiguration.Type)
             {
                 case NoSqlType.TableStorage:
-                    Integration = new TableStorageIntegration<TEntity>(configuration);
+                    Integration = new TableStorageIntegration<TEntity>(NoSqlConfiguration);
                     break;
                 default:
-                    throw new InvalidOperationException($"Wrong type installed {configuration.Type}");
+                    throw new InvalidOperationException($"Wrong type installed {NoSqlConfiguration.Type}");
             }
         }
         public async Task<bool> DeleteAsync(INoSql entity)
-            => await Integration.DeleteAsync(entity);
+            => await Integration.DeleteAsync((TEntity)entity);
         public async Task<bool> ExistsAsync(INoSql entity)
-            => await Integration.ExistsAsync(entity);
-        public async Task<IEnumerable<TNoSqlEntity>> FetchAsync<TNoSqlEntity>(INoSql entity, Expression<Func<INoSql, bool>> expression = null, int? takeCount = null)
+            => await Integration.ExistsAsync((TEntity)entity);
+        public async Task<IEnumerable<TNoSqlEntity>> FetchAsync<TNoSqlEntity>(INoSql entity, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
             where TNoSqlEntity : INoSql
-            => (await Integration.GetAsync(entity, expression, takeCount)).Select(x => (TNoSqlEntity)(INoSql)x);
+            => (await Integration.GetAsync((TEntity)entity, expression as Expression<Func<TEntity, bool>>, takeCount)).Select(x => (TNoSqlEntity)(INoSql)x);
         public async Task<bool> UpdateAsync(INoSql entity)
-            => await Integration.UpdateAsync(entity);
+            => await Integration.UpdateAsync((TEntity)entity);
+        public string GetName()
+            => NoSqlConfiguration.Name;
     }
 }

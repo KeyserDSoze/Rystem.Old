@@ -15,5 +15,6 @@ namespace Rystem.Azure.Queue
         Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds);
         Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds = 0);
         Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds = 0);
+        string GetName();
     }
 }
