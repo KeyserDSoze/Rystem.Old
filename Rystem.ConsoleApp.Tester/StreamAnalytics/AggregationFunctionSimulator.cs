@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rystem.ConsoleApp.Tester;
+using Rystem.Enums;
 using Rystem.StreamAnalytics;
 using System;
 using System.Collections;
@@ -18,13 +19,20 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
             AggregationInstaller<EventData>.Configure(
                 new AggregationProperty()
                 {
-                    QueueName = "Alto",
-                    MaximumBuffer = 4000,
+                    Name = "Alto",
+                    MaximumBuffer = 80,
                     Parsers = new List<IAggregationParser>() { new FunctionParser() }
                 });
+            AggregationInstaller<EventData>.Configure(
+                new AggregationProperty()
+                {
+                    Name = "Alto2",
+                    MaximumBuffer = 100,
+                    Parsers = new List<IAggregationParser>() { new FunctionParser() }
+                }, Installation.Inst0);
             AggregationManager<EventData> aggregationManager = new AggregationManager<EventData>();
             IList<EventData> messages = new List<EventData>();
-            for (int i = 0; i < 5010; i++)
+            for (int i = 0; i < 110; i++)
                 messages.Add(
                     new EventData(
                         Encoding.UTF8.GetBytes(
@@ -35,6 +43,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                                 }))));
             EventData[] entries = messages.ToArray();
             aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action: " + x), x => Console.WriteLine("Action on error: " + x));
+            aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action2: " + x), x => Console.WriteLine("Action on error2: " + x), Installation.Inst0);
             return true;
         }
     }
@@ -45,7 +54,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
     }
     public class FunctionParser : IAggregationParser
     {
-        public void Parse<T>(string queueName, IList<T> events, ILogger log)
+        public void Parse<T>(string queueName, IList<T> events, ILogger log, Installation installation)
         {
             foreach (T a in events)
                 log.LogInformation($"Parsing {a} in queue: {queueName}");
