@@ -30,7 +30,9 @@ namespace System
             => JsonConvert.SerializeObject(message, ExternalLibrarySettings.JsonSettings);
         public static byte[] ToSendable(this IQueue message)
             => Encoding.UTF8.GetBytes(message.ToJson());
-
+        public static TEntity FromString<TEntity>(this string message)
+            where TEntity : IQueue
+            => JsonConvert.DeserializeObject<TEntity>(message);
         public static string ToJson(this IEnumerable<IQueue> messages)
             => JsonConvert.SerializeObject(messages, ExternalLibrarySettings.JsonSettings);
         public static byte[] ToSendable(this IEnumerable<IQueue> messages)
