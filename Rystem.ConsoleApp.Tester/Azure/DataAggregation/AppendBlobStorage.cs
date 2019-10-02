@@ -39,22 +39,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             if (meatball2.Count != 0)
                 return false;
 
-            meatball.Delete(Enums.Installation.Inst0);
+            meatball.Delete(Enums.Installation.Inst00);
             meatball.A = 3;
-            meatball.Append(0, Enums.Installation.Inst0);
+            meatball.Append(0, Enums.Installation.Inst00);
             meatball.A = 5;
-            meatball.Append(0, Enums.Installation.Inst0);
+            meatball.Append(0, Enums.Installation.Inst00);
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Append(0, Enums.Installation.Inst0);
-            meatball2 = meatball.List(installation: Enums.Installation.Inst0).ToList();
+            meatball.Append(0, Enums.Installation.Inst00);
+            meatball2 = meatball.List(installation: Enums.Installation.Inst00).ToList();
             if (meatball2.Count != 3)
                 return false;
-            if (!meatball.Delete(Enums.Installation.Inst0))
+            if (!meatball.Delete(Enums.Installation.Inst00))
                 return false;
-            if (meatball.Exists(Enums.Installation.Inst0))
+            if (meatball.Exists(Enums.Installation.Inst00))
                 return false;
-            meatball2 = meatball.List(installation: Enums.Installation.Inst0).ToList();
+            meatball2 = meatball.List(installation: Enums.Installation.Inst00).ToList();
             if (meatball2.Count != 0)
                 return false;
 
@@ -82,7 +82,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                     Type = AggregatedDataType.AppendBlob,
                     Name = "kollipop"
                 },
-                Enums.Installation.Inst0
+                Enums.Installation.Inst00
                 );
         }
         public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";

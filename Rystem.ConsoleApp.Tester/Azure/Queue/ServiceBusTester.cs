@@ -42,22 +42,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
-            messageId = myServiceBus.SendScheduled(120, Enums.Installation.Inst0);
+            messageId = myServiceBus.SendScheduled(120, Enums.Installation.Inst00);
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst0);
+            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst00);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120, Enums.Installation.Inst0)[0];
+            messageId = myServiceBuses.SendScheduledBatch(120, Enums.Installation.Inst00)[0];
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst0);
+            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst00);
             if (!returned)
                 return false;
-            debugMessage = myServiceBus.DebugSend(120, Enums.Installation.Inst0);
+            debugMessage = myServiceBus.DebugSend(120, Enums.Installation.Inst00);
             if (!debugMessage.ServiceBusMessage.Contains("dsad"))
                 return false;
-            debugMessage2 = myServiceBuses.DebugSendBatch(120, Enums.Installation.Inst0);
+            debugMessage2 = myServiceBuses.DebugSendBatch(120, Enums.Installation.Inst00);
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
@@ -101,7 +101,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
                 Type = QueueType.ServiceBus,
                 Name = "aloa"
-            }, Enums.Installation.Inst0);
+            }, Enums.Installation.Inst00);
         }
 
     }

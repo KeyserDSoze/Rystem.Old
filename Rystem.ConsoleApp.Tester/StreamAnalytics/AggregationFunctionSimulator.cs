@@ -29,7 +29,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                     Name = "Alto2",
                     MaximumBuffer = 100,
                     Parsers = new List<IAggregationParser>() { new FunctionParser() }
-                }, Installation.Inst0);
+                }, Installation.Inst00);
             AggregationManager<EventData> aggregationManager = new AggregationManager<EventData>();
             IList<EventData> messages = new List<EventData>();
             for (int i = 0; i < 110; i++)
@@ -43,7 +43,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                                 }))));
             EventData[] entries = messages.ToArray();
             IList<EventData> flusheds = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action: " + x), (x, _) => Console.WriteLine("Action on error: " + x));
-            IList<EventData> flusheds2 = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action2: " + x), (x, _) => Console.WriteLine("Action on error2: " + x), Installation.Inst0);
+            IList<EventData> flusheds2 = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action2: " + x), (x, _) => Console.WriteLine("Action on error2: " + x), Installation.Inst00);
             return true;
         }
     }

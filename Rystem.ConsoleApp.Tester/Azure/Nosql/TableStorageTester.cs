@@ -43,22 +43,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
 
             try
             {
-                example.Delete(Installation.Inst0);
+                example.Delete(Installation.Inst00);
             }
             catch { }
-            if (!example.Update(Installation.Inst0))
+            if (!example.Update(Installation.Inst00))
                 return false;
-            examples = example.Get(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd", installation: Installation.Inst0);
+            examples = example.Get(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd", installation: Installation.Inst00);
             //IEnumerable<Example> examples = example.Get(x => x.PartitionKey.GreaterThan("A"));
             if (examples.Count() != 1)
                 return false;
-            if (!example.Exists(Installation.Inst0))
+            if (!example.Exists(Installation.Inst00))
                 return false;
-            if (!example.Delete(Installation.Inst0))
+            if (!example.Delete(Installation.Inst00))
                 return false;
-            if (example.Exists(Installation.Inst0))
+            if (example.Exists(Installation.Inst00))
                 return false;
-            examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd", installation: Installation.Inst0);
+            examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd", installation: Installation.Inst00);
             if (examples.Count() != 0)
                 return false;
 
@@ -70,7 +70,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
         static Example()
         {
             NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
-            NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger" }, Installation.Inst0);
+            NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger" }, Installation.Inst00);
         }
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }

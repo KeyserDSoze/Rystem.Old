@@ -28,11 +28,11 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 return false;
             if (!myAbstractionEventHubs.SendBatch())
                 return false;
-            DebugMessage debugMessage = myEventHub.DebugSend(0, Installation.Inst0);
-            DebugMessage debugMessages = myAbstractionEventHubs.DebugSendBatch(0, Installation.Inst0);
-            if (!myEventHub.Send(Installation.Inst0))
+            DebugMessage debugMessage = myEventHub.DebugSend(0, Installation.Inst00);
+            DebugMessage debugMessages = myAbstractionEventHubs.DebugSendBatch(0, Installation.Inst00);
+            if (!myEventHub.Send(Installation.Inst00))
                 return false;
-            if (!myAbstractionEventHubs.SendBatch(Installation.Inst0))
+            if (!myAbstractionEventHubs.SendBatch(Installation.Inst00))
                 return false;
             return true;
         }
@@ -58,7 +58,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
                 Name = "aloa",
                 Type = QueueType.EventHub
-            }, Enums.Installation.Inst0);
+            }, Enums.Installation.Inst00);
         }
         public class MyObject
         {
