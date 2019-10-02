@@ -42,8 +42,8 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                                     X = i
                                 }))));
             EventData[] entries = messages.ToArray();
-            IList<EventData> flusheds = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action: " + x), x => Console.WriteLine("Action on error: " + x));
-            IList<EventData> flusheds2 = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action2: " + x), x => Console.WriteLine("Action on error2: " + x), Installation.Inst0);
+            IList<EventData> flusheds = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action: " + x), (x, _) => Console.WriteLine("Action on error: " + x));
+            IList<EventData> flusheds2 = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action2: " + x), (x, _) => Console.WriteLine("Action on error2: " + x), Installation.Inst0);
             return true;
         }
     }

@@ -21,7 +21,7 @@ namespace Rystem.StreamAnalytics
             public IList<T> Events { get; set; } = new List<T>();
             public long LastBufferCreation { get; set; } = DateTime.UtcNow.Ticks;
         }
-        public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception> errorCatcher = null, Installation installation = Installation.Default)
+        public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception, T> errorCatcher = null, Installation installation = Installation.Default)
         {
             this.CreateTrafficLight(installation);
             IList<Exception> exceptions = new List<Exception>();
@@ -39,7 +39,7 @@ namespace Rystem.StreamAnalytics
                 }
                 catch (Exception e)
                 {
-                    errorCatcher?.Invoke(e);
+                    errorCatcher?.Invoke(e, eventData);
                     exceptions.Add(e);
                 }
             }
