@@ -21,7 +21,7 @@ namespace Rystem.StreamAnalytics
             public IList<T> Events { get; set; } = new List<T>();
             public long LastBufferCreation { get; set; } = DateTime.UtcNow.Ticks;
         }
-        public void Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception> errorCatcher = null, Installation installation = Installation.Default)
+        public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception> errorCatcher = null, Installation installation = Installation.Default)
         {
             this.CreateTrafficLight(installation);
             IList<Exception> exceptions = new List<Exception>();
@@ -43,9 +43,10 @@ namespace Rystem.StreamAnalytics
                     exceptions.Add(e);
                 }
             }
-            this.Flush(log, installation);
+            IList<T> flusheds = this.Flush(log, installation);
             DateTime endTime = DateTime.UtcNow;
             log.LogInformation($"istance: {istance} throws error {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
+            return flusheds;
         }
         private void CreateTrafficLight(Installation installation)
         {
@@ -62,8 +63,9 @@ namespace Rystem.StreamAnalytics
             lock (TrafficLight[installation])
                 Buffer[installation].Events.Add(singleEvent);
         }
-        public void Flush(ILogger log, Installation installation)
+        public IList<T> Flush(ILogger log, Installation installation)
         {
+            IList<T> events = new List<T>();
             log.LogDebug($"{this.QueueName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
             DateTime startTime = DateTime.UtcNow;
             if (Buffer[installation].Events.Count > this.AggregationProperties[installation].MaximumBuffer || (Buffer[installation].Events.Count > 0 && startTime.Ticks - Buffer[installation].LastBufferCreation > this.AggregationProperties[installation].MaximumTime))
@@ -72,6 +74,7 @@ namespace Rystem.StreamAnalytics
                 {
                     if (Buffer[installation].Events.Count > this.AggregationProperties[installation].MaximumBuffer || (Buffer[installation].Events.Count > 0 && startTime.Ticks - Buffer[installation].LastBufferCreation > this.AggregationProperties[installation].MaximumTime))
                     {
+                        events = Buffer[installation].Events.ToList();
                         foreach (IAggregationParser parser in this.AggregationProperties[installation].Parsers)
                         {
                             try
@@ -88,6 +91,7 @@ namespace Rystem.StreamAnalytics
                     }
                 }
             }
+            return events;
         }
     }
 }
