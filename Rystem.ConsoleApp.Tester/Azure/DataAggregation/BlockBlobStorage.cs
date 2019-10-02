@@ -20,35 +20,35 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                     ContentType = "text/json"
                 }
             };
-            meatball.Delete();
+            meatball.Delete(Enums.Installation.Inst01);
             meatball.A = 3;
-            meatball.Write();
+            meatball.Write(Enums.Installation.Inst01);
             try
             {
                 meatball.A = 5;
-                meatball.Append();
+                meatball.Append(installation: Enums.Installation.Inst01);
                 return false;
             }
             catch
             {
             }
-            if (!meatball.Exists())
+            if (!meatball.Exists(Enums.Installation.Inst01))
                 return false;
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Write();
-            if (meatball.Fetch().A != meatball.A)
+            meatball.Write(Enums.Installation.Inst01);
+            if (meatball.Fetch(Enums.Installation.Inst01).A != meatball.A)
                 return false;
-            IList<Meatball2> meatball2 = meatball.List().ToList();
+            IList<Meatball2> meatball2 = meatball.List(installation: Enums.Installation.Inst01).ToList();
             if (meatball2.Count != 1)
                 return false;
             if (meatball2.FirstOrDefault().B != "dsadsadsa")
                 return false;
-            if (!meatball.Delete())
+            if (!meatball.Delete(Enums.Installation.Inst01))
                 return false;
-            if (meatball.Exists())
+            if (meatball.Exists(Enums.Installation.Inst01))
                 return false;
-            meatball2 = meatball.List().ToList();
+            meatball2 = meatball.List(installation: Enums.Installation.Inst01).ToList();
             if (meatball2.Count != 0)
                 return false;
 
@@ -98,7 +98,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 
                     ConnectionString = StorageConnectionString,
                     Type = AggregatedDataType.BlockBlob
-                }
+                },
+                Enums.Installation.Inst01
                 );
             AggregatedDataInstaller.Configure(
                 new AggregatedDataConfiguration<Meatball2>()
