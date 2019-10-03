@@ -1,4 +1,5 @@
 ﻿using Rystem.Cache;
+using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonTableStorageTest : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             SmallTableKey smallTableKey = new SmallTableKey() { Id = 2 };
             smallTableKey.Remove();

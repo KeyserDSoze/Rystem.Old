@@ -1,11 +1,10 @@
 ﻿using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Rystem.ConsoleApp.Tester;
 using Rystem.Enums;
+using Rystem.Interfaces.Utility.Tester;
 using Rystem.StreamAnalytics;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +13,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
 {
     public class FunctionSimulator : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             AggregationInstaller<EventData>.Configure(
                 new AggregationProperty()

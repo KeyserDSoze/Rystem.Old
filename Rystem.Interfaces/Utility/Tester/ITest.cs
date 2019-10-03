@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.ZConsoleApp.Tester
+namespace Rystem.Interfaces.Utility.Tester
 {
     public interface ITest
     {
-        bool DoWork(string entry);
+        bool DoWork(Action<object> action, params string[] args);
     }
 }

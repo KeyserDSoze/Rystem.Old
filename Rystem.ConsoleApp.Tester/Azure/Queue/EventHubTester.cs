@@ -1,6 +1,7 @@
 ﻿using Rystem.Azure.Queue;
 using Rystem.Debug;
 using Rystem.Enums;
+using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class EventHubTester : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             MyAbstractionEventHub myEventHub = new MyEventHub()
             {

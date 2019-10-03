@@ -1,5 +1,6 @@
 ﻿using Rystem.Azure.Queue;
 using Rystem.Debug;
+using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class ServiceBusTester : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             MyAbstractionOfServiceBus myServiceBus = new MyServiceBus()
             {

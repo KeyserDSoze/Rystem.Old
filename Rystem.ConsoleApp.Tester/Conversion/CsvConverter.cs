@@ -1,15 +1,14 @@
 ﻿using Newtonsoft.Json;
 using Rystem.Conversion;
-using Rystem.Conversion;
+using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Rystem.ZConsoleApp.Tester.Conversion
 {
     public class CsvConverter : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             Halo halo = new Halo()
             {

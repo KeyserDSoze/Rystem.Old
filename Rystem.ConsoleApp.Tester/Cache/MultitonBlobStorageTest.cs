@@ -1,5 +1,6 @@
 ﻿using Rystem.Cache;
 using Rystem.ConsoleApp.Tester;
+using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonBlobStorageTest : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             SmallBlobKey smallBlobKey = new SmallBlobKey() { Id = 2 };
             smallBlobKey.Remove();

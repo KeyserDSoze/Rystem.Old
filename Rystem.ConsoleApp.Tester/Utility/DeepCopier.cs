@@ -1,13 +1,12 @@
-﻿using Rystem.ConsoleApp.Tester;
+﻿using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Rystem.ZConsoleApp.Tester.Utility
 {
     public class DeepCopier : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             try
             {

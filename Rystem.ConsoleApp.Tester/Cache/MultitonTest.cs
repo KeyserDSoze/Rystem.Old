@@ -1,4 +1,5 @@
 ﻿using Rystem.Cache;
+using Rystem.Interfaces.Utility.Tester;
 using Rystem.Utility;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonTest : ITest
     {
-        public bool DoWork(string entry)
+        public bool DoWork(Action<object> action, params string[] args)
         {
             MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
             ServiceKey serviceKey = new ServiceKey() { Id = 2 };
