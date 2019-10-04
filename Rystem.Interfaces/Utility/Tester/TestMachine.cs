@@ -18,7 +18,7 @@ namespace Rystem.Interfaces.Utility.Tester
         {
             this.Namespace = @namespace;
             this.Tests = (Assembly.GetAssembly(typeof(T)) ?? Assembly.GetAssembly(this.GetType())).GetTypes()
-                .Where(x => typeof(ITest).IsAssignableFrom(x))
+                .Where(x => typeof(ITest).IsAssignableFrom(x) && !x.IsAbstract && !x.IsInterface)
                 .OrderBy(x => x.FullName)
                 .Select(x => Activator.CreateInstance(x) as ITest)
                 .ToList();
