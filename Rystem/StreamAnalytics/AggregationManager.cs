@@ -45,7 +45,7 @@ namespace Rystem.StreamAnalytics
             }
             IList<T> flusheds = this.Flush(log, installation);
             DateTime endTime = DateTime.UtcNow;
-            log.LogInformation($"istance: {istance} throws error {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
+            log.LogInformation($"istance: {istance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
             return flusheds;
         }
         private void CreateTrafficLight(Installation installation)
@@ -66,7 +66,7 @@ namespace Rystem.StreamAnalytics
         public IList<T> Flush(ILogger log, Installation installation)
         {
             IList<T> events = new List<T>();
-            log.LogDebug($"{this.QueueName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
+            log.LogWarning($"{this.QueueName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
             DateTime startTime = DateTime.UtcNow;
             if (Buffer[installation].Events.Count > this.AggregationProperties[installation].MaximumBuffer || (Buffer[installation].Events.Count > 0 && startTime.Ticks - Buffer[installation].LastBufferCreation > this.AggregationProperties[installation].MaximumTime))
             {
