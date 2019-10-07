@@ -107,14 +107,7 @@ namespace Rystem.Azure.AggregatedData
             return attempt <= MaximumAttempt;
         }
 
-        public async Task<string> WriteAsync(IAggregatedData entity)
-        {
-            ICloudBlob cloudBlob = this.Context.GetBlockBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
-            await cloudBlob.UploadFromStreamAsync(dummy.Stream);
-            string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
-            await BlobStorageBaseIntegration.SetBlobPropertyIfNecessary(entity, cloudBlob, dummy);
-            return path;
-        }
+        public async Task<string> WriteAsync(IAggregatedData entity) 
+            => throw new NotImplementedException($"You must use Append with {AggregatedDataType.AppendBlob}");
     }
 }
