@@ -10,11 +10,10 @@ namespace Rystem.Azure.AggregatedData
         where TEntity : IAggregatedData
     {
         Task<bool> ExistsAsync(IAggregatedData entity);
-        Task<string> WriteAsync(IAggregatedData entity);
+        Task<bool> WriteAsync(IAggregatedData entity, long offset);
         Task<TEntity> FetchAsync(IAggregatedData entity);
-        Task<bool> AppendAsync(IAggregatedData entity, long offset = 0);
         Task<bool> DeleteAsync(IAggregatedData entity);
-        Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix = null, int? takeCount = null);
-        Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix = null, int? takeCount = null);
+        Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix, int? takeCount);
+        Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix, int? takeCount);
     }
 }

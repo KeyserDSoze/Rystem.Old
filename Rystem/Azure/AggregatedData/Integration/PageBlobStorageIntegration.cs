@@ -46,7 +46,7 @@ namespace Rystem.Azure.AggregatedData
             });
         }
 
-        public async Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix = null, int? takeCount = null)
+        public async Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix, int? takeCount)
         {
             List<TEntity> items = new List<TEntity>();
             BlobContinuationToken token = null;
@@ -65,12 +65,12 @@ namespace Rystem.Azure.AggregatedData
             return items;
         }
 
-        public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix = null, int? takeCount = null)
+        public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix, int? takeCount)
             => await BlobStorageBaseIntegration.SearchAsync(this.Context, prefix, takeCount);
 
         private static object TrafficLight = new object();
         private const long Size = 512;
-        public async Task<bool> AppendAsync(IAggregatedData entity, long offset = 0)
+        public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {
             CloudPageBlob pageBlob = this.Context.GetPageBlobReference(entity.Name);
             AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
@@ -90,8 +90,5 @@ namespace Rystem.Azure.AggregatedData
 #warning È sicuramente buggato, perchè scrive solo quando è in un if buggato
             return true;
         }
-
-        public async Task<string> WriteAsync(IAggregatedData entity)
-            => throw new NotImplementedException($"You must use Append with {AggregatedDataType.PageBlob}");
     }
 }

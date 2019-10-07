@@ -42,15 +42,13 @@ namespace Rystem.Azure.AggregatedData
         public async Task<TEntityLake> FetchAsync<TEntityLake>(IAggregatedData entity, Installation installation)
             where TEntityLake : IAggregatedData
             => (TEntityLake)(IAggregatedData)(await Integrations[installation].FetchAsync(entity));
-        public async Task<IEnumerable<TEntityLake>> ListAsync<TEntityLake>(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null)
+        public async Task<IEnumerable<TEntityLake>> ListAsync<TEntityLake>(IAggregatedData entity, Installation installation, string prefix, int? takeCount)
             where TEntityLake : IAggregatedData
             => (await Integrations[installation].ListAsync(entity, prefix, takeCount)).Select(x => (TEntityLake)(IAggregatedData)x);
-        public async Task<IList<string>> SearchAsync(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null)
+        public async Task<IList<string>> SearchAsync(IAggregatedData entity, Installation installation, string prefix, int? takeCount)
             => await Integrations[installation].SearchAsync(entity, prefix, takeCount);
-        public async Task<bool> AppendAsync(IAggregatedData entity, Installation installation, long offset = 0)
-            => await Integrations[installation].AppendAsync(entity, offset);
-        public async Task<string> WriteAsync(IAggregatedData entity, Installation installation)
-            => await Integrations[installation].WriteAsync(entity);
+        public async Task<bool> WriteAsync(IAggregatedData entity, Installation installation, long offset)
+            => await Integrations[installation].WriteAsync(entity, offset);
         public string GetName(Installation installation)
             => this.AggregatedDataConfiguration[installation].Name;
     }

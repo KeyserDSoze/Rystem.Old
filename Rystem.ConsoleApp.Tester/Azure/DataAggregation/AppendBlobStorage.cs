@@ -23,12 +23,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             };
             meatball.Delete();
             meatball.A = 3;
-            meatball.Append();
+            meatball.Write();
             meatball.A = 5;
-            meatball.Append();
+            meatball.Write();
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Append();
+            meatball.Write();
             IList<Meatball> meatball2 = meatball.List().ToList();
             if (meatball2.Count != 3)
                 return false;
@@ -42,12 +42,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 
             meatball.Delete(Enums.Installation.Inst00);
             meatball.A = 3;
-            meatball.Append(0, Enums.Installation.Inst00);
+            meatball.Write(0, Enums.Installation.Inst00);
             meatball.A = 5;
-            meatball.Append(0, Enums.Installation.Inst00);
+            meatball.Write(0, Enums.Installation.Inst00);
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Append(0, Enums.Installation.Inst00);
+            meatball.Write(0, Enums.Installation.Inst00);
             meatball2 = meatball.List(installation: Enums.Installation.Inst00).ToList();
             if (meatball2.Count != 3)
                 return false;

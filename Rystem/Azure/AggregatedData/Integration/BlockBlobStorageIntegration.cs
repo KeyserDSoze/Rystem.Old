@@ -70,20 +70,13 @@ namespace Rystem.Azure.AggregatedData
         public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix = null, int? takeCount = null)
             => await BlobStorageBaseIntegration.SearchAsync(this.Context, prefix, takeCount);
 
-        public async Task<bool> AppendAsync(IAggregatedData entity, long offset = 0)
-        {
-            await Task.Delay(0);
-            throw new NotImplementedException($"Blockblob doesn't allow append. Try to use {AggregatedDataType.AppendBlob} or {AggregatedDataType.DataLakeV2}");
-        }
-
-        public async Task<string> WriteAsync(IAggregatedData entity)
+        public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {
             ICloudBlob cloudBlob = this.Context.GetBlockBlobReference(entity.Name);
             AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
             await cloudBlob.UploadFromStreamAsync(dummy.Stream);
-            string path = new UriBuilder(cloudBlob.Uri).Uri.AbsoluteUri;
             await BlobStorageBaseIntegration.SetBlobPropertyIfNecessary(entity, cloudBlob, dummy);
-            return path;
+            return true;
         }
     }
 }

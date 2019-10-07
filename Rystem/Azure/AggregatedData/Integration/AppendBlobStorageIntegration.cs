@@ -47,7 +47,7 @@ namespace Rystem.Azure.AggregatedData
             });
         }
 
-        public async Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix = null, int? takeCount = null)
+        public async Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix, int? takeCount)
         {
             List<TEntity> items = new List<TEntity>();
             BlobContinuationToken token = null;
@@ -66,10 +66,10 @@ namespace Rystem.Azure.AggregatedData
             return items;
         }
 
-        public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix = null, int? takeCount = null)
+        public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix, int? takeCount)
             => await BlobStorageBaseIntegration.SearchAsync(this.Context, prefix, takeCount);
 
-        public async Task<bool> AppendAsync(IAggregatedData entity, long offset = 0)
+        public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {
             int attempt = 0;
             CloudAppendBlob appendBlob = this.Context.GetAppendBlobReference(entity.Name);
@@ -106,8 +106,5 @@ namespace Rystem.Azure.AggregatedData
             } while (attempt <= MaximumAttempt);
             return attempt <= MaximumAttempt;
         }
-
-        public async Task<string> WriteAsync(IAggregatedData entity) 
-            => throw new NotImplementedException($"You must use Append with {AggregatedDataType.AppendBlob}");
     }
 }

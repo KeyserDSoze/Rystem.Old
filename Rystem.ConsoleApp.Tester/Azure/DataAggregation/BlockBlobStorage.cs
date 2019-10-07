@@ -23,21 +23,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             };
             meatball.Delete(Enums.Installation.Inst01);
             meatball.A = 3;
-            meatball.Write(Enums.Installation.Inst01);
-            try
-            {
-                meatball.A = 5;
-                meatball.Append(installation: Enums.Installation.Inst01);
-                return false;
-            }
-            catch
-            {
-            }
+            meatball.Write(installation: Enums.Installation.Inst01);
             if (!meatball.Exists(Enums.Installation.Inst01))
                 return false;
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Write(Enums.Installation.Inst01);
+            meatball.Write(installation: Enums.Installation.Inst01);
             if (meatball.Fetch(Enums.Installation.Inst01).A != meatball.A)
                 return false;
             IList<Meatball2> meatball2 = meatball.List(installation: Enums.Installation.Inst01).ToList();
@@ -55,21 +46,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 
             meatball.Delete(Enums.Installation.Inst00);
             meatball.A = 3;
-            meatball.Write(Enums.Installation.Inst00);
-            try
-            {
-                meatball.A = 5;
-                meatball.Append(0, Enums.Installation.Inst00);
-                return false;
-            }
-            catch
-            {
-            }
+            meatball.Write(installation: Enums.Installation.Inst00);
             if (!meatball.Exists(Enums.Installation.Inst00))
                 return false;
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Write(Enums.Installation.Inst00);
+            meatball.Write(installation: Enums.Installation.Inst00);
             if (meatball.Fetch(Enums.Installation.Inst00).A != meatball.A)
                 return false;
             meatball2 = meatball.List(installation: Enums.Installation.Inst00).ToList();

@@ -24,12 +24,9 @@ namespace System
                     }
             return Managers[dataType.FullName];
         }
-        public static async Task<bool> AppendAsync<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
-            where TEntity : IAggregatedData
-           => await Manager(entity.GetType()).AppendAsync(entity, installation, offset);
-        public static async Task<string> WriteAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+        public static async Task<bool> WriteAsync<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
         where TEntity : IAggregatedData
-       => await Manager(entity.GetType()).WriteAsync(entity, installation);
+       => await Manager(entity.GetType()).WriteAsync(entity, installation, offset);
         public static async Task<bool> DeleteAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : IAggregatedData
            => await Manager(entity.GetType()).DeleteAsync(entity, installation);
@@ -46,12 +43,9 @@ namespace System
             where TEntity : IAggregatedData
            => (await Manager(entity.GetType()).SearchAsync(entity, installation, prefix, takeCount));
 
-        public static bool Append<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
-            where TEntity : IAggregatedData
-           => AppendAsync(entity, offset, installation).ConfigureAwait(false).GetAwaiter().GetResult();
-        public static string Write<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+        public static bool Write<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
         where TEntity : IAggregatedData
-       => WriteAsync(entity, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+       => WriteAsync(entity, offset, installation).ConfigureAwait(false).GetAwaiter().GetResult();
         public static TEntity Fetch<TEntity>(this TEntity entity, Installation installation = Installation.Default)
        where TEntity : IAggregatedData
       => FetchAsync(entity, installation).ConfigureAwait(false).GetAwaiter().GetResult();

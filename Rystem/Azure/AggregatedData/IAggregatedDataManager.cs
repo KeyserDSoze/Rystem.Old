@@ -12,8 +12,7 @@ namespace Rystem.Azure.AggregatedData
         Task<bool> ExistsAsync(IAggregatedData entity, Installation installation);
         Task<TEntityLake> FetchAsync<TEntityLake>(IAggregatedData entity, Installation installation)
             where TEntityLake : IAggregatedData;
-        Task<string> WriteAsync(IAggregatedData entity, Installation installation);
-        Task<bool> AppendAsync(IAggregatedData entity, Installation installation, long offset = 0);
+        Task<bool> WriteAsync(IAggregatedData entity, Installation installation, long offset);
         Task<bool> DeleteAsync(IAggregatedData entity, Installation installation);
         Task<IEnumerable<TEntityLake>> ListAsync<TEntityLake>(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null)
             where TEntityLake : IAggregatedData;
