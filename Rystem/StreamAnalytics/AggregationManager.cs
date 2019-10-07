@@ -74,20 +74,25 @@ namespace Rystem.StreamAnalytics
                 {
                     if (Buffer[installation].Events.Count > this.AggregationProperties[installation].MaximumBuffer || (Buffer[installation].Events.Count > 0 && startTime.Ticks - Buffer[installation].LastBufferCreation > this.AggregationProperties[installation].MaximumTime))
                     {
-                        events = Buffer[installation].Events.ToList();
-                        foreach (IAggregationParser parser in this.AggregationProperties[installation].Parsers)
-                        {
-                            try
-                            {
-                                parser.Parse(this.QueueName(installation), Buffer[installation].Events, log, installation);
-                            }
-                            catch (Exception er)
-                            {
-                                log.LogError(er.ToString());
-                            }
-                        }
+                        foreach (T x in Buffer[installation].Events)
+                            events.Add(x);
                         log.LogWarning($"Flushed {Buffer[installation].Events.Count} elements.");
                         Buffer[installation] = new BufferBearer();
+                    }
+                }
+            }
+            if (events.Count > 0)
+            {
+                foreach (IAggregationParser parser in this.AggregationProperties[installation].Parsers)
+                {
+                    try
+                    {
+                        parser.Parse(this.QueueName(installation), events, log, installation);
+                        log.LogWarning($"Parsed {parser.GetType().Name}.");
+                    }
+                    catch (Exception er)
+                    {
+                        log.LogError(er.ToString());
                     }
                 }
             }
