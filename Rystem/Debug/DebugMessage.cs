@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.ServiceBus;
+using Rystem.Azure.Queue;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,7 @@ namespace Rystem.Debug
         public int DelayInSeconds { get; set; }
         public EventData[] EventDatas { get; set; }
         public string ServiceBusMessage { get; set; }
+        public string SmartMessage { get; set; }
         public DebugMessage()
         {
             int a = this.Id;

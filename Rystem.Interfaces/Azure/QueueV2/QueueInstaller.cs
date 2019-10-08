@@ -28,6 +28,7 @@ namespace Rystem.Azure.Queue
     {
         EventHub,
         QueueStorage,
-        ServiceBus
+        ServiceBus,
+        SmartQueue
     }
 }

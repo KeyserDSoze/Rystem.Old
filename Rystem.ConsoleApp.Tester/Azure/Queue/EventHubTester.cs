@@ -29,11 +29,11 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 return false;
             if (!myAbstractionEventHubs.SendBatch())
                 return false;
-            DebugMessage debugMessage = myEventHub.DebugSend(0, Installation.Inst00);
-            DebugMessage debugMessages = myAbstractionEventHubs.DebugSendBatch(0, Installation.Inst00);
-            if (!myEventHub.Send(Installation.Inst00))
+            DebugMessage debugMessage = myEventHub.DebugSend(0, installation: Installation.Inst00);
+            DebugMessage debugMessages = myAbstractionEventHubs.DebugSendBatch(0, installation: Installation.Inst00);
+            if (!myEventHub.Send(installation: Installation.Inst00))
                 return false;
-            if (!myAbstractionEventHubs.SendBatch(Installation.Inst00))
+            if (!myAbstractionEventHubs.SendBatch(installation: Installation.Inst00))
                 return false;
             return true;
         }

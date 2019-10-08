@@ -43,22 +43,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
-            messageId = myServiceBus.SendScheduled(120, Enums.Installation.Inst00);
+            messageId = myServiceBus.SendScheduled(120, installation: Enums.Installation.Inst00);
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst00);
+            returned = myServiceBus.DeleteScheduled(messageId, installation: Enums.Installation.Inst00);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120, Enums.Installation.Inst00)[0];
+            messageId = myServiceBuses.SendScheduledBatch(120, installation: Enums.Installation.Inst00)[0];
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, Enums.Installation.Inst00);
+            returned = myServiceBus.DeleteScheduled(messageId, installation: Enums.Installation.Inst00);
             if (!returned)
                 return false;
-            debugMessage = myServiceBus.DebugSend(120, Enums.Installation.Inst00);
+            debugMessage = myServiceBus.DebugSend(120, installation: Enums.Installation.Inst00);
             if (!debugMessage.ServiceBusMessage.Contains("dsad"))
                 return false;
-            debugMessage2 = myServiceBuses.DebugSendBatch(120, Enums.Installation.Inst00);
+            debugMessage2 = myServiceBuses.DebugSendBatch(120, installation: Enums.Installation.Inst00);
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
