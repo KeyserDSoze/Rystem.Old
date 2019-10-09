@@ -79,7 +79,7 @@ namespace Rystem.Azure.Queue
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
             StringBuilder sb = new StringBuilder();
             sb.Append(InsertQuery);
-            sb.Append($"{path},'{organization}','{JsonConvert.SerializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }).Replace("'", "''")}',");
+            sb.Append($"{path},{organization},'{JsonConvert.SerializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }).Replace("'", "''")}',");
             sb.Append($"'{newDatetime.ToString("yyyy-MM-ddTHH:mm:ss")}', {newDatetime.Ticks}); SELECT SCOPE_IDENTITY();");
             using (SqlConnection connection = Connection())
             {
