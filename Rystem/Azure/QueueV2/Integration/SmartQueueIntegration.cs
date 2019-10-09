@@ -21,9 +21,22 @@ namespace Rystem.Azure.Queue
         internal SmartQueueIntegration(QueueConfiguration property)
         {
             this.ConnectionString = property.ConnectionString;
-            this.CheckDuplication = property.CheckDuplication;
+            this.CheckDuplication = property.CheckDuplication > 0;
             if (this.CheckDuplication)
-                this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1}) ";
+            {
+                switch (property.CheckDuplication)
+                {
+                    case QueueDuplication.Path:
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1}) ";
+                        break;
+                    case QueueDuplication.Message:
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Message = '{2}') ";
+                        break;
+                    case QueueDuplication.PathAndMessage:
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1} and Message = '{2}') ";
+                        break;
+                }
+            }
             this.InsertQuery = $"INSERT INTO SmartQueue_{property.Name} (Path, Organization, Message, TimeStamp, Ticks) OUTPUT Inserted.Id VALUES (";
             this.ReadQuery = $"Select top 100 Id, Message from SmartQueue_{property.Name} where Ticks <= ";
             this.DeleteQuery = $"Delete from SmartQueue_{property.Name} where Id = ";
@@ -82,11 +95,12 @@ namespace Rystem.Azure.Queue
         private async Task<long> SendingAsync(IQueue message, int delayInSeconds, int path, int organization)
         {
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
+            string messageToSend = JsonConvert.SerializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }).Replace("'", "''");
             StringBuilder sb = new StringBuilder();
             if (this.CheckDuplication)
-                sb.Append(string.Format(this.IfOnInsert, path, organization));
+                sb.Append(string.Format(this.IfOnInsert, path, organization, messageToSend));
             sb.Append(InsertQuery);
-            sb.Append($"{path},{organization},'{JsonConvert.SerializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }).Replace("'", "''")}',");
+            sb.Append($"{path},{organization},'{messageToSend}',");
             sb.Append($"'{newDatetime.ToString("yyyy-MM-ddTHH:mm:ss")}', {newDatetime.Ticks})");
             using (SqlConnection connection = Connection())
             {
