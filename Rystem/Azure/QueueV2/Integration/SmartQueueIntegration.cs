@@ -12,14 +12,19 @@ namespace Rystem.Azure.Queue
     {
         private string ConnectionString;
         private string InsertQuery;
+        private string IfOnInsert;
         private string ReadQuery;
         private string DeleteQuery;
         private string DeleteOnReadingQuery;
+        private bool CheckDuplication;
         private SqlConnection Connection() => new SqlConnection(ConnectionString);
         internal SmartQueueIntegration(QueueConfiguration property)
         {
             this.ConnectionString = property.ConnectionString;
-            this.InsertQuery = $"INSERT INTO SmartQueue_{property.Name} (Path, Organization, Message, TimeStamp, Ticks) VALUES (";
+            this.CheckDuplication = property.CheckDuplication;
+            if (this.CheckDuplication)
+                this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1}) ";
+            this.InsertQuery = $"INSERT INTO SmartQueue_{property.Name} (Path, Organization, Message, TimeStamp, Ticks) OUTPUT Inserted.Id VALUES (";
             this.ReadQuery = $"Select top 100 Id, Message from SmartQueue_{property.Name} where Ticks <= ";
             this.DeleteQuery = $"Delete from SmartQueue_{property.Name} where Id = ";
             this.DeleteOnReadingQuery = $"Delete from SmartQueue_{property.Name} where Id in (";
@@ -78,14 +83,22 @@ namespace Rystem.Azure.Queue
         {
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
             StringBuilder sb = new StringBuilder();
+            if (this.CheckDuplication)
+                sb.Append(string.Format(this.IfOnInsert, path, organization));
             sb.Append(InsertQuery);
             sb.Append($"{path},{organization},'{JsonConvert.SerializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }).Replace("'", "''")}',");
-            sb.Append($"'{newDatetime.ToString("yyyy-MM-ddTHH:mm:ss")}', {newDatetime.Ticks}); SELECT SCOPE_IDENTITY();");
+            sb.Append($"'{newDatetime.ToString("yyyy-MM-ddTHH:mm:ss")}', {newDatetime.Ticks})");
             using (SqlConnection connection = Connection())
             {
                 await connection.OpenAsync();
                 using (SqlCommand command = new SqlCommand(sb.ToString(), connection))
-                    return Convert.ToInt64(await command.ExecuteScalarAsync());
+                {
+                    object value = await command.ExecuteScalarAsync();
+                    if (value != null)
+                        return Convert.ToInt64(value);
+                    else
+                        return 0;
+                }
             }
         }
         private async Task<bool> SendingBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)

@@ -23,6 +23,7 @@ namespace Rystem.Azure.Queue
         public string ConnectionString { get; set; }
         public string Name { get; set; }
         public QueueType Type { get; set; }
+        public bool CheckDuplication { get; set; }
     }
     public enum QueueType
     {

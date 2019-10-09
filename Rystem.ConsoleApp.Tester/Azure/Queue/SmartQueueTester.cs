@@ -47,6 +47,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             xx = mySmartQueue.Read(installation: Enums.Installation.Inst05, organization: 3);
             if (xx.Count() > 0)
                 return false;
+
+            //Duplication check
+            long v1 = mySmartQueue.SendScheduled(0, 1, 23);
+            long v2 = mySmartQueue.SendScheduled(0, 1, 23);
+            if (v1 == v2)
+                return false;
+            if (v2 > 0)
+                return false;
+
+            xx = mySmartQueue.Read(1, 23);
+            if (xx.Count() != 1)
+                return false;
+            xx = mySmartQueue.Read(1, 23);
+            if (xx.Count() > 0)
+                return false;
+
             return true;
         }
     }
@@ -60,6 +76,13 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 Type = QueueType.SmartQueue,
                 Name = "Business"
             }, Enums.Installation.Inst05);
+            QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
+            {
+                ConnectionString = "Server=tcp:myfirstservicebus.database.windows.net,1433;Initial Catalog=myfirstservicebus;Persist Security Info=False;User ID=myfirstservicebus;Password=DaveTheBeauty86;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                Type = QueueType.SmartQueue,
+                Name = "Notification",
+                CheckDuplication = true
+            });
         }
         public string Al { get; set; }
         public MyManagerImporter MyManagerImporter { get; set; }
