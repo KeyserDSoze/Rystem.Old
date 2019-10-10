@@ -27,22 +27,22 @@ namespace Rystem.Azure.Queue
                 switch (property.CheckDuplication)
                 {
                     case QueueDuplication.Path:
-                        this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1}) ";
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1}) ";
                         break;
                     case QueueDuplication.Message:
-                        this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Message = '{2}') ";
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Message = '{2}') ";
                         break;
                     case QueueDuplication.PathAndMessage:
-                        this.IfOnInsert = $"IF NOT EXISTS (SELECT * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1} and Message = '{2}') ";
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1} and Message = '{2}') ";
                         break;
                 }
             }
             this.InsertQuery = $"INSERT INTO SmartQueue_{property.Name} (Path, Organization, Message, TimeStamp, Ticks) OUTPUT Inserted.Id VALUES (";
-            this.ReadQuery = $"Select top 100 Id, Message from SmartQueue_{property.Name} where Ticks <= ";
+            this.ReadQuery = $"Select top {property.NumberOfMessages} Id, Message from SmartQueue_{property.Name} where Ticks <= ";
             this.DeleteQuery = $"Delete from SmartQueue_{property.Name} where Id = ";
             this.DeleteOnReadingQuery = $"Delete from SmartQueue_{property.Name} where Id in (";
             StringBuilder sb = new StringBuilder();
-            sb.Append($"IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='SmartQueue_{property.Name}' and xtype='U')");
+            sb.Append($"IF NOT EXISTS (SELECT TOP 1 * FROM sysobjects WHERE name='SmartQueue_{property.Name}' and xtype='U')");
             sb.Append($"CREATE TABLE SmartQueue_{property.Name} (");
             sb.Append("Id bigint NOT NULL IDENTITY(1,1) PRIMARY KEY,");
             sb.Append("Path int NOT NULL,");
@@ -50,7 +50,7 @@ namespace Rystem.Azure.Queue
             sb.Append("Message varchar(max) NOT NULL,");
             sb.Append("Timestamp datetime NOT NULL,");
             sb.Append("Ticks bigint NOT NULL);");
-            sb.Append($"IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='SmartQueueDeleted_{property.Name}' and xtype='U')");
+            sb.Append($"IF NOT EXISTS (SELECT TOP 1 * FROM sysobjects WHERE name='SmartQueueDeleted_{property.Name}' and xtype='U')");
             sb.Append($"CREATE TABLE SmartQueueDeleted_{property.Name} (");
             sb.Append("Id bigint NOT NULL PRIMARY KEY,");
             sb.Append("Path int NOT NULL,");
