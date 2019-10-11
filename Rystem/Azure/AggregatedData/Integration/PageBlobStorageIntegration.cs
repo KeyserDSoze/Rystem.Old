@@ -52,7 +52,7 @@ namespace Rystem.Azure.AggregatedData
             BlobContinuationToken token = null;
             do
             {
-                BlobResultSegment segment = await this.Context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { });
+                BlobResultSegment segment = await this.Context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, BlobStorageBaseIntegration.BlobRequestOptions, new OperationContext() { });
                 token = segment.ContinuationToken;
                 foreach (IListBlobItem blobItem in segment.Results)
                 {

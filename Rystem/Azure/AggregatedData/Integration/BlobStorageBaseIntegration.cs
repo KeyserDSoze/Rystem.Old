@@ -11,6 +11,7 @@ namespace Rystem.Azure.AggregatedData.Integration
 {
     internal static class BlobStorageBaseIntegration
     {
+        internal static BlobRequestOptions BlobRequestOptions = new BlobRequestOptions() { DisableContentMD5Validation = true };
         public static async Task<bool> DeleteAsync(ICloudBlob cloudBlob)
             => await cloudBlob.DeleteIfExistsAsync();
 
@@ -78,7 +79,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             await cloudBlob.FetchAttributesAsync();
             var fileLength = cloudBlob.Properties.Length;
             byte[] fileByte = new byte[fileLength];
-            await cloudBlob.DownloadToByteArrayAsync(fileByte, 0);
+            await cloudBlob.DownloadToByteArrayAsync(fileByte, 0, null, BlobRequestOptions, null);
             Stream stream = new MemoryStream(fileByte);
             return stream;
         }
