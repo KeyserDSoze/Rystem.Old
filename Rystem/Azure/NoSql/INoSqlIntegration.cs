@@ -10,7 +10,8 @@ namespace Rystem.Azure.NoSql
         where TEntity : INoSql
     {
         Task<bool> ExistsAsync(TEntity entity);
-        Task<IList<TEntity>> GetAsync(TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null);
+        Task<IList<TSpecialEntity>> GetAsync<TSpecialEntity>(TEntity entity, Expression<Func<TSpecialEntity, bool>> expression = null, int? takeCount = null)
+            where TSpecialEntity : INoSql;
         Task<bool> UpdateAsync(TEntity entity);
         Task<bool> DeleteAsync(TEntity entity);
     }

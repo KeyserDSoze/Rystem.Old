@@ -31,9 +31,9 @@ namespace Rystem.Azure.NoSql
             => await Integrations[installation].DeleteAsync((TEntity)entity);
         public async Task<bool> ExistsAsync(INoSql entity, Installation installation)
             => await Integrations[installation].ExistsAsync((TEntity)entity);
-        public async Task<IEnumerable<TNoSqlEntity>> FetchAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
+        public async Task<IList<TNoSqlEntity>> GetAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
             where TNoSqlEntity : INoSql
-            => (await Integrations[installation].GetAsync((TEntity)entity, expression as Expression<Func<TEntity, bool>>, takeCount)).Select(x => (TNoSqlEntity)(x as INoSql));
+            => await Integrations[installation].GetAsync((TEntity)entity, expression, takeCount);
         public async Task<bool> UpdateAsync(INoSql entity, Installation installation)
             => await Integrations[installation].UpdateAsync((TEntity)entity);
         public string GetName(Installation installation = Installation.Default)

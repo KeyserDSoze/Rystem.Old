@@ -17,6 +17,7 @@ namespace Rystem.Azure.AggregatedData
         Task<IEnumerable<TEntityLake>> ListAsync<TEntityLake>(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null)
             where TEntityLake : IAggregatedData;
         Task<IList<string>> SearchAsync(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null);
+        Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, Installation installation, string prefix = null, int? takeCount = null);
         string GetName(Installation installation);
     }
 }

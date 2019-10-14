@@ -33,6 +33,24 @@ namespace Rystem.Azure.AggregatedData.Integration
             } while (token != null);
             return items;
         }
+        public static async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
+        {
+            IList<AggregatedDataDummy> items = new List<AggregatedDataDummy>();
+            BlobContinuationToken token = null;
+            do
+            {
+                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { });
+                token = segment.ContinuationToken;
+                foreach (IListBlobItem blobItem in segment.Results)
+                {
+                    await (blobItem as ICloudBlob).FetchAttributesAsync();
+                    items.Add(new AggregatedDataDummy() { Name = blobItem.Uri.AbsolutePath, Properties = (blobItem as ICloudBlob).Properties.ToAggregatedDataProperties() });
+                }
+                if (takeCount != null && items.Count >= takeCount)
+                    break;
+            } while (token != null);
+            return items;
+        }
 
         public static async Task<bool> SetBlobPropertyIfNecessary(IAggregatedData entity, ICloudBlob cloudBlob, AggregatedDataDummy dummy)
         {

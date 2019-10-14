@@ -59,16 +59,17 @@ namespace Rystem.Azure.NoSql
             return result.Result != null;
         }
 
-        public async Task<IList<TEntity>> GetAsync(TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null)
+        public async Task<IList<TSpecialEntity>> GetAsync<TSpecialEntity>(TEntity entity, Expression<Func<TSpecialEntity, bool>> expression = null, int? takeCount = null)
+            where TSpecialEntity : INoSql
         {
-            List<TEntity> items = new List<TEntity>();
+            List<TSpecialEntity> items = new List<TSpecialEntity>();
             TableContinuationToken token = null;
             string query = ToQuery(expression?.Body);
             do
             {
                 TableQuerySegment<DynamicTableEntity> seg = await this.Context.ExecuteQuerySegmentedAsync(new TableQuery<DynamicTableEntity>() { FilterString = query, TakeCount = takeCount }, token);
                 token = seg.ContinuationToken;
-                items.AddRange(seg.Select(x => ReadEntity(x)));
+                items.AddRange(seg.Select(x => ReadEntity<TSpecialEntity>(x)));
                 if (takeCount != null && items.Count >= takeCount) break;
             } while (token != null);
             return items;
@@ -111,7 +112,8 @@ namespace Rystem.Azure.NoSql
             return dummy;
         }
         private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);
-        private TEntity ReadEntity(DynamicTableEntity dynamicTableEntity)
+        private TSpecialEntity ReadEntity<TSpecialEntity>(DynamicTableEntity dynamicTableEntity)
+            where TSpecialEntity : INoSql
         {
             ITableStorage entity = Activator.CreateInstance(typeof(TEntity)) as ITableStorage;
             entity.PartitionKey = dynamicTableEntity.PartitionKey;
@@ -126,7 +128,7 @@ namespace Rystem.Azure.NoSql
                     dynamic value = JsonConvertDeserializeMethod.MakeGenericMethod(pi.PropertyType).Invoke(null, new object[2] { dynamicTableEntity.Properties[pi.Name].StringValue, JsonSettings });
                     pi.SetValue(entity, value);
                 }
-            return (TEntity)entity;
+            return (TSpecialEntity)entity;
             void SetValue(EntityProperty entityProperty, PropertyInfo pi)
             {
                 switch (entityProperty.PropertyType)

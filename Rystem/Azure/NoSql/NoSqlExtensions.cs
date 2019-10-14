@@ -33,9 +33,9 @@ namespace System
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
            => await Manager(entity.GetType()).ExistsAsync(entity, installation);
-        public static async Task<IEnumerable<TEntity>> GetAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default)
+        public static async Task<IList<TEntity>> GetAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => await Manager(entity.GetType()).FetchAsync<TEntity>(entity, installation, expression, takeCount);
+           => await Manager(entity.GetType()).GetAsync(entity, installation, expression, takeCount);
 
         public static bool Update<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : INoSql
@@ -46,7 +46,7 @@ namespace System
         public static bool Exists<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
            => ExistsAsync(entity, installation).ConfigureAwait(false).GetAwaiter().GetResult();
-        public static IEnumerable<TEntity> Get<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default)
+        public static IList<TEntity> Get<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : INoSql
            => GetAsync(entity, expression, takeCount, installation).ConfigureAwait(false).GetAwaiter().GetResult();
 #warning Fare la stessa cosa fatta per AggregatedData

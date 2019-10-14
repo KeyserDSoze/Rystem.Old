@@ -47,6 +47,8 @@ namespace Rystem.Azure.AggregatedData
             => (await Integrations[installation].ListAsync(entity, prefix, takeCount)).Select(x => (TEntityLake)(IAggregatedData)x);
         public async Task<IList<string>> SearchAsync(IAggregatedData entity, Installation installation, string prefix, int? takeCount)
             => await Integrations[installation].SearchAsync(entity, prefix, takeCount);
+        public async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, Installation installation, string prefix, int? takeCount)
+            => await Integrations[installation].FetchPropertiesAsync(entity, prefix, takeCount);
         public async Task<bool> WriteAsync(IAggregatedData entity, Installation installation, long offset)
             => await Integrations[installation].WriteAsync(entity, offset);
         public string GetName(Installation installation)

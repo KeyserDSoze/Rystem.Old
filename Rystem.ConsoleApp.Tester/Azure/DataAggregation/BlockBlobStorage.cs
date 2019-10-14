@@ -34,6 +34,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             IList<Meatball2> meatball2 = meatball.List(installation: Enums.Installation.Inst01).ToList();
             if (meatball2.Count != 1)
                 return false;
+            IList<AggregatedDataDummy> properties = meatball.FetchProperties(installation: Enums.Installation.Inst01);
+            if (properties.Count != 1)
+                return false;
             if (meatball2.FirstOrDefault().B != "dsadsadsa")
                 return false;
             if (!meatball.Delete(Enums.Installation.Inst01))
@@ -56,6 +59,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                 return false;
             meatball2 = meatball.List(installation: Enums.Installation.Inst00).ToList();
             if (meatball2.Count != 1)
+                return false;
+            properties = meatball.FetchProperties(installation: Enums.Installation.Inst00);
+            if (properties.Count != 1)
                 return false;
             if (meatball2.FirstOrDefault().B != "dsadsadsa")
                 return false;

@@ -10,7 +10,7 @@ namespace Rystem.Azure.NoSql
     internal interface INoSqlManager
     {
         Task<bool> ExistsAsync(INoSql entity, Installation installation);
-        Task<IEnumerable<TNoSqlEntity>> FetchAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
+        Task<IList<TNoSqlEntity>> GetAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
             where TNoSqlEntity : INoSql;
         Task<bool> UpdateAsync(INoSql entity, Installation installation);
         Task<bool> DeleteAsync(INoSql entity, Installation installation);

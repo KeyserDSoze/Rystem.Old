@@ -38,10 +38,13 @@ namespace System
            => await Manager(entity.GetType()).FetchAsync<TEntity>(entity, installation);
         public static async Task<IEnumerable<TEntity>> ListAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData
-           => (await Manager(entity.GetType()).ListAsync<TEntity>(entity, installation, prefix, takeCount));
+           => await Manager(entity.GetType()).ListAsync<TEntity>(entity, installation, prefix, takeCount);
         public static async Task<IList<string>> SearchAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData
-           => (await Manager(entity.GetType()).SearchAsync(entity, installation, prefix, takeCount));
+           => await Manager(entity.GetType()).SearchAsync(entity, installation, prefix, takeCount);
+        public static async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
+            where TEntity : IAggregatedData
+           => await Manager(entity.GetType()).FetchPropertiesAsync(entity, installation, prefix, takeCount);
 
         public static bool Write<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
         where TEntity : IAggregatedData
@@ -61,6 +64,9 @@ namespace System
         public static IList<string> Search<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData
            => SearchAsync(entity, prefix, takeCount, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static IList<AggregatedDataDummy> FetchProperties<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
+            where TEntity : IAggregatedData
+           => FetchPropertiesAsync(entity, prefix, takeCount, installation).ConfigureAwait(false).GetAwaiter().GetResult();
         public static string GetName<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : IAggregatedData
        => Manager(entity.GetType()).GetName(installation);

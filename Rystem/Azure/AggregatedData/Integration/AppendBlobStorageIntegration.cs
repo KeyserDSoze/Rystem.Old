@@ -68,6 +68,8 @@ namespace Rystem.Azure.AggregatedData
 
         public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix, int? takeCount)
             => await BlobStorageBaseIntegration.SearchAsync(this.Context, prefix, takeCount);
+        public async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, string prefix, int? takeCount)
+            => await BlobStorageBaseIntegration.FetchPropertiesAsync(this.Context, prefix, takeCount);
 
         public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {

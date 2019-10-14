@@ -15,5 +15,6 @@ namespace Rystem.Azure.AggregatedData
         Task<bool> DeleteAsync(IAggregatedData entity);
         Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix, int? takeCount);
         Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix, int? takeCount);
+        Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, string prefix, int? takeCount);
     }
 }
