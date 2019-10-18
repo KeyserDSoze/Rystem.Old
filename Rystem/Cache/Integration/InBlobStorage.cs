@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using Rystem.Cache;
 
 namespace Rystem.Cache
 {
@@ -18,9 +15,9 @@ namespace Rystem.Cache
         private static long ExpireCache = 0;
         private const string ContainerName = "rystemcache";
         private readonly static string FullName = typeof(T).FullName + "/";
-        internal InBlobStorage(MultitonInstaller.MultitonConfiguration configuration)
+        internal InBlobStorage(InCloudMultitonProperties configuration)
         {
-            ExpireCache = TimeSpan.FromMinutes(configuration.ExpireCache).Ticks;
+            ExpireCache = configuration.ExpireTimeSpan.Ticks;
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             Context = Client.GetContainerReference(ContainerName);
@@ -40,7 +37,8 @@ namespace Rystem.Cache
             return true;
         }
 
-        internal override bool Delete(string key) => Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+        internal override bool Delete(string key) 
+            => Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         internal override bool Exists(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));

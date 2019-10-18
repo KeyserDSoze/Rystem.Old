@@ -4,10 +4,11 @@ using Rystem.Utility;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Rystem.ZConsoleApp.Tester.Cache
 {
-    public class MultitonTest : ITest
+    public class MultitonRedisTest : ITest
     {
         public bool DoWork(Action<object> action, params string[] args)
         {
@@ -29,6 +30,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 return false;
             if (serviceKey.AllKeys().Count != 0)
                 return false;
+            service = serviceKey.Instance() as Service;
+            Thread.Sleep(200);
+            if (!serviceKey.IsPresent())
+                return false;
+            Thread.Sleep(800);
+            if (serviceKey.IsPresent())
+                return false;
             MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }
@@ -47,7 +55,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()
         {
-            MultitonInstaller.Configure<ServiceKey>(ConnectionString, InCloudType.RedisCache, CacheExpireTime.TenMinutes, MultitonExpireTime.TurnOff);
+            MultitonInstaller.Configure<ServiceKey, Service>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.RedisCache, ExpireTime.OneSecond)));
         }
     }
     public class Service : IMultiton

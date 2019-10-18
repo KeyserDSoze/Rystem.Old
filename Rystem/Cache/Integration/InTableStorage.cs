@@ -16,9 +16,9 @@ namespace Rystem.Cache
         private static long ExpireCache = 0;
         private const string TableName = "RystemCache";
         private readonly static string FullName = typeof(T).FullName;
-        internal InTableStorage(MultitonInstaller.MultitonConfiguration configuration)
+        internal InTableStorage(InCloudMultitonProperties configuration)
         {
-            ExpireCache = TimeSpan.FromMinutes(configuration.ExpireCache).Ticks;
+            ExpireCache = configuration.ExpireTimeSpan.Ticks;
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             Context = tableClient.GetTableReference(TableName);

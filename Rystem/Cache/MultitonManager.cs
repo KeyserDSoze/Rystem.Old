@@ -14,26 +14,27 @@ namespace Rystem.Cache
         private readonly bool CloudIsActive = false;
         private readonly static string FullName = typeof(T).FullName;
         private readonly static object TrafficLight = new object();
-        public MultitonManager()
+        public MultitonManager(MultitonProperties configuration)
         {
-            MultitonInstaller.MultitonConfiguration configuration = MultitonInstaller.GetConfiguration(typeof(T));
-            if (MemoryIsActive = configuration.ExpireMultiton != (int)MultitonExpireTime.TurnOff)
-                InMemory = new InMemory<T>(configuration);
-            if (CloudIsActive = configuration.ExpireCache != (int)CacheExpireTime.TurnOff && !string.IsNullOrWhiteSpace(configuration.ConnectionString))
+            if (MemoryIsActive = configuration.InMemoryProperties != null && configuration.InMemoryProperties.ExpireSeconds != (int)ExpireTime.TurnOff)
+                InMemory = new InMemory<T>(configuration.InMemoryProperties);
+            if (CloudIsActive = configuration.InCloudProperties != null && configuration.InCloudProperties.ExpireSeconds != (int)ExpireTime.TurnOff)
             {
-                switch (configuration.InCloudType)
+                if(string.IsNullOrWhiteSpace(configuration.InCloudProperties.ConnectionString))
+                    throw new ArgumentException($"Value {typeof(T).FullName} installed for cloud without a connection string.");
+                switch (configuration.InCloudProperties.CloudType)
                 {
                     case InCloudType.RedisCache:
-                        InCloud = new InRedisCache<T>(configuration);
+                        InCloud = new InRedisCache<T>(configuration.InCloudProperties);
                         break;
                     case InCloudType.TableStorage:
-                        InCloud = new InTableStorage<T>(configuration);
+                        InCloud = new InTableStorage<T>(configuration.InCloudProperties);
                         break;
                     case InCloudType.BlobStorage:
-                        InCloud = new InBlobStorage<T>(configuration);
+                        InCloud = new InBlobStorage<T>(configuration.InCloudProperties);
                         break;
                     default:
-                        throw new NotImplementedException($"InCloudType not found {configuration.InCloudType}");
+                        throw new NotImplementedException($"CloudType not found {configuration.InCloudProperties.CloudType}");
                 }
             }
         }

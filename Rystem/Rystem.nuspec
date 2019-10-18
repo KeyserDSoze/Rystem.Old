@@ -28,7 +28,7 @@
     <copyright>Copyright 2019-2026</copyright>
     <tags>Rystem Cache Multiton Azure Utility Stream Analytics Crypting</tags>
     <dependencies>
-      <dependency id="Rystem.Interfaces" version="4.6.1" />
+      <dependency id="Rystem.Interfaces" version="4.7.1" />
       <dependency id="Newtonsoft.Json" version="10.0.3" />
       <dependency id="Microsoft.Azure.EventHubs" version="4.1.0" />
       <dependency id="Microsoft.Azure.ServiceBus" version="4.0.0" />

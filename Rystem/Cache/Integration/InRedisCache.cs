@@ -15,9 +15,9 @@ namespace Rystem.Cache
         private static Lazy<ConnectionMultiplexer> Connection;
         private static TimeSpan ExpireCache;
         private readonly static string FullName = typeof(T).FullName;
-        internal InRedisCache(MultitonInstaller.MultitonConfiguration configuration)
+        internal InRedisCache(InCloudMultitonProperties configuration)
         {
-            ExpireCache = TimeSpan.FromMinutes(configuration.ExpireCache);
+            ExpireCache = configuration.ExpireTimeSpan;
             Connection = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(configuration.ConnectionString));
         }
         internal override T Instance(string key)

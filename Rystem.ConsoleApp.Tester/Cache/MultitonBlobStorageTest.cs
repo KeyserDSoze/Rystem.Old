@@ -4,6 +4,7 @@ using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Rystem.ZConsoleApp.Tester.Cache
 {
@@ -29,6 +30,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 return false;
             if (smallBlobKey.AllKeys().Count != 0)
                 return false;
+            smallBlob = smallBlobKey.Instance() as SmallBlob;
+            Thread.Sleep(200);
+            if (!smallBlobKey.IsPresent())
+                return false;
+            Thread.Sleep(4800);
+            if (smallBlobKey.IsPresent())
+                return false;
             return true;
         }
     }
@@ -38,7 +46,8 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         static SmallBlobKey()
         {
-            MultitonInstaller.Configure<SmallBlobKey, SmallBlob>(ConnectionString, InCloudType.BlobStorage, CacheExpireTime.EightHour, MultitonExpireTime.TurnOff);
+            MultitonInstaller.Configure<SmallBlobKey, SmallBlob>(
+                new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.BlobStorage, ExpireTime.FiveSeconds)));
         }
         public IMultiton Fetch()
         {

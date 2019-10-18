@@ -26,8 +26,8 @@ namespace System
                     if (!Managers.ContainsKey(keyType.FullName))
                     {
                         Type valueType = MultitonInstaller.GetKeyType(keyType);
-                        Type genericType = typeof(MultitonManager<>).MakeGenericType(valueType);
-                        Managers.Add(keyType.FullName, (IMultitonManager)Activator.CreateInstance(genericType));
+                        Type managerType = typeof(MultitonManager<>).MakeGenericType(valueType);
+                        Managers.Add(keyType.FullName, (IMultitonManager)Activator.CreateInstance(managerType, new object[1] { MultitonInstaller.GetConfiguration(keyType) }));
                     }
             return Managers[keyType.FullName];
         }
