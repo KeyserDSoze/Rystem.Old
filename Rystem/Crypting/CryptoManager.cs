@@ -21,25 +21,27 @@ namespace Rystem.Crypting
                 switch (configuration.Value.Type)
                 {
                     case CryptoType.Rijndael:
-                        Integrations.Add(configuration.Key, new Rijndael(configuration.Value));
+                        Integrations.Add(configuration.Key, new Rijndael(configuration.Value as RjindaelConfiguration));
                         break;
                     case CryptoType.Sha256:
-                        Integrations.Add(configuration.Key, new Sha256(configuration.Value));
+                        Integrations.Add(configuration.Key, new Sha256(configuration.Value as Sha256Configuration));
                         break;
                     default:
                         throw new InvalidOperationException($"Wrong type installed {configuration.Value.Type}");
                 }
         }
 
-        public TInnerEntity Decrypt<TInnerEntity>(TInnerEntity entity, Installation installation) where TInnerEntity : ICrypto
+        public TInnerEntity Decrypt<TInnerEntity>(TInnerEntity entity, Installation installation)
+            where TInnerEntity : ICrypto
         {
-            entity.Message = this.Integrations[installation].Decrypt(entity.Message);
+            entity.Message = this.Integrations[installation].Decrypt(entity.CryptedMessage);
             return entity;
         }
 
-        public TInnerEntity Encrypt<TInnerEntity>(TInnerEntity entity, Installation installation) where TInnerEntity : ICrypto
+        public TInnerEntity Encrypt<TInnerEntity>(TInnerEntity entity, Installation installation)
+            where TInnerEntity : ICrypto
         {
-            entity.Message = this.Integrations[installation].Encrypt(entity.Message);
+            entity.CryptedMessage = this.Integrations[installation].Encrypt(entity.Message);
             return entity;
         }
     }

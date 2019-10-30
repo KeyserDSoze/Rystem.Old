@@ -7,10 +7,13 @@
   <ItemGroup>
     <Compile Remove="Azure\Queue\**" />
     <Compile Remove="Base\**" />
+    <Compile Remove="Utility\Crypting\**" />
     <EmbeddedResource Remove="Azure\Queue\**" />
     <EmbeddedResource Remove="Base\**" />
+    <EmbeddedResource Remove="Utility\Crypting\**" />
     <None Remove="Azure\Queue\**" />
     <None Remove="Base\**" />
+    <None Remove="Utility\Crypting\**" />
   </ItemGroup>
 
   <ItemGroup>

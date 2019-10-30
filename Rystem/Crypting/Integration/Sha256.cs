@@ -1,22 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace Rystem.Crypting
 {
     internal class Sha256 : ICryptoIntegration
     {
-        private CryptoConfiguration CryptoConfiguration;
-        public Sha256(CryptoConfiguration configuration) => this.CryptoConfiguration = CryptoConfiguration;
+        private Sha256Configuration CryptoConfiguration;
+        public Sha256(Sha256Configuration configuration) => this.CryptoConfiguration = configuration;
 
         public string Decrypt(string encryptedMessage)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Hash is not decryptable.");
         }
 
         public string Encrypt(string message)
         {
-            throw new NotImplementedException();
+            using (SHA256 mySHA256 = SHA256.Create())
+            {
+                byte[] bytes = mySHA256.ComputeHash(Encoding.UTF8.GetBytes(message));
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (var @byte in bytes)
+                    stringBuilder.Append(@byte.ToString("x2"));
+                return stringBuilder.ToString();
+            }
         }
     }
 }

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rystem.Crypting
+﻿namespace Rystem.Crypting
 {
-    public class CryptoConfiguration : IRystemConfiguration
+    public abstract class CryptoConfiguration : IRystemConfiguration
     {
         public string Name { get; set; }
-        public CryptoType Type { get; set; }
+        public abstract CryptoType Type { get; }
     }
 }

@@ -7,5 +7,6 @@ namespace Rystem.Crypting
     public interface ICrypto
     {
         string Message { get; set; }
+        string CryptedMessage { get; set; }
     }
 }
