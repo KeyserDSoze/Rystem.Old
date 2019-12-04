@@ -34,6 +34,8 @@ namespace Rystem.Crypting
         public TInnerEntity Decrypt<TInnerEntity>(TInnerEntity entity, Installation installation)
             where TInnerEntity : ICrypto
         {
+            if (entity.CryptedMessage == null)
+                throw new ArgumentNullException($"Property {nameof(entity.CryptedMessage)} is null.");
             entity.Message = this.Integrations[installation].Decrypt(entity.CryptedMessage);
             return entity;
         }
@@ -41,6 +43,8 @@ namespace Rystem.Crypting
         public TInnerEntity Encrypt<TInnerEntity>(TInnerEntity entity, Installation installation)
             where TInnerEntity : ICrypto
         {
+            if (entity.Message == null)
+                throw new ArgumentNullException($"Property {nameof(entity.Message)} is null.");
             entity.CryptedMessage = this.Integrations[installation].Encrypt(entity.Message);
             return entity;
         }

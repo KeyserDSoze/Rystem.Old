@@ -94,12 +94,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         }
         public static async Task<Stream> ReadAsync(ICloudBlob cloudBlob)
         {
-            await cloudBlob.FetchAttributesAsync();
-            var fileLength = cloudBlob.Properties.Length;
-            byte[] fileByte = new byte[fileLength];
-            await cloudBlob.DownloadToByteArrayAsync(fileByte, 0, null, BlobRequestOptions, null);
-            Stream stream = new MemoryStream(fileByte);
-            return stream;
+            return await cloudBlob.OpenReadAsync(null, BlobRequestOptions, null);
         }
         internal static AggregatedDataProperties ToAggregatedDataProperties(this BlobProperties blobProperties)
         {

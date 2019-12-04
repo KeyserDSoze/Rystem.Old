@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
@@ -14,17 +15,17 @@ namespace Rystem.Azure.AggregatedData.Integration
             TypeNameHandling = TypeNameHandling.Auto,
             NullValueHandling = NullValueHandling.Ignore
         };
-        public TEntity Read(AggregatedDataDummy dummy)
+        public async Task<TEntity> ReadAsync(AggregatedDataDummy dummy)
         {
             using (StreamReader sr = new StreamReader(dummy.Stream))
             {
-                TEntity dataLake = JsonConvert.DeserializeObject<TEntity>(sr.ReadToEnd(), JsonSettings);
+                TEntity dataLake = JsonConvert.DeserializeObject<TEntity>(await sr.ReadToEndAsync(), JsonSettings);
                 dataLake.Properties = dummy.Properties;
                 dataLake.Name = dummy.Name;
                 return dataLake;
             }
         }
-        public AggregatedDataDummy Write(TEntity entity)
+        public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
         {
             return new AggregatedDataDummy()
             {

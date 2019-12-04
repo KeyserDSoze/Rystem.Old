@@ -39,7 +39,7 @@ namespace Rystem.Azure.AggregatedData
         }
         private async Task<IList<TEntity>> ReadAsync(ICloudBlob cloudBlob)
         {
-            return this.ListReader.Read(new AggregatedDataDummy()
+            return await this.ListReader.ReadAsync(new AggregatedDataDummy()
             {
                 Name = cloudBlob.Name,
                 Stream = await BlobStorageBaseIntegration.ReadAsync(cloudBlob),
@@ -75,7 +75,7 @@ namespace Rystem.Azure.AggregatedData
         {
             int attempt = 0;
             CloudAppendBlob appendBlob = this.Context.GetAppendBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
+            AggregatedDataDummy dummy = await this.Writer.WriteAsync((TEntity)entity);
             do
             {
                 try

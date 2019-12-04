@@ -40,7 +40,7 @@ namespace Rystem.Azure.AggregatedData
         }
         private async Task<TEntity> ReadAsync(ICloudBlob cloudBlob)
         {
-            return this.Reader.Read(new AggregatedDataDummy()
+            return await this.Reader.ReadAsync(new AggregatedDataDummy()
             {
                 Name = cloudBlob.Name,
                 Stream = await BlobStorageBaseIntegration.ReadAsync(cloudBlob),
@@ -75,7 +75,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {
             ICloudBlob cloudBlob = this.Context.GetBlockBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
+            AggregatedDataDummy dummy = await this.Writer.WriteAsync((TEntity)entity);
             await cloudBlob.UploadFromStreamAsync(dummy.Stream);
             await BlobStorageBaseIntegration.SetBlobPropertyIfNecessary(entity, cloudBlob, dummy);
             return true;

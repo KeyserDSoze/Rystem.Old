@@ -1,10 +1,11 @@
 ﻿using Rystem.Azure.AggregatedData;
+using System.Threading.Tasks;
 
 namespace Reporting.WindTre.Library.Base.Blob
 {
     public class BlobManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity> where TEntity : BlobObject, new()
     {
-        public TEntity Read(AggregatedDataDummy dummy)
+        public async Task<TEntity> ReadAsync(AggregatedDataDummy dummy)
         {
             return new TEntity()
             {
@@ -14,7 +15,7 @@ namespace Reporting.WindTre.Library.Base.Blob
             };
         }
 
-        public AggregatedDataDummy Write(TEntity entity)
+        public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
         {
             return new AggregatedDataDummy()
             {

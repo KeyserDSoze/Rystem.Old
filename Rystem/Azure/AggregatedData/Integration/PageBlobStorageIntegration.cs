@@ -38,7 +38,7 @@ namespace Rystem.Azure.AggregatedData
         }
         private async Task<IList<TEntity>> ReadAsync(ICloudBlob cloudBlob)
         {
-            return this.ListReader.Read(new AggregatedDataDummy()
+            return await this.ListReader.ReadAsync(new AggregatedDataDummy()
             {
                 Name = cloudBlob.Name,
                 Stream = await BlobStorageBaseIntegration.ReadAsync(cloudBlob),
@@ -75,7 +75,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {
             CloudPageBlob pageBlob = this.Context.GetPageBlobReference(entity.Name);
-            AggregatedDataDummy dummy = this.Writer.Write((TEntity)entity);
+            AggregatedDataDummy dummy = await this.Writer.WriteAsync((TEntity)entity);
             if (!await pageBlob.ExistsAsync())
                 lock (TrafficLight)
                     if (!pageBlob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult())

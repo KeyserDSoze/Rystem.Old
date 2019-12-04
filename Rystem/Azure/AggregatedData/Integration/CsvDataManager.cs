@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
@@ -73,14 +74,14 @@ namespace Rystem.Azure.AggregatedData.Integration
             }
             return stringBuilder.ToString() + BreakLine;
         }
-        public IList<TEntity> Read(AggregatedDataDummy dummy)
+        public async Task<IList<TEntity>> ReadAsync(AggregatedDataDummy dummy)
         {
             IList<TEntity> aggregatedDatas = new List<TEntity>();
             using (StreamReader sr = new StreamReader(dummy.Stream))
             {
                 while (!sr.EndOfStream)
                 {
-                    TEntity aggregatedData = Deserialize(sr.ReadLine());
+                    TEntity aggregatedData = Deserialize(await sr.ReadLineAsync());
                     aggregatedData.Properties = dummy.Properties;
                     aggregatedData.Name = dummy.Name;
                     aggregatedDatas.Add(aggregatedData);
@@ -89,7 +90,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             return aggregatedDatas;
         }
 
-        public AggregatedDataDummy Write(TEntity entity)
+        public  async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
         {
             return new AggregatedDataDummy()
             {
