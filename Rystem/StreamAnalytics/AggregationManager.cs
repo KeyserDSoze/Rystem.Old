@@ -25,9 +25,9 @@ namespace Rystem.StreamAnalytics
         {
             this.CreateTrafficLight(installation);
             IList<Exception> exceptions = new List<Exception>();
-            string istance = Guid.NewGuid().ToString("N");
+            string instance = Guid.NewGuid().ToString("N");
             DateTime startTime = DateTime.UtcNow;
-            log.LogInformation($"istance: {istance} -> {startTime}.");
+            log.LogInformation($"instance: {instance} -> {startTime}.");
             int totalCount = 0;
             foreach (T eventData in events)
             {
@@ -45,7 +45,7 @@ namespace Rystem.StreamAnalytics
             }
             IList<T> flusheds = this.Flush(log, installation);
             DateTime endTime = DateTime.UtcNow;
-            log.LogInformation($"istance: {istance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
+            log.LogInformation($"instance: {instance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
             return flusheds;
         }
         private void CreateTrafficLight(Installation installation)

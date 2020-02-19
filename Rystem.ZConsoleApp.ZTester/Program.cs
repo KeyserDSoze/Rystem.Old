@@ -16,7 +16,9 @@ namespace Rystem.ZConsoleApp.ZTester
         static List<string> xx;
         static void Main(string[] args)
         {
-            var xx = new TrafficCardLogByName().List("Billing/20191203/Ok.csv");
+            //var xx = new TrafficCardLogByName().List("Billing/20191203/Ok.csv");
+            var tt = new CrostaModel().List(takeCount: 10);
+            var uu = "";
             //foreach(string a in xx) 
             //{
             //    string o = a;

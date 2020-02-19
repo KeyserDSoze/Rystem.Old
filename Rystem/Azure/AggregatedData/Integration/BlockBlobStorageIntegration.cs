@@ -54,7 +54,7 @@ namespace Rystem.Azure.AggregatedData
             BlobContinuationToken token = null;
             do
             {
-                BlobResultSegment segment = await this.Context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, BlobStorageBaseIntegration.BlobRequestOptions, new OperationContext() { });
+                BlobResultSegment segment = await this.Context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, takeCount, token, BlobStorageBaseIntegration.BlobRequestOptions, new OperationContext() { });
                 token = segment.ContinuationToken;
                 foreach (IListBlobItem blobItem in segment.Results)
                 {
@@ -62,7 +62,8 @@ namespace Rystem.Azure.AggregatedData
                         continue;
                     items.Add(await this.ReadAsync(blobItem as ICloudBlob));
                 }
-                if (takeCount != null && items.Count >= takeCount) break;
+                if (takeCount != null && items.Count >= takeCount)
+                    break;
             } while (token != null);
             return items;
         }

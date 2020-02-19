@@ -18,7 +18,6 @@ namespace Reporting.WindTre.Library.Base.Blob
             blobObject.Properties = new AggregatedDataProperties()
             {
                 ContentType = contentType,
-
             };
             await blobObject.WriteAsync(0, installation);
         }
