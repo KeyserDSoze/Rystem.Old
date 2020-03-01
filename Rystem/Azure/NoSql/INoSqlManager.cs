@@ -13,7 +13,9 @@ namespace Rystem.Azure.NoSql
         Task<IList<TNoSqlEntity>> GetAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
             where TNoSqlEntity : INoSql;
         Task<bool> UpdateAsync(INoSql entity, Installation installation);
+        Task<bool> UpdateBatchAsync(IEnumerable<INoSql> entity, Installation installation);
         Task<bool> DeleteAsync(INoSql entity, Installation installation);
+        Task<bool> DeleteBatchAsync(IEnumerable<INoSql> entities, Installation installation);
         string GetName(Installation installation);
     }
 }

@@ -91,6 +91,27 @@ namespace Rystem.Azure.NoSql
             TableOperation operation = TableOperation.InsertOrReplace(WriteEntity(entity));
             return (await this.Context.ExecuteAsync(operation)).HttpStatusCode == 204;
         }
+        public async Task<bool> UpdateBatchAsync(IEnumerable<TEntity> entities)
+        {
+            TableBatchOperation batch = new TableBatchOperation();
+            foreach (TEntity entity in entities)
+                batch.InsertOrReplace(WriteEntity(entity));
+            IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
+            return (results.All(x => x.HttpStatusCode == 204));
+        }
+        public async Task<bool> DeleteBatchAsync(IEnumerable<TEntity> entities)
+        {
+            TableBatchOperation batch = new TableBatchOperation();
+            foreach (ITableStorage entity in entities.Select(x => x as ITableStorage))
+                batch.Delete(new DummyTableStorage()
+                {
+                    PartitionKey = entity.PartitionKey,
+                    RowKey = entity.RowKey,
+                    ETag = "*"
+                });
+            IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
+            return (results.All(x => x.HttpStatusCode == 204));
+        }
         private static DateTime DateTimeDefault = default;
         private DynamicTableEntity WriteEntity(TEntity entity)
         {

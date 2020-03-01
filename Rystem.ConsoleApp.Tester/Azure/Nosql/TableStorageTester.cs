@@ -63,6 +63,21 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             if (examples.Count() != 0)
                 return false;
 
+            List<Example> examplesForBatch = new List<Example>()
+            {
+                new Example(){PartitionKey = "A", RowKey="B", },
+                new Example(){PartitionKey = "A", RowKey="C", },
+                new Example(){PartitionKey = "A", RowKey="D", },
+            };
+            examplesForBatch.UpdateBatch();
+            examplesForBatch = new Example().Get().ToList();
+            if (examplesForBatch.Count != 3)
+                return false;
+            examplesForBatch.DeleteBatch();
+            examplesForBatch = new Example().Get().ToList();
+            if (examplesForBatch.Count != 0)
+                return false;
+
             return true;
         }
     }

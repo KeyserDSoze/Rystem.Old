@@ -27,9 +27,15 @@ namespace System
         public static async Task<bool> UpdateAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
            => await Manager(entity.GetType()).UpdateAsync(entity, installation);
+        public static async Task<bool> UpdateBatchAsync<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
+            where TEntity : INoSql
+           => await Manager(entities.FirstOrDefault().GetType()).UpdateBatchAsync(entities.Select(x => (INoSql)x), installation);
         public static async Task<bool> DeleteAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
            => await Manager(entity.GetType()).DeleteAsync(entity, installation);
+        public static async Task<bool> DeleteBatchAsync<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
+            where TEntity : INoSql
+           => await Manager(entities.FirstOrDefault().GetType()).DeleteBatchAsync(entities.Select(x => (INoSql)x), installation);
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
            => await Manager(entity.GetType()).ExistsAsync(entity, installation);
@@ -40,9 +46,15 @@ namespace System
         public static bool Update<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : INoSql
           => UpdateAsync(entity, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool UpdateBatch<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
+           where TEntity : INoSql
+          => UpdateBatchAsync(entities, installation).ConfigureAwait(false).GetAwaiter().GetResult();
         public static bool Delete<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
            => DeleteAsync(entity, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        public static bool DeleteBatch<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
+           where TEntity : INoSql
+          => DeleteBatchAsync(entities, installation).ConfigureAwait(false).GetAwaiter().GetResult();
         public static bool Exists<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
            => ExistsAsync(entity, installation).ConfigureAwait(false).GetAwaiter().GetResult();
