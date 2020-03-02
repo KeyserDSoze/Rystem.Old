@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    internal class InRedisCache<T> : AMultitonIntegration<T>
+    internal class InRedisCache<T> : IMultitonIntegration<T>
         where T : IMultiton
     {
         private static IDatabase Cache => Connection.Value.GetDatabase();
@@ -20,7 +20,7 @@ namespace Rystem.Cache
             ExpireCache = configuration.ExpireTimeSpan;
             Connection = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(configuration.ConnectionString));
         }
-        internal override T Instance(string key)
+        public T Instance(string key)
         {
             string json = Cache.StringGet(CloudKeyToString(key));
             return JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings()
@@ -28,18 +28,22 @@ namespace Rystem.Cache
                 TypeNameHandling = TypeNameHandling.Auto
             });
         }
-        internal override bool Update(string key, T value)
+        public bool Update(string key, T value, TimeSpan expiringTime)
         {
             bool code = false;
-            if (ExpireCache.Ticks > 0)
-                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings), ExpireCache);
+            if (expiringTime == default)
+                expiringTime = ExpireCache;
+            if (expiringTime.Ticks > 0)
+                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings), expiringTime);
             else
                 code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
             return code;
         }
-        internal override bool Exists(string key) => Cache.KeyExists(CloudKeyToString(key));
-        internal override bool Delete(string key) => Cache.KeyDelete(CloudKeyToString(key));
-        internal override IEnumerable<string> List()
+        public bool Exists(string key) 
+            => Cache.KeyExists(CloudKeyToString(key));
+        public bool Delete(string key) 
+            => Cache.KeyDelete(CloudKeyToString(key));
+        public IEnumerable<string> List()
         {
             string toReplace = $"{FullName}{MultitonConst.Separator}";
             List<string> keys = new List<string>();

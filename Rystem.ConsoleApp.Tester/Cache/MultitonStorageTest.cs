@@ -36,6 +36,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             Thread.Sleep(4800);
             if (smallTableKey.IsPresent())
                 return false;
+            smallTableKey.Restore(expiringTime: new TimeSpan(0, 0, 10));
+            Thread.Sleep(7000);
+            if (!smallTableKey.IsPresent())
+                return false;
+            Thread.Sleep(5000);
+            if (smallTableKey.IsPresent())
+                return false;
             return true;
         }
     }

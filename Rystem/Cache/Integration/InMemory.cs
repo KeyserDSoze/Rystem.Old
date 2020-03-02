@@ -5,29 +5,42 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    internal class InMemory<T> : AMultitonIntegration<T>
+    internal class InMemory<T> : IMultitonIntegration<T>
         where T : IMultiton
     {
         private static int ExpireMultiton = 0;
         private static Dictionary<string, Dummy> Instances = new Dictionary<string, Dummy>();
-        internal InMemory(ExpiringProperties configuration) 
+        internal InMemory(ExpiringProperties configuration)
             => ExpireMultiton = configuration.ExpireSeconds;
-        internal override T Instance(string key) 
+        public T Instance(string key)
             => Instances[key].Instance;
-        internal override bool Update(string key, T value)
+        public bool Update(string key, T value, TimeSpan expireTime)
         {
+            long multitonExpireTime = ExpireMultiton;
+            if (expireTime != default)
+                multitonExpireTime = (long)expireTime.TotalSeconds;
             if (!Instances.ContainsKey(key))
                 Instances.Add(key, new Dummy());
             Instances[key].Instance = value;
-            if (ExpireMultiton > (int)ExpireTime.Infinite)
-                Instances[key].ExpiringTime = DateTime.UtcNow.AddSeconds(ExpireMultiton).Ticks;
+            if (multitonExpireTime > (int)ExpireTime.Infinite)
+                Instances[key].ExpiringTime = DateTime.UtcNow.AddSeconds(multitonExpireTime).Ticks;
             return true;
         }
-        internal override bool Exists(string key) 
-            => Instances.ContainsKey(key) && (ExpireMultiton == (int)ExpireTime.Infinite || (Instances[key]?.ExpiringTime ?? 0) >= DateTime.UtcNow.Ticks);
-        internal override bool Delete(string key) 
+        public bool Exists(string key)
+        {
+            if (Instances.ContainsKey(key))
+            {
+                if (ExpireMultiton == (int)ExpireTime.Infinite || (Instances[key]?.ExpiringTime ?? 0) >= DateTime.UtcNow.Ticks)
+                    return true;
+                else
+                    Instances.Remove(key);
+            }
+            return false;
+        }
+
+        public bool Delete(string key)
             => Instances.Remove(key);
-        internal override IEnumerable<string> List() 
+        public IEnumerable<string> List()
             => Instances.Keys;
         private class Dummy
         {

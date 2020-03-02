@@ -41,10 +41,10 @@ namespace System
         {
             return Manager(entry.GetType()).Delete(entry);
         }
-        public static bool Restore<TEntry>(this TEntry entry, IMultiton value = null)
+        public static bool Restore<TEntry>(this TEntry entry, IMultiton value = null, TimeSpan expiringTime = default)
             where TEntry : IMultitonKey
         {
-            return Manager(entry.GetType()).Update(entry, value);
+            return Manager(entry.GetType()).Update(entry, value, expiringTime);
         }
         public static bool IsPresent<TEntry>(this TEntry entry)
             where TEntry : IMultitonKey

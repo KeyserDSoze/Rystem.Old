@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace Rystem.Cache
 {
-    internal class InBlobStorage<T> : AMultitonIntegration<T>
+    internal class InBlobStorage<T> : IMultitonIntegration<T>
         where T : IMultiton
     {
         private static CloudBlobContainer Context;
@@ -23,23 +23,37 @@ namespace Rystem.Cache
             Context = Client.GetContainerReference(ContainerName);
             Context.CreateIfNotExistsAsync().GetAwaiter().GetResult();
         }
-        internal override T Instance(string key)
+        public T Instance(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
-            using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ConfigureAwait(false).GetAwaiter().GetResult()))
-                return JsonConvert.DeserializeObject<T>(reader.ReadToEnd(), MultitonConst.JsonSettings);
+            cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
+            {
+                this.Delete(key);
+                return default;
+            }
+            else
+            {
+                using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ConfigureAwait(false).GetAwaiter().GetResult()))
+                    return JsonConvert.DeserializeObject<T>(reader.ReadToEnd(), MultitonConst.JsonSettings);
+            }
         }
-        internal override bool Update(string key, T value)
+        public bool Update(string key, T value, TimeSpan expiringTime)
         {
+            long expiring = ExpireCache;
+            if (expiringTime != default)
+                expiring = expiringTime.Ticks;
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
+            if (expiring > 0)
+                cloudBlob.Properties.CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString();
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value, MultitonConst.JsonSettings))))
                 cloudBlob.UploadFromStreamAsync(stream).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }
 
-        internal override bool Delete(string key) 
+        public bool Delete(string key)
             => Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        internal override bool Exists(string key)
+        public bool Exists(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
             if (cloudBlob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult())
@@ -47,15 +61,18 @@ namespace Rystem.Cache
                 if (ExpireCache > 0)
                 {
                     cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                    if (DateTime.UtcNow.Ticks - cloudBlob.Properties.LastModified.Value.UtcDateTime.Ticks > ExpireCache)
+                    if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
+                    {
+                        this.Delete(key);
                         return false;
+                    }
                 }
                 return true;
             }
             return false;
         }
 
-        internal override IEnumerable<string> List()
+        public IEnumerable<string> List()
         {
             List<string> items = new List<string>();
             BlobContinuationToken token = null;

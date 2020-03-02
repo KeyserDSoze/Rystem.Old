@@ -9,7 +9,7 @@ using Rystem.Cache;
 
 namespace Rystem.Cache
 {
-    internal class InTableStorage<T> : AMultitonIntegration<T>
+    internal class InTableStorage<T> : IMultitonIntegration<T>
         where T : IMultiton
     {
         private static CloudTable Context;
@@ -24,25 +24,29 @@ namespace Rystem.Cache
             Context = tableClient.GetTableReference(TableName);
             Context.CreateIfNotExistsAsync().GetAwaiter().GetResult();
         }
-        internal override T Instance(string key)
+        public T Instance(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-            return result.Result != null ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, MultitonConst.JsonSettings) : default(T);
+            return result.Result != default ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, MultitonConst.JsonSettings) : default(T);
         }
-        internal override bool Update(string key, T value)
+        public bool Update(string key, T value, TimeSpan expiringTime)
         {
+            long expiring = ExpireCache;
+            if (expiringTime != default)
+                expiring = expiringTime.Ticks;
             RystemCache rystemCache = new RystemCache()
             {
                 PartitionKey = FullName,
                 RowKey = key,
-                Data = JsonConvert.SerializeObject(value, MultitonConst.JsonSettings)
+                Data = JsonConvert.SerializeObject(value, MultitonConst.JsonSettings),
+                E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);
             TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             return (esito.HttpStatusCode == 204);
         }
-        internal override bool Delete(string key)
+        public bool Delete(string key)
         {
             RystemCache rystemCache = new RystemCache()
             {
@@ -63,18 +67,21 @@ namespace Rystem.Cache
                 throw er;
             }
         }
-        internal override bool Exists(string key)
+        public bool Exists(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
             if (result.Result == null)
                 return false;
             RystemCache cached = (RystemCache)result.Result;
-            if (ExpireCache > 0 && DateTime.UtcNow.Ticks - cached.Timestamp.UtcDateTime.Ticks > ExpireCache)
+            if (DateTime.UtcNow.Ticks > cached.E)
+            {
+                this.Delete(key);
                 return false;
+            }
             return true;
         }
-        internal override IEnumerable<string> List()
+        public IEnumerable<string> List()
         {
             TableQuery tableQuery = new TableQuery
             {
@@ -94,6 +101,7 @@ namespace Rystem.Cache
         private class RystemCache : TableEntity
         {
             public string Data { get; set; }
+            public long E { get; set; }
         }
     }
 }

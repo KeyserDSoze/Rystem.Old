@@ -8,9 +8,9 @@ namespace Rystem.Cache
     internal class MultitonManager<T> : IMultitonManager
         where T : IMultiton
     {
-        private readonly AMultitonIntegration<T> InMemory;
+        private readonly IMultitonIntegration<T> InMemory;
         private readonly bool MemoryIsActive = false;
-        private readonly AMultitonIntegration<T> InCloud;
+        private readonly IMultitonIntegration<T> InCloud;
         private readonly bool CloudIsActive = false;
         private readonly static string FullName = typeof(T).FullName;
         private readonly static object TrafficLight = new object();
@@ -50,9 +50,9 @@ namespace Rystem.Cache
                         if (!InMemory.Exists(keyString))
                         {
                             if (CloudIsActive && InCloud.Exists(keyString))
-                                InMemory.Update(keyString, InCloud.Instance(keyString));
+                                InMemory.Update(keyString, InCloud.Instance(keyString), default);
                             else
-                                Update(key, key.Fetch());
+                                Update(key, key.Fetch(), default);
                         }
                     }
                 }
@@ -63,17 +63,17 @@ namespace Rystem.Cache
                 if (!InCloud.Exists(keyString))
                     lock (TrafficLight)
                         if (!InCloud.Exists(keyString))
-                            Update(key, key.Fetch());
+                            Update(key, key.Fetch(), default);
                 return InCloud.Instance(keyString);
             }
         }
-        public bool Update(IMultitonKey key, IMultiton value)
+        public bool Update(IMultitonKey key, IMultiton value, TimeSpan expiringTime)
         {
             string keyString = key.ToKeyString();
             if (value == null)
                 value = key.Fetch();
-            return (!MemoryIsActive || InMemory.Update(keyString, (T)value)) &&
-                (!CloudIsActive || InCloud.Update(keyString, (T)value));
+            return (!MemoryIsActive || InMemory.Update(keyString, (T)value, expiringTime)) &&
+                (!CloudIsActive || InCloud.Update(keyString, (T)value, expiringTime));
         }
 
         public bool Exists(IMultitonKey key)

@@ -37,6 +37,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             Thread.Sleep(800);
             if (serviceKey.IsPresent())
                 return false;
+            serviceKey.Restore(expiringTime: new TimeSpan(0, 0, 5));
+            Thread.Sleep(2000);
+            if (!serviceKey.IsPresent())
+                return false;
+            Thread.Sleep(5000);
+            if (serviceKey.IsPresent())
+                return false;
             MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }
