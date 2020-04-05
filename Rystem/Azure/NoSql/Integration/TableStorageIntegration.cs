@@ -184,7 +184,7 @@ namespace Rystem.Azure.NoSql
 
         private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
         {
-            TypeNameHandling = TypeNameHandling.Auto,
+            TypeNameHandling = TypeNameHandling.All,
             NullValueHandling = NullValueHandling.Ignore
         };
     }
