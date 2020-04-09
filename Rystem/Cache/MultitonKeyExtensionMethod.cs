@@ -8,8 +8,9 @@ namespace System
 {
     public static class MultitonKeyExtensionMethod
     {
-        public static string ToKeyString(this IMultitonKey multitonKey) => multitonKey.Value().Trim(MultitonConst.Separator);
-        private static string Value(this IMultitonKey multitonKey)
+        public static string ToKeyString(this IMultiKey multitonKey)
+            => multitonKey.Value().Trim(MultitonConst.Separator);
+        private static string Value(this IMultiKey multitonKey)
         {
             Type keyType = multitonKey.GetType();
             StringBuilder valueBuilder = new StringBuilder();
@@ -31,28 +32,27 @@ namespace System
                     }
             return Managers[keyType.FullName];
         }
-        public static IMultiton Instance<TEntry>(this TEntry entry)
-            where TEntry : IMultitonKey
-        {
-            return Manager(entry.GetType()).Instance(entry);
-        }
-        public static bool Remove<TEntry>(this TEntry entry)
-            where TEntry : IMultitonKey
-        {
-            return Manager(entry.GetType()).Delete(entry);
-        }
-        public static bool Restore<TEntry>(this TEntry entry, IMultiton value = null, TimeSpan expiringTime = default)
-            where TEntry : IMultitonKey
-        {
-            return Manager(entry.GetType()).Update(entry, value, expiringTime);
-        }
-        public static bool IsPresent<TEntry>(this TEntry entry)
-            where TEntry : IMultitonKey
-        {
-            return Manager(entry.GetType()).Exists(entry);
-        }
+        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
+        public static IMultiton Instance(this IMultitonKey entry)
+            => Manager(entry.GetType()).Instance(entry);
+        public static TEntry Instance<TEntry>(this IMultitonKey<TEntry> entry)
+            where TEntry : IMultiton, new()
+            => Manager(entry.GetType()).Instance(entry);
+
+        public static bool Remove(this IMultiKey entry)
+            => Manager(entry.GetType()).Delete(entry);
+
+        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
+        public static bool Restore(this IMultitonKey entry, IMultiton value = null, TimeSpan expiringTime = default)
+            => Manager(entry.GetType()).Update(entry, value, expiringTime);
+        public static bool Restore<TEntry>(this IMultitonKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
+            where TEntry : IMultiton, new()
+            => Manager(entry.GetType()).Update(entry, value, expiringTime);
+
+        public static bool IsPresent(this IMultiKey entry)
+            => Manager(entry.GetType()).Exists(entry);
         public static IList<TEntry> AllKeys<TEntry>(this TEntry entry)
-            where TEntry : IMultitonKey, new()
+            where TEntry : IMultiKey, new()
         {
             Type keyType = typeof(TEntry);
             IList<TEntry> keys = new List<TEntry>();

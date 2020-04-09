@@ -4,7 +4,10 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    public interface IMultiton : IMulti
+    public interface IMultiKey
+    {
+    }
+    public interface IMulti
     {
     }
 }

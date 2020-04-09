@@ -15,9 +15,10 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             hybridTableKey.Remove();
 
             HybridTable hybridTable = hybridTableKey.Instance() as HybridTable;
-            Thread.Sleep(5000);
-            hybridTable = hybridTableKey.Instance() as HybridTable;
-
+            hybridTableKey.Restore(new HybridTable() { Id = 7 });
+            HybridTable secondHybridTable = new SecondHybridTableKey() { Id = 2 }.Instance();
+            if (hybridTable.Id == secondHybridTable.Id)
+                return false;
             return true;
         }
     }
@@ -30,6 +31,22 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             MultitonInstaller.Configure<HybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds)));
         }
         public IMultiton Fetch()
+        {
+            return new HybridTable()
+            {
+                Id = 5
+            };
+        }
+    }
+    public class SecondHybridTableKey : IMultitonKey<HybridTable>
+    {
+        public int Id { get; set; }
+        private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
+        static SecondHybridTableKey()
+        {
+            MultitonInstaller.Configure<SecondHybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds)));
+        }
+        public HybridTable Fetch()
         {
             return new HybridTable()
             {

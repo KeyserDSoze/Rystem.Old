@@ -20,7 +20,7 @@ namespace Rystem.Cache
                 InMemory = new InMemory<T>(configuration.InMemoryProperties);
             if (CloudIsActive = configuration.InCloudProperties != null && configuration.InCloudProperties.ExpireSeconds != (int)ExpireTime.TurnOff)
             {
-                if(string.IsNullOrWhiteSpace(configuration.InCloudProperties.ConnectionString))
+                if (string.IsNullOrWhiteSpace(configuration.InCloudProperties.ConnectionString))
                     throw new ArgumentException($"Value {typeof(T).FullName} installed for cloud without a connection string.");
                 switch (configuration.InCloudProperties.CloudType)
                 {
@@ -38,6 +38,7 @@ namespace Rystem.Cache
                 }
             }
         }
+        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
         public IMultiton Instance(IMultitonKey key)
         {
             string keyString = key.ToKeyString();
@@ -67,6 +68,38 @@ namespace Rystem.Cache
                 return InCloud.Instance(keyString);
             }
         }
+        public TEntry Instance<TEntry>(IMultitonKey<TEntry> key)
+            where TEntry : IMultiton, new()
+        {
+            string keyString = key.ToKeyString();
+            if (MemoryIsActive)
+            {
+                if (!InMemory.Exists(keyString))
+                {
+                    lock (TrafficLight)
+                    {
+                        if (!InMemory.Exists(keyString))
+                        {
+                            if (CloudIsActive && InCloud.Exists(keyString))
+                                InMemory.Update(keyString, InCloud.Instance(keyString), default);
+                            else
+                                Update(key, key.Fetch(), default);
+                        }
+                    }
+                }
+                return (TEntry)(InMemory.Instance(keyString) as IMultiton);
+            }
+            else
+            {
+                if (!InCloud.Exists(keyString))
+                    lock (TrafficLight)
+                        if (!InCloud.Exists(keyString))
+                            Update(key, key.Fetch(), default);
+                return (TEntry)(InCloud.Instance(keyString) as IMultiton);
+            }
+        }
+
+        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
         public bool Update(IMultitonKey key, IMultiton value, TimeSpan expiringTime)
         {
             string keyString = key.ToKeyString();
@@ -75,15 +108,24 @@ namespace Rystem.Cache
             return (!MemoryIsActive || InMemory.Update(keyString, (T)value, expiringTime)) &&
                 (!CloudIsActive || InCloud.Update(keyString, (T)value, expiringTime));
         }
+        public bool Update<TEntry>(IMultitonKey<TEntry> key, TEntry value, TimeSpan expiringTime)
+            where TEntry : IMultiton, new()
+        {
+            string keyString = key.ToKeyString();
+            if (value == null)
+                value = key.Fetch();
+            return (!MemoryIsActive || InMemory.Update(keyString, (T)(value as IMultiton), expiringTime)) &&
+                (!CloudIsActive || InCloud.Update(keyString, (T)(value as IMultiton), expiringTime));
+        }
 
-        public bool Exists(IMultitonKey key)
+        public bool Exists(IMultiKey key)
         {
             string keyString = key.ToKeyString();
             return (!MemoryIsActive || InMemory.Exists(keyString))
                    && (!CloudIsActive || InCloud.Exists(keyString));
         }
 
-        public bool Delete(IMultitonKey key)
+        public bool Delete(IMultiKey key)
         {
             string keyString = key.ToKeyString();
             return (!MemoryIsActive || InMemory.Delete(keyString))
@@ -98,6 +140,6 @@ namespace Rystem.Cache
                 return InMemory.List();
             return null;
         }
-       
+
     }
 }

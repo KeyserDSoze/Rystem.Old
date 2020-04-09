@@ -30,7 +30,7 @@ namespace Rystem.Cache
         /// <param name="expireCache">timespan for next update  Cache (default: 0, infinite), TableStorage has only infinite value</param>
         /// <param name="expireMultiton">timespan for next update Multiton (default: -1, turn off, use only  cache) (with 0 you can use a Multiton without update time)</param>
         public static void Configure<TKey, TEntry>(MultitonProperties properties)
-            where TKey : IMultitonKey
+            where TKey : IMultiKey
             where TEntry : IMultiton
         {
             Configure(typeof(TKey), typeof(TEntry), properties);
