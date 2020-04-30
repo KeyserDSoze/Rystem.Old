@@ -11,14 +11,35 @@ namespace Rystem.Cache
     internal class InRedisCache<T> : IMultitonIntegration<T>
         where T : IMultiton
     {
-        private static IDatabase Cache => Connection.Value.GetDatabase();
-        private static Lazy<ConnectionMultiplexer> Connection;
+        private int RoundRobin = -1;
+        private static readonly object TrafficLight = new object();
+        private IDatabase Cache
+        {
+            get
+            {
+                int value = 0;
+                if (this.Configuration.NumberOfClients > 1)
+                    lock (TrafficLight)
+                        value = this.RoundRobin = (this.RoundRobin + 1) % this.Configuration.NumberOfClients;
+                return Connections[value].Value.GetDatabase();
+            }
+        }
+
+        private List<Lazy<ConnectionMultiplexer>> Connections;
         private static TimeSpan ExpireCache;
-        private readonly static string FullName = typeof(T).FullName;
+        private readonly string FullName = typeof(T).FullName;
+        private readonly InCloudMultitonProperties Configuration;
         internal InRedisCache(InCloudMultitonProperties configuration)
         {
+            Configuration = configuration;
             ExpireCache = configuration.ExpireTimeSpan;
-            Connection = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(configuration.ConnectionString));
+            Connections = new List<Lazy<ConnectionMultiplexer>>();
+            for (int i = 0; i < configuration.NumberOfClients; i++)
+                Connections.Add(new Lazy<ConnectionMultiplexer>(() =>
+                {
+                    ConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect(configuration.ConnectionString);
+                    return connectionMultiplexer;
+                }));
         }
         public T Instance(string key)
         {
@@ -39,9 +60,9 @@ namespace Rystem.Cache
                 code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
             return code;
         }
-        public bool Exists(string key) 
+        public bool Exists(string key)
             => Cache.KeyExists(CloudKeyToString(key));
-        public bool Delete(string key) 
+        public bool Delete(string key)
             => Cache.KeyDelete(CloudKeyToString(key));
         public IEnumerable<string> List()
         {
@@ -52,7 +73,7 @@ namespace Rystem.Cache
                     keys.Add(redisKey.Replace(toReplace, string.Empty));
             return keys;
         }
-        private static string CloudKeyToString(string keyString)
+        private string CloudKeyToString(string keyString)
            => $"{FullName}{MultitonConst.Separator}{keyString}";
     }
 }

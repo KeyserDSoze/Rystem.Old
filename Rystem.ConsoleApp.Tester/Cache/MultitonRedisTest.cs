@@ -34,7 +34,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             Thread.Sleep(200);
             if (!serviceKey.IsPresent())
                 return false;
-            Thread.Sleep(800);
+            Thread.Sleep(4800);
             if (serviceKey.IsPresent())
                 return false;
             serviceKey.Restore(expiringTime: new TimeSpan(0, 0, 5));
@@ -62,7 +62,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()
         {
-            MultitonInstaller.Configure<ServiceKey, Service>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.RedisCache, ExpireTime.OneSecond)));
+            MultitonInstaller.Configure<ServiceKey, Service>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.RedisCache, ExpireTime.FiveSeconds)));
         }
     }
     public class Service : IMultiton
