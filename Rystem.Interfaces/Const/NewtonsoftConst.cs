@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Interfaces.Const
+namespace Rystem.Const
 {
-    public static class ExternalLibrarySettings
+    public static class NewtonsoftConst
     {
-        public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
+        public static readonly JsonSerializerSettings AutoNameHandling_NullIgnore_JsonSettings = new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.Auto,
             NullValueHandling = NullValueHandling.Ignore

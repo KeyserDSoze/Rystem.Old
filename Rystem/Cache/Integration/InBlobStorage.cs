@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
+using Rystem.Const;
 
 namespace Rystem.Cache
 {
@@ -35,7 +36,7 @@ namespace Rystem.Cache
             else
             {
                 using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ConfigureAwait(false).GetAwaiter().GetResult()))
-                    return JsonConvert.DeserializeObject<T>(reader.ReadToEnd(), MultitonConst.JsonSettings);
+                    return JsonConvert.DeserializeObject<T>(reader.ReadToEnd(), NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
             }
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
@@ -46,7 +47,7 @@ namespace Rystem.Cache
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
             if (expiring > 0)
                 cloudBlob.Properties.CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString();
-            using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value, MultitonConst.JsonSettings))))
+            using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings))))
                 cloudBlob.UploadFromStreamAsync(stream).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }

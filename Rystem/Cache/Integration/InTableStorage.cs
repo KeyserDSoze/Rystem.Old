@@ -6,6 +6,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using Rystem.Cache;
+using Rystem.Const;
 
 namespace Rystem.Cache
 {
@@ -28,7 +29,7 @@ namespace Rystem.Cache
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-            return result.Result != default ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, MultitonConst.JsonSettings) : default(T);
+            return result.Result != default ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings) : default(T);
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {
@@ -39,7 +40,7 @@ namespace Rystem.Cache
             {
                 PartitionKey = FullName,
                 RowKey = key,
-                Data = JsonConvert.SerializeObject(value, MultitonConst.JsonSettings),
+                Data = JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings),
                 E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);

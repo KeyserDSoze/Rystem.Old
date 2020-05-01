@@ -1,6 +1,7 @@
 ﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using Rystem.Const;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,7 +130,7 @@ namespace Rystem.Azure.NoSql
             }
             foreach (PropertyInfo pi in this.SpecialProperties)
                 dummy.Properties.Add(pi.Name, new EntityProperty(
-                    JsonConvert.SerializeObject(pi.GetValue(entity), JsonSettings)));
+                    JsonConvert.SerializeObject(pi.GetValue(entity), NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings)));
             return dummy;
         }
         private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);
@@ -146,7 +147,7 @@ namespace Rystem.Azure.NoSql
             foreach (PropertyInfo pi in this.SpecialProperties)
                 if (dynamicTableEntity.Properties.ContainsKey(pi.Name))
                 {
-                    dynamic value = JsonConvertDeserializeMethod.MakeGenericMethod(pi.PropertyType).Invoke(null, new object[2] { dynamicTableEntity.Properties[pi.Name].StringValue, JsonSettings });
+                    dynamic value = JsonConvertDeserializeMethod.MakeGenericMethod(pi.PropertyType).Invoke(null, new object[2] { dynamicTableEntity.Properties[pi.Name].StringValue, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings });
                     pi.SetValue(entity, value);
                 }
             return (TSpecialEntity)entity;
@@ -181,11 +182,5 @@ namespace Rystem.Azure.NoSql
                 }
             }
         }
-
-        private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
-        {
-            TypeNameHandling = TypeNameHandling.Auto,
-            NullValueHandling = NullValueHandling.Ignore
-        };
     }
 }

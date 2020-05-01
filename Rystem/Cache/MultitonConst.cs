@@ -28,14 +28,7 @@ namespace Rystem.Cache
             }
             return PropertyInfoDictionary[keyType.FullName];
         }
-        public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings()
-        {
-            TypeNameHandling = TypeNameHandling.Auto,
-            NullValueHandling = NullValueHandling.Ignore
-        };
         public const char Separator = '╬';
         public static readonly Type NoKey = typeof(NoMultitonKey);
-        public static readonly Type MultitonKey = typeof(IMultitonKey);
-       
     }
 }

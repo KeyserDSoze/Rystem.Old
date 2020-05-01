@@ -44,7 +44,7 @@ namespace Rystem.Azure.Queue
             => await Integrations[installation].DeleteScheduledAsync(messageId);
         public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, Installation installation, int path, int organization)
             => await Integrations[installation].SendBatchAsync(messages, path, organization);
-        public async Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization)
+        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization)
             => await Integrations[installation].SendScheduledBatchAsync(messages, delayInSeconds, path, organization);
         public async Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds, Installation installation, int path, int organization)
         {

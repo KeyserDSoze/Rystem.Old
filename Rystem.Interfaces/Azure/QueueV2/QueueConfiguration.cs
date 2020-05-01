@@ -22,7 +22,7 @@
         /// </summary>
         public QueueDuplication CheckDuplication { get; set; }
         /// <summary>
-        /// Only available for SmartQueue. Number of messages read at every request. Default value is 100.
+        /// Only available for SmartQueue and QueueStorage. Number of messages read at every request. Default value is 100.
         /// </summary>
         public int NumberOfMessages { get; set; } = 100;
         /// <summary>

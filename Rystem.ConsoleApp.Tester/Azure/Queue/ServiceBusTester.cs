@@ -3,6 +3,7 @@ using Rystem.Debug;
 using Rystem.Interfaces.Utility.Tester;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.Queue
@@ -30,7 +31,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             bool returned = myServiceBus.DeleteScheduled(messageId);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120)[0];
+            messageId = myServiceBuses.SendScheduledBatch(120).FirstOrDefault();
             if (messageId <= 0)
                 return false;
             returned = myServiceBus.DeleteScheduled(messageId);
@@ -49,7 +50,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             returned = myServiceBus.DeleteScheduled(messageId, installation: Enums.Installation.Inst00);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120, installation: Enums.Installation.Inst00)[0];
+            messageId = myServiceBuses.SendScheduledBatch(120, installation: Enums.Installation.Inst00).FirstOrDefault();
             if (messageId <= 0)
                 return false;
             returned = myServiceBus.DeleteScheduled(messageId, installation: Enums.Installation.Inst00);

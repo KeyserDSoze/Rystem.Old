@@ -1,6 +1,5 @@
 ﻿using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
-using Rystem.Interfaces.Const;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,10 +17,8 @@ namespace Rystem.Azure.Queue
                     $"{property.ConnectionString};EntityPath={property.Name}"),
                     ReceiveMode.PeekLock);
 
-        public Task<bool> CleanAsync()
-        {
-            throw new NotImplementedException();
-        }
+        public Task<bool> CleanAsync() 
+            => throw new NotImplementedException("ServiceBus doesn't allow this operation.");
 
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
@@ -29,10 +26,7 @@ namespace Rystem.Azure.Queue
             return true;
         }
 
-        public Task<IList<TEntity>> Read(int path, int organization)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<IEnumerable<TEntity>> Read(int path, int organization) => throw new NotImplementedException();
 
         public async Task<bool> SendAsync(IQueue message, int path, int organization)
         {
@@ -54,7 +48,7 @@ namespace Rystem.Azure.Queue
                  new Message(message.ToSendable()), DateTime.UtcNow.AddSeconds(delayInSeconds));
         }
 
-        public async Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
+        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
         {
             return new List<long>()
             {

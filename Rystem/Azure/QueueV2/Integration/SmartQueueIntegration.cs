@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Rystem.Const;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -125,7 +126,7 @@ namespace Rystem.Azure.Queue
         private async Task<long> SendingAsync(IQueue message, int delayInSeconds, int path, int organization)
         {
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
-            string messageToSend = JsonConvert.SerializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }).Replace("'", "''");
+            string messageToSend = JsonConvert.SerializeObject(message, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings).Replace("'", "''");
             StringBuilder sb = new StringBuilder();
             if (this.CheckDuplication)
                 sb.Append(string.Format(this.IfOnInsert, path, organization, messageToSend));
@@ -151,13 +152,13 @@ namespace Rystem.Azure.Queue
             foreach (IQueue message in messages)
             {
                 sb.Append(InsertQuery);
-                sb.Append($"{path},'{organization}','{JsonConvert.SerializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }).Replace("'", "''")}',");
+                sb.Append($"{path},'{organization}','{JsonConvert.SerializeObject(message, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings).Replace("'", "''")}',");
                 sb.Append($"'{newDatetime.ToString("yyyy-MM-ddTHH:mm:ss")}', {newDatetime.Ticks});");
             }
             using (SqlConnection connection = Connection())
                 return await Retry(connection, sb.ToString(), ExecuteNonQueryAsync) > 0;
         }
-        public async Task<IList<TEntity>> Read(int path, int organization)
+        public async Task<IEnumerable<TEntity>> Read(int path, int organization)
         {
             StringBuilder query = new StringBuilder();
             query.Append(this.ReadQuery + DateTime.UtcNow.Ticks.ToString());
@@ -181,7 +182,7 @@ namespace Rystem.Azure.Queue
                     while (await myReader.ReadAsync())
                     {
                         reading.Messages.Add(JsonConvert.DeserializeObject<TEntity>(myReader["Message"].ToString(),
-                            new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.Auto }));
+                            NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings));
                         reading.ToDeleteIds.Add(int.Parse(myReader["Id"].ToString()));
                     }
                     return reading;
@@ -210,7 +211,7 @@ namespace Rystem.Azure.Queue
           => await SendingBatchAsync(messages, 0, path, organization);
         public async Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, int path, int organization)
             => await SendingAsync(message, delayInSeconds, path, organization);
-        public async Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
+        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
         {
             await SendingBatchAsync(messages, delayInSeconds, path, organization);
             return new List<long>();

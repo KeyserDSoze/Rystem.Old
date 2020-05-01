@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Rystem.Cache;
+using Rystem.Const;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -44,10 +45,7 @@ namespace Rystem.Cache
         public T Instance(string key)
         {
             string json = Cache.StringGet(CloudKeyToString(key));
-            return JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Auto
-            });
+            return JsonConvert.DeserializeObject<T>(json, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {
@@ -55,9 +53,9 @@ namespace Rystem.Cache
             if (expiringTime == default)
                 expiringTime = ExpireCache;
             if (expiringTime.Ticks > 0)
-                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings), expiringTime);
+                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings), expiringTime);
             else
-                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, MultitonConst.JsonSettings));
+                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings));
             return code;
         }
         public bool Exists(string key)
