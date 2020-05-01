@@ -17,6 +17,12 @@ namespace Rystem.Azure.Queue
                 new ServiceBusConnectionStringBuilder(
                     $"{property.ConnectionString};EntityPath={property.Name}"),
                     ReceiveMode.PeekLock);
+
+        public Task<bool> CleanAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
             await this.QueueClient.CancelScheduledMessageAsync(messageId);

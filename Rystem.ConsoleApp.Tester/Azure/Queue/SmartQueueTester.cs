@@ -93,6 +93,16 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             if (xx.Count() > 0)
                 return false;
 
+            bool va = mySmartQueue.Clean(Enums.Installation.Inst01);
+            if (!va)
+                return false;
+
+            for (int attempt = 0; attempt < 2; attempt++)
+                va = mySmartQueue.Clean(Enums.Installation.Inst05);
+
+            if (va)
+                return false;
+
             return true;
         }
     }
@@ -102,30 +112,35 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
         {
             QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
             {
-                ConnectionString = "Server=tcp:myfirstservicebus.database.windows.net,1433;Initial Catalog=myfirstservicebus;Persist Security Info=False;User ID=myfirstservicebus;Password=DaveTheBeauty86;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
                 Type = QueueType.SmartQueue,
-                Name = "Business"
+                Name = "Business",
+                Retry = 3,
             }, Enums.Installation.Inst05);
             QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
             {
-                ConnectionString = "Server=tcp:myfirstservicebus.database.windows.net,1433;Initial Catalog=myfirstservicebus;Persist Security Info=False;User ID=myfirstservicebus;Password=DaveTheBeauty86;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
                 Type = QueueType.SmartQueue,
                 Name = "Notification",
-                CheckDuplication = QueueDuplication.Path
+                CheckDuplication = QueueDuplication.Path,
+                Retry = 3
             });
             QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
             {
-                ConnectionString = "Server=tcp:myfirstservicebus.database.windows.net,1433;Initial Catalog=myfirstservicebus;Persist Security Info=False;User ID=myfirstservicebus;Password=DaveTheBeauty86;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
                 Type = QueueType.SmartQueue,
                 Name = "Unsubscription",
-                CheckDuplication = QueueDuplication.Message
+                CheckDuplication = QueueDuplication.Message,
+                Retry = 3
             }, Enums.Installation.Inst00);
             QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
             {
-                ConnectionString = "Server=tcp:myfirstservicebus.database.windows.net,1433;Initial Catalog=myfirstservicebus;Persist Security Info=False;User ID=myfirstservicebus;Password=DaveTheBeauty86;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
                 Type = QueueType.SmartQueue,
                 Name = "Billing",
-                CheckDuplication = QueueDuplication.PathAndMessage
+                CheckDuplication = QueueDuplication.PathAndMessage,
+                Retry = 3,
+                Retention = -1
             }, Enums.Installation.Inst01);
         }
         public string Al { get; set; }

@@ -16,6 +16,7 @@ namespace Rystem.Azure.Queue
         Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization);
         Task<IEnumerable<TEntity>> ReadAsync<TEntity>(Installation installation, int path, int organization)
             where TEntity : IQueue;
+        Task<bool> CleanAsync(Installation installation);
         Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds, Installation installation, int path, int organization);
         Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization);
         string GetName(Installation installation);

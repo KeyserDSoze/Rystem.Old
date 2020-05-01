@@ -14,5 +14,6 @@ namespace Rystem.Azure.Queue
         Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, int path, int organization);
         Task<IList<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization);
         Task<IList<TEntity>> Read(int path, int organization);
+        Task<bool> CleanAsync();
     }
 }

@@ -15,6 +15,12 @@ namespace Rystem.Azure.Queue
             this.Client = EventHubClient.CreateFromConnectionString(
                      new EventHubsConnectionStringBuilder($"{property.ConnectionString};EntityPath={property.Name}").ToString());
         }
+
+        public async Task<bool> CleanAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
             await Task.Delay(0);

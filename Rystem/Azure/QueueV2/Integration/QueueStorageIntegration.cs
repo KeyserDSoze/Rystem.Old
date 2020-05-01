@@ -19,6 +19,12 @@ namespace Rystem.Azure.Queue
             this.Client = queueClient.GetQueueReference(property.Name);
             this.Client.CreateIfNotExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
+
+        public Task<bool> CleanAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
             await Task.Delay(0);

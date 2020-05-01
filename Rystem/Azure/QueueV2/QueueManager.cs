@@ -61,5 +61,8 @@ namespace Rystem.Azure.Queue
         public async Task<IEnumerable<TQueue>> ReadAsync<TQueue>(Installation installation, int path, int organization)
             where TQueue : IQueue
             => (await Integrations[installation].Read(path, organization)).Select(x => (TQueue)(x as IQueue));
+
+        public async Task<bool> CleanAsync(Installation installation)
+            => await Integrations[installation].CleanAsync();
     }
 }

@@ -25,5 +25,13 @@
         /// Only available for SmartQueue. Number of messages read at every request. Default value is 100.
         /// </summary>
         public int NumberOfMessages { get; set; } = 100;
+        /// <summary>
+        /// Only available for SmartQueue. Number of retries. Default value is 1.
+        /// </summary>
+        public int Retry { get; set; } = 1;
+        /// <summary>
+        /// Only available for SmartQueue. Number of days in memory. Default value is 1.
+        /// </summary>
+        public int Retention { get; set; } = 30;
     }
 }
