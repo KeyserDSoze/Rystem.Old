@@ -17,7 +17,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 A = "dsad",
                 B = new MyObject()
                 {
-                    B = "dasdsa"
+                    K = "dasdsa"
                 }
             };
             List<MyAbstractionOfServiceBus> myServiceBuses = new List<MyAbstractionOfServiceBus>()
@@ -83,10 +83,6 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
     {
         public string A { get; set; }
         public MyObject B { get; set; }
-    }
-    public class MyObject
-    {
-        public string B { get; set; }
     }
     public class MyServiceBus : MyAbstractionOfServiceBus
     {

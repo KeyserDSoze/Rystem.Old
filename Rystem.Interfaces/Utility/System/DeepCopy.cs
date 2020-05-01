@@ -10,12 +10,13 @@ namespace System
     public static class DeepCopyExtension
     {
 #warning Controllare che le proprietà siano oltre che in get anche in set, altrimenti non posso impostarle.
+        [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static dynamic DeepCopy(this object original, params object[] args)
         {
             return InternalCopy(original, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
         }
         private static readonly MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
-       
+
         private static Object InternalCopy(object originalObject, IDictionary<Object, Object> visited, params object[] args)
         {
             if (originalObject == null)
@@ -68,6 +69,8 @@ namespace System
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }
+
+        [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         private static void CopyProperties(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy)
         {
 
@@ -83,9 +86,8 @@ namespace System
                     object clonedFieldValue = InternalCopy(originalFieldValue, visited);
                     propertyInfo.SetValue(cloneObject, clonedFieldValue);
                 }
-                catch (Exception er)
+                catch (Exception)
                 {
-                    string dj = er.ToString();
                 }
             }
         }
@@ -119,15 +121,15 @@ namespace System
     }
     internal class ArrayTraverse
     {
-        public int[] Position;
-        private int[] maxLengths;
+        public readonly int[] Position;
+        public readonly int[] MaxLengths;
 
         public ArrayTraverse(Array array)
         {
-            maxLengths = new int[array.Rank];
+            MaxLengths = new int[array.Rank];
             for (int i = 0; i < array.Rank; ++i)
             {
-                maxLengths[i] = array.GetLength(i) - 1;
+                MaxLengths[i] = array.GetLength(i) - 1;
             }
             Position = new int[array.Rank];
         }
@@ -135,7 +137,7 @@ namespace System
         {
             for (int i = 0; i < Position.Length; ++i)
             {
-                if (Position[i] < maxLengths[i])
+                if (Position[i] < MaxLengths[i])
                 {
                     Position[i]++;
                     for (int j = 0; j < i; j++)

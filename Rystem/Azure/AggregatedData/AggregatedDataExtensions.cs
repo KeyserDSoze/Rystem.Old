@@ -11,7 +11,7 @@ namespace System
 {
     public static class AggregatedDataExtensions
     {
-        private static Dictionary<string, IAggregatedDataManager> Managers = new Dictionary<string, IAggregatedDataManager>();
+        private readonly static Dictionary<string, IAggregatedDataManager> Managers = new Dictionary<string, IAggregatedDataManager>();
         private readonly static object TrafficLight = new object();
         private static IAggregatedDataManager Manager<TEntity>()
             where TEntity : IAggregatedData
@@ -66,8 +66,10 @@ namespace System
         public static IList<AggregatedDataDummy> FetchProperties<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData
            => FetchPropertiesAsync(entity, prefix, takeCount, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+#pragma warning disable IDE0060 // Remove unused parameter
         public static string GetName<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : IAggregatedData
             => Manager<TEntity>().GetName(installation);
+#pragma warning restore IDE0060 // Remove unused parameter
     }
 }

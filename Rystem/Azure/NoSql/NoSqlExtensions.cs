@@ -11,7 +11,7 @@ namespace System
 {
     public static class NoSqlExtensions
     {
-        private static Dictionary<string, INoSqlManager> Managers = new Dictionary<string, INoSqlManager>();
+        private readonly static Dictionary<string, INoSqlManager> Managers = new Dictionary<string, INoSqlManager>();
         private readonly static object TrafficLight = new object();
         private static INoSqlManager Manager<TEntity>()
             where TEntity : INoSql
@@ -61,6 +61,8 @@ namespace System
             where TEntity : INoSql
            => GetAsync(entity, expression, takeCount, installation).ConfigureAwait(false).GetAwaiter().GetResult();
 
+
+        [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static string GetName<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
         => Manager<TEntity>().GetName(installation);

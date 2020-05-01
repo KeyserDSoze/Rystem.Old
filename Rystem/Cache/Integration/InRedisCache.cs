@@ -26,8 +26,8 @@ namespace Rystem.Cache
             }
         }
 
-        private List<Lazy<ConnectionMultiplexer>> Connections;
-        private static TimeSpan ExpireCache;
+        private readonly List<Lazy<ConnectionMultiplexer>> Connections;
+        private readonly TimeSpan ExpireCache;
         private readonly string FullName = typeof(T).FullName;
         private readonly InCloudMultitonProperties Configuration;
         internal InRedisCache(InCloudMultitonProperties configuration)
@@ -49,7 +49,7 @@ namespace Rystem.Cache
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {
-            bool code = false;
+            bool code;
             if (expiringTime == default)
                 expiringTime = ExpireCache;
             if (expiringTime.Ticks > 0)

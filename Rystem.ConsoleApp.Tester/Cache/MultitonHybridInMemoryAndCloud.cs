@@ -22,7 +22,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class HybridTableKey : IMultitonKey
+    public class HybridTableKey : IMultitonKey<HybridTable>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
@@ -30,7 +30,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         {
             MultitonInstaller.Configure<HybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds)));
         }
-        public IMultiton Fetch()
+        public HybridTable Fetch()
         {
             return new HybridTable()
             {

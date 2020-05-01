@@ -14,13 +14,13 @@ namespace Rystem.Azure.AggregatedData.Integration
     internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
           where TEntity : IAggregatedData
     {
-        private char SplittingChar;
+        private readonly char SplittingChar;
         private const string InCaseOfSplittedChar = "\"{0}\"";
         private const string InNormalCase = "{0}";
         private static readonly string BreakLine = '\n'.ToString();
         private readonly Regex SplittingRegex;
-        private static Type CsvIgnoreType = typeof(CsvIgnore);
-        private static Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
+        private static readonly Type CsvIgnoreType = typeof(CsvIgnore);
+        private static readonly Dictionary<string, List<PropertyInfo>> Properties = new Dictionary<string, List<PropertyInfo>>();
         private static readonly object TrafficLight = new object();
         public CsvDataManager(char splittingChar = ',')
         {
@@ -30,15 +30,9 @@ namespace Rystem.Azure.AggregatedData.Integration
         private static List<PropertyInfo> Property(Type type)
         {
             if (!Properties.ContainsKey(type.FullName))
-            {
                 lock (TrafficLight)
-                {
                     if (!Properties.ContainsKey(type.FullName))
-                    {
                         Properties.Add(type.FullName, type.GetProperties().ToList().FindAll(x => x.GetCustomAttribute(CsvIgnoreType) == null && StringablePrimitive.Check(x.PropertyType) && x.Name != "Name"));
-                    }
-                }
-            }
             return Properties[type.FullName];
         }
         private TEntity Deserialize(string value)
@@ -90,8 +84,9 @@ namespace Rystem.Azure.AggregatedData.Integration
             return aggregatedDatas;
         }
 
-        public  async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
+        public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
         {
+            await Task.Delay(0);
             return new AggregatedDataDummy()
             {
                 Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/csv" },

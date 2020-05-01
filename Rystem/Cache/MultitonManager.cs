@@ -12,7 +12,6 @@ namespace Rystem.Cache
         private readonly bool MemoryIsActive = false;
         private readonly IMultitonIntegration<T> InCloud;
         private readonly bool CloudIsActive = false;
-        private readonly static string FullName = typeof(T).FullName;
         private readonly static object TrafficLight = new object();
         public MultitonManager(MultitonProperties configuration)
         {

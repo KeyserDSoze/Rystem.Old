@@ -10,8 +10,8 @@ namespace Rystem.StreamAnalytics
 {
     public class AggregationManager<T>
     {
-        private static Dictionary<Installation, object> TrafficLight = new Dictionary<Installation, object>();
-        private static Dictionary<Installation, BufferBearer> Buffer = new Dictionary<Installation, BufferBearer>();
+        private readonly static Dictionary<Installation, object> TrafficLight = new Dictionary<Installation, object>();
+        private readonly static Dictionary<Installation, BufferBearer> Buffer = new Dictionary<Installation, BufferBearer>();
         private static readonly object AcquireToken = new object();
         private IDictionary<Installation, AggregationProperty> aggregationProperties;
         private IDictionary<Installation, AggregationProperty> AggregationProperties => aggregationProperties ?? (aggregationProperties = AggregationInstaller<T>.GetProperties());
@@ -21,6 +21,8 @@ namespace Rystem.StreamAnalytics
             public IList<T> Events { get; set; } = new List<T>();
             public long LastBufferCreation { get; set; } = DateTime.UtcNow.Ticks;
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]
         public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception, T> errorCatcher = null, Installation installation = Installation.Default)
         {
             this.CreateTrafficLight(installation);
@@ -63,6 +65,8 @@ namespace Rystem.StreamAnalytics
             lock (TrafficLight[installation])
                 Buffer[installation].Events.Add(singleEvent);
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's a logger that catch the exception")]
         public IList<T> Flush(ILogger log, Installation installation)
         {
             IList<T> events = new List<T>();

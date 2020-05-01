@@ -8,8 +8,8 @@ namespace System.Reflection
 {
     public static class Properties
     {
-        private static Dictionary<string, PropertyInfo[]> AllProperties = new Dictionary<string, PropertyInfo[]>();
-        private static object TrafficCard = new object();
+        private readonly static Dictionary<string, PropertyInfo[]> AllProperties = new Dictionary<string, PropertyInfo[]>();
+        private readonly static object TrafficCard = new object();
         public static PropertyInfo[] Fetch(Type type, params Type[] attributesToIgnore)
         {
             if (!AllProperties.ContainsKey(type.FullName))

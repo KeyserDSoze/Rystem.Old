@@ -9,8 +9,8 @@ namespace Rystem.Cache
 {
     internal class MultitonConst
     {
-        private static Dictionary<string, IEnumerable<PropertyInfo>> PropertyInfoDictionary = new Dictionary<string, IEnumerable<PropertyInfo>>();
-        private static object TrafficLight = new object();
+        private readonly static Dictionary<string, IEnumerable<PropertyInfo>> PropertyInfoDictionary = new Dictionary<string, IEnumerable<PropertyInfo>>();
+        private readonly static object TrafficLight = new object();
         internal static IEnumerable<PropertyInfo> Instance(Type keyType)
         {
             if (!PropertyInfoDictionary.ContainsKey(keyType.FullName))

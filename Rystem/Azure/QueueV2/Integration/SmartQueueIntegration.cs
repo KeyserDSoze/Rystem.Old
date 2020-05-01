@@ -21,6 +21,8 @@ namespace Rystem.Azure.Queue
         private readonly bool CheckDuplication;
         private readonly QueueConfiguration QueueConfiguration;
         private SqlConnection Connection() => new SqlConnection(this.QueueConfiguration.ConnectionString);
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command")]
         internal SmartQueueIntegration(QueueConfiguration property)
         {
             this.QueueConfiguration = property;
@@ -90,6 +92,9 @@ namespace Rystem.Azure.Queue
                 }
             }
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "I need to use it in this way")]
         private async Task<T> Retry<T>(SqlConnection connection, string query, Func<SqlCommand, Task<T>> commandQuery)
         {
             if (connection.State != ConnectionState.Open)
@@ -103,7 +108,7 @@ namespace Rystem.Azure.Queue
                     {
                         return await commandQuery.Invoke(command);
                     }
-                    catch (SqlException sqlException)
+                    catch (SqlException)
                     {
                         switch (connection.State)
                         {
@@ -123,16 +128,21 @@ namespace Rystem.Azure.Queue
             using (SqlConnection connection = Connection())
                 return await Retry(connection, $"{DeleteQuery}{messageId}", ExecuteNonQueryAsync) > 0;
         }
+
+        private const string ToReplaceOnQuery = "'";
+        private const string ReplaceWithOnQuery = "''";
+        private string GetNormalizedJson(IQueue message)
+            => message.ToJson().Replace(ToReplaceOnQuery, ReplaceWithOnQuery);
         private async Task<long> SendingAsync(IQueue message, int delayInSeconds, int path, int organization)
         {
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
-            string messageToSend = JsonConvert.SerializeObject(message, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings).Replace("'", "''");
+            string messageToSend = GetNormalizedJson(message);
             StringBuilder sb = new StringBuilder();
             if (this.CheckDuplication)
                 sb.Append(string.Format(this.IfOnInsert, path, organization, messageToSend));
             sb.Append(InsertQuery);
             sb.Append($"{path},{organization},'{messageToSend}',");
-            sb.Append($"'{newDatetime.ToString("yyyy-MM-ddTHH:mm:ss")}', {newDatetime.Ticks})");
+            sb.Append($"'{newDatetime:yyyy-MM-ddTHH:mm:ss}', {newDatetime.Ticks})");
             using (SqlConnection connection = Connection())
                 return await Retry(connection, sb.ToString(), ExecuteScalarAsync);
 
@@ -152,8 +162,8 @@ namespace Rystem.Azure.Queue
             foreach (IQueue message in messages)
             {
                 sb.Append(InsertQuery);
-                sb.Append($"{path},'{organization}','{JsonConvert.SerializeObject(message, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings).Replace("'", "''")}',");
-                sb.Append($"'{newDatetime.ToString("yyyy-MM-ddTHH:mm:ss")}', {newDatetime.Ticks});");
+                sb.Append($"{path},'{organization}','{GetNormalizedJson(message)}',");
+                sb.Append($"'{newDatetime:yyyy-MM-ddTHH:mm:ss}', {newDatetime.Ticks});");
             }
             using (SqlConnection connection = Connection())
                 return await Retry(connection, sb.ToString(), ExecuteNonQueryAsync) > 0;
@@ -181,8 +191,7 @@ namespace Rystem.Azure.Queue
                 {
                     while (await myReader.ReadAsync())
                     {
-                        reading.Messages.Add(JsonConvert.DeserializeObject<TEntity>(myReader["Message"].ToString(),
-                            NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings));
+                        reading.Messages.Add(myReader["Message"].ToString().ToMessage<TEntity>());
                         reading.ToDeleteIds.Add(int.Parse(myReader["Id"].ToString()));
                     }
                     return reading;

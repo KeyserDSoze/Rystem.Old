@@ -8,8 +8,8 @@ namespace Rystem.Cache
     internal class InMemory<T> : IMultitonIntegration<T>
         where T : IMultiton
     {
-        private static int ExpireMultiton = 0;
-        private static Dictionary<string, Dummy> Instances = new Dictionary<string, Dummy>();
+        private readonly int ExpireMultiton = 0;
+        private readonly static Dictionary<string, Dummy> Instances = new Dictionary<string, Dummy>();
         internal InMemory(ExpiringProperties configuration)
             => ExpireMultiton = configuration.ExpireSeconds;
         public T Instance(string key)

@@ -23,6 +23,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         }
         public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
         {
+            await Task.Delay(0);
             return new AggregatedDataDummy()
             {
                 Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/json" },

@@ -9,6 +9,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class SmartQueueTester : ITest
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
         public bool DoWork(Action<object> action, params string[] args)
         {
             MySmartQueue mySmartQueue = new MySmartQueue()

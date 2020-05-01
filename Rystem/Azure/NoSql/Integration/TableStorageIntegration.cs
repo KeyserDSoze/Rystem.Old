@@ -15,9 +15,9 @@ namespace Rystem.Azure.NoSql
     internal class TableStorageIntegration<TEntity> : INoSqlIntegration<TEntity>
         where TEntity : INoSql
     {
-        private CloudTable Context;
-        private IList<PropertyInfo> Properties = new List<PropertyInfo>();
-        private IList<PropertyInfo> SpecialProperties = new List<PropertyInfo>();
+        private readonly CloudTable Context;
+        private readonly IList<PropertyInfo> Properties = new List<PropertyInfo>();
+        private readonly IList<PropertyInfo> SpecialProperties = new List<PropertyInfo>();
         internal TableStorageIntegration(NoSqlConfiguration noSqlConfiguration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(noSqlConfiguration.ConnectionString);
@@ -113,15 +113,17 @@ namespace Rystem.Azure.NoSql
             IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
             return (results.All(x => x.HttpStatusCode == 204));
         }
-        private static DateTime DateTimeDefault = default;
+        private static readonly DateTime DateTimeDefault = default;
         private DynamicTableEntity WriteEntity(TEntity entity)
         {
             ITableStorage entityStorage = entity as ITableStorage;
-            DynamicTableEntity dummy = new DynamicTableEntity();
-            dummy.PartitionKey = entityStorage.PartitionKey;
-            dummy.RowKey = entityStorage.RowKey = entityStorage.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N"));
-            dummy.Timestamp = entityStorage.Timestamp > DateTimeDefault ? entityStorage.Timestamp : (entityStorage.Timestamp = DateTime.UtcNow);
-            dummy.ETag = entityStorage.ETag = entityStorage.ETag ?? "*";
+            DynamicTableEntity dummy = new DynamicTableEntity
+            {
+                PartitionKey = entityStorage.PartitionKey,
+                RowKey = entityStorage.RowKey = entityStorage.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N")),
+                Timestamp = entityStorage.Timestamp > DateTimeDefault ? entityStorage.Timestamp : (entityStorage.Timestamp = DateTime.UtcNow),
+                ETag = entityStorage.ETag = entityStorage.ETag ?? "*"
+            };
             foreach (PropertyInfo pi in this.Properties)
             {
                 dynamic value = pi.GetValue(entity);
@@ -133,7 +135,7 @@ namespace Rystem.Azure.NoSql
                     JsonConvert.SerializeObject(pi.GetValue(entity), NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings)));
             return dummy;
         }
-        private static MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);
+        private static readonly MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);
         private TSpecialEntity ReadEntity<TSpecialEntity>(DynamicTableEntity dynamicTableEntity)
             where TSpecialEntity : INoSql
         {

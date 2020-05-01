@@ -7,9 +7,11 @@ using System.Reflection;
 
 namespace Rystem.Interfaces.Utility
 {
-    public class Assembler
+    public static class Assembler
     {
         public static readonly List<Type> Types = new List<Type>();
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         static Assembler()
         {
             List<Assembly> allAssemblies = new List<Assembly>();
@@ -20,9 +22,8 @@ namespace Rystem.Interfaces.Utility
                 {
                     allAssemblies.Add(Assembly.LoadFile(dll));
                 }
-                catch (Exception er)
+                catch (Exception)
                 {
-                    string gomorra = er.ToString();
                 }
             }
             foreach (Assembly assembly in allAssemblies)
@@ -31,9 +32,8 @@ namespace Rystem.Interfaces.Utility
                 {
                     Types.AddRange(assembly.GetExportedTypes());
                 }
-                catch (Exception er)
+                catch (Exception)
                 {
-                    string sodoma = er.ToString();
                 }
             }
         }

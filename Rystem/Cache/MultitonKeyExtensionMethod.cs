@@ -18,7 +18,7 @@ namespace System
                 valueBuilder.Append($"{MultitonConst.Separator}{propertyInfo.GetValue(multitonKey)}");
             return valueBuilder.ToString();
         }
-        private static Dictionary<string, IMultitonManager> Managers = new Dictionary<string, IMultitonManager>();
+        private readonly static Dictionary<string, IMultitonManager> Managers = new Dictionary<string, IMultitonManager>();
         private readonly static object TrafficLight = new object();
         private static IMultitonManager Manager<TEntry>(Type keyType)
             where TEntry : IMultiton, new()

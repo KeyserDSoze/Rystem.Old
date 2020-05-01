@@ -13,9 +13,9 @@ namespace Rystem.Azure.AggregatedData
     internal class PageBlobStorageIntegration<TEntity> : IAggregatedDataIntegration<TEntity>
         where TEntity : IAggregatedData
     {
-        private CloudBlobContainer Context;
-        private IAggregatedDataWriter<TEntity> Writer;
-        private IAggregatedDataListReader<TEntity> ListReader;
+        private readonly CloudBlobContainer Context;
+        private readonly IAggregatedDataWriter<TEntity> Writer;
+        private readonly IAggregatedDataListReader<TEntity> ListReader;
         internal PageBlobStorageIntegration(AggregatedDataConfiguration<TEntity> configuration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
@@ -70,7 +70,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, string prefix, int? takeCount)
           => await BlobStorageBaseIntegration.FetchPropertiesAsync(this.Context, prefix, takeCount);
 
-        private static object TrafficLight = new object();
+        private readonly static object TrafficLight = new object();
         private const long Size = 512;
         public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {

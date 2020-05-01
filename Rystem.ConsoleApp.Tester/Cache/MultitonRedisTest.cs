@@ -10,6 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonRedisTest : ITest
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
         public bool DoWork(Action<object> action, params string[] args)
         {
             MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -22,13 +23,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             serviceKey.Restore(new Service() { A = "4", C = 0 });
             if ((serviceKey.Instance() as Service).A != "4")
                 return false;
-            if (serviceKey.AllKeys().Count != 1)
+            if (serviceKey.Keys<ServiceKey, Service>().Count != 1)
                 return false;
             if (!serviceKey.Remove())
                 return false;
             if (serviceKey.IsPresent())
                 return false;
-            if (serviceKey.AllKeys().Count != 0)
+            if (serviceKey.Keys<ServiceKey, Service>().Count != 0)
                 return false;
             service = serviceKey.Instance() as Service;
             Thread.Sleep(200);
@@ -48,10 +49,10 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class ServiceKey : IMultitonKey
+    public class ServiceKey : IMultitonKey<Service>
     {
         public int Id { get; set; }
-        public IMultiton Fetch()
+        public Service Fetch()
         {
             return new Service()
             {

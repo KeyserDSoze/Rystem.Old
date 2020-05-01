@@ -71,6 +71,8 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
         public IHalo2 Halo2 { get; set; }
         public IList<int> Integers { get; set; }
         public IDictionary<int, IHalo2> Halos2 { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Test")]
         public IHalo2[] Array { get; set; }
     }
     public interface IHalo2

@@ -15,9 +15,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             MyAbstractionEventHub myEventHub = new MyEventHub()
             {
                 A = "dsad",
-                B = new MyEventHub.MyObject()
+                B = new MyObject()
                 {
-                    B = "dasdsa"
+                    K = "dasdsa"
                 }
             };
             List<MyAbstractionEventHub> myAbstractionEventHubs = new List<MyAbstractionEventHub>()
@@ -29,8 +29,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 return false;
             if (!myAbstractionEventHubs.SendBatch())
                 return false;
-            DebugMessage debugMessage = myEventHub.DebugSend(0, installation: Installation.Inst00);
-            DebugMessage debugMessages = myAbstractionEventHubs.DebugSendBatch(0, installation: Installation.Inst00);
+            myEventHub.DebugSend(0, installation: Installation.Inst00);
+            myAbstractionEventHubs.DebugSendBatch(0, installation: Installation.Inst00);
             if (!myEventHub.Send(installation: Installation.Inst00))
                 return false;
             if (!myAbstractionEventHubs.SendBatch(installation: Installation.Inst00))
@@ -60,10 +60,10 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 Name = "aloa",
                 Type = QueueType.EventHub
             }, Enums.Installation.Inst00);
-        }
-        public class MyObject
-        {
-            public string B { get; set; }
-        }
+        }  
+    }
+    public class MyObject
+    {
+        public string K { get; set; }
     }
 }

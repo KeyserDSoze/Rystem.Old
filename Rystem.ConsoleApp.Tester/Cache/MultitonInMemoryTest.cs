@@ -10,6 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonInMemoryTest : ITest
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
         public bool DoWork(Action<object> action, params string[] args)
         {
             Service2Key serviceKey = new Service2Key() { Id = 2 };
@@ -21,13 +22,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             serviceKey.Restore(new Service2() { A = "4", C = 0 });
             if ((serviceKey.Instance() as Service2).A != "4")
                 return false;
-            if (serviceKey.AllKeys().Count != 1)
+            if (serviceKey.Keys<Service2Key, Service2>().Count != 1)
                 return false;
             if (!serviceKey.Remove())
                 return false;
             if (serviceKey.IsPresent())
                 return false;
-            if (serviceKey.AllKeys().Count != 0)
+            if (serviceKey.Keys<Service2Key, Service2>().Count != 0)
                 return false;
             service = serviceKey.Instance() as Service2;
             Thread.Sleep(200);
@@ -46,10 +47,10 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class Service2Key : IMultitonKey
+    public class Service2Key : IMultitonKey<Service2>
     {
         public int Id { get; set; }
-        public IMultiton Fetch()
+        public Service2 Fetch()
         {
             return new Service2()
             {

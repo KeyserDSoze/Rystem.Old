@@ -9,12 +9,10 @@ namespace Rystem.Azure.Queue
     internal class EventHubIntegration<TEntity> : IQueueIntegration<TEntity>
         where TEntity : IQueue
     {
-        private EventHubClient Client;
-        internal EventHubIntegration(QueueConfiguration property)
-        {
-            this.Client = EventHubClient.CreateFromConnectionString(
-                     new EventHubsConnectionStringBuilder($"{property.ConnectionString};EntityPath={property.Name}").ToString());
-        }
+        private readonly EventHubClient Client;
+        internal EventHubIntegration(QueueConfiguration property) 
+            => this.Client = EventHubClient.CreateFromConnectionString(
+                  new EventHubsConnectionStringBuilder($"{property.ConnectionString};EntityPath={property.Name}").ToString());
 
         public Task<bool> CleanAsync() => throw new NotImplementedException("Event hub doesn't allow this operation.");
         public Task<bool> DeleteScheduledAsync(long messageId) => throw new NotImplementedException("Event hub doesn't allow this operation.");

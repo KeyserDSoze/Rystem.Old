@@ -10,6 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonComboCloudMemoryTest : ITest
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
         public bool DoWork(Action<object> action, params string[] args)
         {
             Service3Key serviceKey = new Service3Key() { Id = 2 };
@@ -21,13 +22,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             serviceKey.Restore(new Service3() { A = "4", C = 0 });
             if ((serviceKey.Instance() as Service3).A != "4")
                 return false;
-            if (serviceKey.AllKeys().Count != 1)
+            if (serviceKey.Keys<Service3Key, Service3>().Count != 1)
                 return false;
             if (!serviceKey.Remove())
                 return false;
             if (serviceKey.IsPresent())
                 return false;
-            if (serviceKey.AllKeys().Count != 0)
+            if (serviceKey.Keys<Service3Key, Service3>().Count != 0)
                 return false;
             service = serviceKey.Instance() as Service3;
             Thread.Sleep(200);
@@ -41,11 +42,11 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class Service3Key : IMultitonKey
+    public class Service3Key : IMultitonKey<Service3>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-        public IMultiton Fetch()
+        public Service3 Fetch()
         {
             return new Service3()
             {

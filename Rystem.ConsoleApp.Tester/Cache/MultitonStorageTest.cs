@@ -9,6 +9,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonTableStorageTest : ITest
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
         public bool DoWork(Action<object> action, params string[] args)
         {
             SmallTableKey smallTableKey = new SmallTableKey() { Id = 2 };
@@ -21,13 +22,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             smallTableKey.Restore(new SmallTable() { Id = 4 });
             if ((smallTableKey.Instance() as SmallTable).Id != 4)
                 return false;
-            if (smallTableKey.AllKeys().Count != 1)
+            if (smallTableKey.Keys<SmallTableKey, SmallTable>().Count != 1)
                 return false;
             if (!smallTableKey.Remove())
                 return false;
             if (smallTableKey.IsPresent())
                 return false;
-            if (smallTableKey.AllKeys().Count != 0)
+            if (smallTableKey.Keys<SmallTableKey, SmallTable>().Count != 0)
                 return false;
             smallTable = smallTableKey.Instance() as SmallTable;
             Thread.Sleep(200);
@@ -46,7 +47,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class SmallTableKey : IMultitonKey
+    public class SmallTableKey : IMultitonKey<SmallTable>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
@@ -54,7 +55,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         {
             MultitonInstaller.Configure<SmallTableKey, SmallTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.FiveSeconds)));
         }
-        public IMultiton Fetch()
+        public SmallTable Fetch()
         {
             return new SmallTable()
             {

@@ -29,7 +29,7 @@ namespace Rystem.Cache
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
             TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-            return result.Result != default ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings) : default(T);
+            return result.Result != default ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings) : default;
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {

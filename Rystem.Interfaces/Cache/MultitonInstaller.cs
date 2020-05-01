@@ -9,7 +9,7 @@ namespace Rystem.Cache
     /// <typeparam name="TEntry">AMultiton Entity</typeparam>
     public static class MultitonInstaller
     {
-        private static Dictionary<string, ValueMutltitonProperties> KeyContexts = new Dictionary<string, ValueMutltitonProperties>();
+        private readonly static Dictionary<string, ValueMutltitonProperties> KeyContexts = new Dictionary<string, ValueMutltitonProperties>();
         private class ValueMutltitonProperties
         {
             internal Type ValueType { get; set; }
