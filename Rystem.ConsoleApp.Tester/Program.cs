@@ -1,4 +1,4 @@
-﻿using Rystem.Interfaces.Utility.Tester;
+﻿using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +8,9 @@ namespace Rystem.ConsoleApp.Tester
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            ITestMachine testMachine = new TestMachine<Program>("Rystem.ZConsoleApp.Tester");
+            IUnitTestMachine testMachine = new ConsoleMachine<Program>("Rystem.ZConsoleApp.Tester");
             testMachine.Start();
         }
     }

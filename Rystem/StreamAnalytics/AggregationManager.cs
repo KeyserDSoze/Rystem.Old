@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using Rystem.Enums;
+using System.Threading.Tasks;
 
 namespace Rystem.StreamAnalytics
 {
@@ -16,14 +15,10 @@ namespace Rystem.StreamAnalytics
         private IDictionary<Installation, AggregationProperty> aggregationProperties;
         private IDictionary<Installation, AggregationProperty> AggregationProperties => aggregationProperties ?? (aggregationProperties = AggregationInstaller<T>.GetProperties());
         private string QueueName(Installation installation) => this.AggregationProperties[installation].Name;
-        private class BufferBearer
-        {
-            public IList<T> Events { get; set; } = new List<T>();
-            public long LastBufferCreation { get; set; } = DateTime.UtcNow.Ticks;
-        }
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]
-        public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception, T> errorCatcher = null, Installation installation = Installation.Default)
+        public async Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default)
         {
             this.CreateTrafficLight(installation);
             IList<Exception> exceptions = new List<Exception>();
@@ -36,38 +31,23 @@ namespace Rystem.StreamAnalytics
                 try
                 {
                     totalCount++;
-                    action?.Invoke(eventData);
+                    await action?.Invoke(eventData);
                     this.Add(eventData, installation);
                 }
                 catch (Exception e)
                 {
-                    errorCatcher?.Invoke(e, eventData);
+                    await errorCatcher?.Invoke(e, eventData);
                     exceptions.Add(e);
                 }
             }
-            IList<T> flusheds = this.Flush(log, installation);
+            IList<T> flusheds = await this.FlushAsync(log, installation);
             DateTime endTime = DateTime.UtcNow;
             log.LogInformation($"instance: {instance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
             return flusheds;
         }
-        private void CreateTrafficLight(Installation installation)
-        {
-            if (!TrafficLight.ContainsKey(installation))
-                lock (AcquireToken)
-                    if (!TrafficLight.ContainsKey(installation))
-                    {
-                        TrafficLight.Add(installation, new object());
-                        Buffer.Add(installation, new BufferBearer());
-                    }
-        }
-        private void Add(T singleEvent, Installation installation)
-        {
-            lock (TrafficLight[installation])
-                Buffer[installation].Events.Add(singleEvent);
-        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's a logger that catch the exception")]
-        public IList<T> Flush(ILogger log, Installation installation)
+        public async Task<IList<T>> FlushAsync(ILogger log, Installation installation)
         {
             IList<T> events = new List<T>();
             log.LogWarning($"{this.QueueName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
@@ -91,7 +71,7 @@ namespace Rystem.StreamAnalytics
                 {
                     try
                     {
-                        parser.Parse(this.QueueName(installation), events, log, installation);
+                        await parser.ParseAsync(this.QueueName(installation), events, log, installation);
                         log.LogWarning($"Parsed {parser.GetType().Name}.");
                     }
                     catch (Exception er)
@@ -101,6 +81,44 @@ namespace Rystem.StreamAnalytics
                 }
             }
             return events;
+        }
+        public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception, T> errorCatcher = null, Installation installation = Installation.Default)
+        {
+            return this.RunAsync(events, log, wrappedAction, wrappedError, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+
+            Task wrappedAction(T t)
+            {
+                action?.Invoke(t);
+                return Task.CompletedTask;
+            }
+            Task wrappedError(Exception e, T t)
+            {
+                errorCatcher.Invoke(e, t);
+                return Task.CompletedTask;
+            }
+        }
+
+        public IList<T> Flush(ILogger log, Installation installation)
+            => this.FlushAsync(log, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+        private class BufferBearer
+        {
+            public IList<T> Events { get; set; } = new List<T>();
+            public long LastBufferCreation { get; set; } = DateTime.UtcNow.Ticks;
+        }
+        private void CreateTrafficLight(Installation installation)
+        {
+            if (!TrafficLight.ContainsKey(installation))
+                lock (AcquireToken)
+                    if (!TrafficLight.ContainsKey(installation))
+                    {
+                        TrafficLight.Add(installation, new object());
+                        Buffer.Add(installation, new BufferBearer());
+                    }
+        }
+        private void Add(T singleEvent, Installation installation)
+        {
+            lock (TrafficLight[installation])
+                Buffer[installation].Events.Add(singleEvent);
         }
     }
 }

@@ -1,15 +1,17 @@
 ﻿using Rystem.Crypting;
 using Rystem.Enums;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Utility
 {
-    public class ShaEncryptor : ITest
+    public class ShaEncryptor : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             ShaHelper shaHelper = new ShaHelper()
             {

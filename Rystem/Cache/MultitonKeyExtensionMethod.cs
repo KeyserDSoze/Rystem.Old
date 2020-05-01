@@ -49,67 +49,7 @@ namespace System
             IList<TKey> keys = new List<TKey>();
             foreach (string key in Manager<TEntry>(keyType).List())
             {
-                TKey multitonKey = (TKey)Activator.CreateInstance(keyType);
-                IEnumerator<string> keyValues = PropertyValue(key);
-                if (!keyValues.MoveNext())
-                    continue;
-                foreach (PropertyInfo property in MultitonConst.Instance(keyType))
-                {
-                    property.SetValue(multitonKey, Convert.ChangeType(keyValues.Current, property.PropertyType));
-                    if (!keyValues.MoveNext())
-                        break;
-                }
-                keys.Add(multitonKey);
-            }
-            return keys;
-            IEnumerator<string> PropertyValue(string key)
-            {
-                foreach (string s in key.Split(MultitonConst.Separator))
-                    yield return s;
-            }
-        }
-    }
-
-    //Obsolete Method
-    //todo: remove in Rystem 5.0.0
-    public static partial class MultitonKeyExtensionMethod
-    {
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        private static IMultitonManager Manager(Type keyType)
-        {
-            if (!Managers.ContainsKey(keyType.FullName))
-                lock (TrafficLight)
-                    if (!Managers.ContainsKey(keyType.FullName))
-                    {
-                        Type valueType = MultitonInstaller.GetKeyType(keyType);
-                        Type managerType = typeof(MultitonManager<>).MakeGenericType(valueType);
-                        Managers.Add(keyType.FullName, (IMultitonManager)Activator.CreateInstance(managerType, new object[1] { MultitonInstaller.GetConfiguration(keyType) }));
-                    }
-            return Managers[keyType.FullName];
-        }
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        public static IMultiton Instance(this IMultitonKey entry)
-            => Manager(entry.GetType()).Instance(entry);
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        public static bool Remove(this IMultitonKey entry)
-            => Manager(entry.GetType()).Delete(entry);
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        public static bool Restore(this IMultitonKey entry, IMultiton value = null, TimeSpan expiringTime = default)
-            => Manager(entry.GetType()).Update(entry, value, expiringTime);
-
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        public static bool IsPresent(this IMultitonKey entry)
-           => Manager(entry.GetType()).Exists(entry);
-
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        public static IList<TEntry> AllKeys<TEntry>(this TEntry entry)
-            where TEntry : IMultiKey, new()
-        {
-            Type keyType = typeof(TEntry);
-            IList<TEntry> keys = new List<TEntry>();
-            foreach (string key in Manager(keyType).List())
-            {
-                TEntry multitonKey = (TEntry)Activator.CreateInstance(keyType);
+                TKey multitonKey = new TKey();
                 IEnumerator<string> keyValues = PropertyValue(key);
                 if (!keyValues.MoveNext())
                     continue;

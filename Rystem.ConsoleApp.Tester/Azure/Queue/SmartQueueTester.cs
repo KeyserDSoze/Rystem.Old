@@ -1,16 +1,17 @@
 ﻿using Rystem.Azure.Queue;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
-    public class SmartQueueTester : ITest
+    public class SmartQueueTester : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             MySmartQueue mySmartQueue = new MySmartQueue()
             {

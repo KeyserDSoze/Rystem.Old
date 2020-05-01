@@ -1,16 +1,17 @@
 ﻿using Rystem.Cache;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Cache
 {
-    public class MultitonTableStorageTest : ITest
+    public class MultitonTableStorageTest : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             SmallTableKey smallTableKey = new SmallTableKey() { Id = 2 };
             smallTableKey.Remove();

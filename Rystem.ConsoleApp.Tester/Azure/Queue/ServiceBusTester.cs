@@ -1,16 +1,17 @@
 ﻿using Rystem.Azure.Queue;
 using Rystem.Debug;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
-    public class ServiceBusTester : ITest
+    public class ServiceBusTester : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             MyAbstractionOfServiceBus myServiceBus = new MyServiceBus()
             {
@@ -88,13 +89,13 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
     {
         static MyServiceBus()
         {
-            QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
+            QueueInstaller.Configure<MyAbstractionOfServiceBus>(new QueueConfiguration()
             {
                 ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
                 Type = QueueType.ServiceBus,
                 Name = "dario"
             });
-            QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
+            QueueInstaller.Configure<MyAbstractionOfServiceBus>(new QueueConfiguration()
             {
                 ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
                 Type = QueueType.ServiceBus,

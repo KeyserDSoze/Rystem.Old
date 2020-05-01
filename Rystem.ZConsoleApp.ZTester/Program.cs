@@ -1,5 +1,4 @@
-﻿using Reporting.WindTre.Library.Base.Blob;
-using Rystem.Azure.AggregatedData;
+﻿using Rystem.Azure.AggregatedData;
 using Rystem.Conversion;
 using Rystem.Enums;
 using System;

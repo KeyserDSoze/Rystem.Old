@@ -1,16 +1,17 @@
 ﻿using Rystem.Azure.Queue;
 using Rystem.Debug;
 using Rystem.Enums;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
-    public class EventHubTester : ITest
+    public class EventHubTester : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             MyAbstractionEventHub myEventHub = new MyEventHub()
             {
@@ -48,13 +49,13 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
         public MyObject B { get; set; }
         static MyEventHub()
         {
-            QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
+            QueueInstaller.Configure<MyAbstractionEventHub>(new QueueConfiguration()
             {
                 ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
                 Name = "queue",
                 Type = QueueType.EventHub
             });
-            QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
+            QueueInstaller.Configure<MyAbstractionEventHub>(new QueueConfiguration()
             {
                 ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
                 Name = "aloa",

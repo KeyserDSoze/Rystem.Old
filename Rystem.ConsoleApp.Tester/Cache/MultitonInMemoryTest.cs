@@ -1,17 +1,18 @@
 ﻿using Rystem.Cache;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using Rystem.Utility;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Cache
 {
-    public class MultitonInMemoryTest : ITest
+    public class MultitonInMemoryTest : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             Service2Key serviceKey = new Service2Key() { Id = 2 };
             if (serviceKey.IsPresent())

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,7 +21,7 @@ namespace Rystem.Azure.Queue
         private readonly string CleanRetentionQuery;
         private readonly bool CheckDuplication;
         private readonly QueueConfiguration QueueConfiguration;
-        private SqlConnection Connection() => new SqlConnection(this.QueueConfiguration.ConnectionString);
+        private SqlConnection NewConnection() => new SqlConnection(this.QueueConfiguration.ConnectionString);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command")]
         internal SmartQueueIntegration(QueueConfiguration property)
@@ -47,7 +48,7 @@ namespace Rystem.Azure.Queue
             this.DeleteQuery = $"Delete from SmartQueue_{property.Name} where Id = ";
             this.DeleteOnReadingQuery = $"Delete from SmartQueue_{property.Name} where Id in (";
             this.CleanRetentionQuery = $"Delete from SmartQueueDeleted_{property.Name} where DATEDIFF(day, ManagedTime,GETUTCDATE()) > {property.Retention}";
-            using (SqlConnection connection = Connection())
+            using (SqlConnection connection = NewConnection())
             {
                 connection.Open();
                 using (SqlCommand existingCommand = new SqlCommand($"SELECT count(*) FROM sysobjects WHERE name='SmartQueue_{property.Name}' and xtype='U'", connection))
@@ -93,13 +94,15 @@ namespace Rystem.Azure.Queue
             }
         }
 
+        private static readonly SqlException SqlExceptionDefault = default;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "I need to use it in this way")]
         private async Task<T> Retry<T>(SqlConnection connection, string query, Func<SqlCommand, Task<T>> commandQuery)
         {
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync();
             int attempt = 0;
+            SqlException sqlException = SqlExceptionDefault;
             using (SqlCommand command = new SqlCommand(query, connection))
             {
                 while (QueueConfiguration.Retry > attempt)
@@ -108,32 +111,31 @@ namespace Rystem.Azure.Queue
                     {
                         return await commandQuery.Invoke(command);
                     }
-                    catch (SqlException)
+                    catch (SqlException ex)
                     {
                         switch (connection.State)
                         {
                             case ConnectionState.Closed:
                             case ConnectionState.Broken:
+                            case ConnectionState.Connecting:
                                 await connection.OpenAsync();
                                 break;
                         }
+                        sqlException = ex;
                     }
                     attempt++;
                 }
             }
+            if (attempt >= QueueConfiguration.Retry)
+                throw sqlException;
             return default;
         }
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
-            using (SqlConnection connection = Connection())
+            using (SqlConnection connection = NewConnection())
                 return await Retry(connection, $"{DeleteQuery}{messageId}", ExecuteNonQueryAsync) > 0;
         }
-
-        private const string ToReplaceOnQuery = "'";
-        private const string ReplaceWithOnQuery = "''";
-        private string GetNormalizedJson(IQueue message)
-            => message.ToJson().Replace(ToReplaceOnQuery, ReplaceWithOnQuery);
-        private async Task<long> SendingAsync(IQueue message, int delayInSeconds, int path, int organization)
+        private async Task<long> SendingAsync(SqlConnection connection, IQueue message, int delayInSeconds, int path, int organization)
         {
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
             string messageToSend = GetNormalizedJson(message);
@@ -143,8 +145,7 @@ namespace Rystem.Azure.Queue
             sb.Append(InsertQuery);
             sb.Append($"{path},{organization},'{messageToSend}',");
             sb.Append($"'{newDatetime:yyyy-MM-ddTHH:mm:ss}', {newDatetime.Ticks})");
-            using (SqlConnection connection = Connection())
-                return await Retry(connection, sb.ToString(), ExecuteScalarAsync);
+            return await Retry(connection, sb.ToString(), ExecuteScalarAsync);
 
             async Task<long> ExecuteScalarAsync(SqlCommand command)
             {
@@ -155,28 +156,35 @@ namespace Rystem.Azure.Queue
                     return 0;
             }
         }
-        private async Task<bool> SendingBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
+        private async Task<QueueResult> SendingBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
         {
-            DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
-            StringBuilder sb = new StringBuilder();
-            foreach (IQueue message in messages)
+            QueueResult queueResult = new QueueResult()
             {
-                sb.Append(InsertQuery);
-                sb.Append($"{path},'{organization}','{GetNormalizedJson(message)}',");
-                sb.Append($"'{newDatetime:yyyy-MM-ddTHH:mm:ss}', {newDatetime.Ticks});");
+                IsOk = true,
+                IdMessages = new List<long>()
+            };
+            using (SqlConnection connection = NewConnection())
+            {
+                foreach (IQueue message in messages)
+                {
+                    long id = await SendingAsync(connection, message, delayInSeconds, path, organization);
+                    if (id == 0)
+                        queueResult.IsOk = false;
+                    else
+                        queueResult.IdMessages.Add(id);
+                }
             }
-            using (SqlConnection connection = Connection())
-                return await Retry(connection, sb.ToString(), ExecuteNonQueryAsync) > 0;
+            return queueResult;
         }
         public async Task<IEnumerable<TEntity>> Read(int path, int organization)
         {
             StringBuilder query = new StringBuilder();
-            query.Append(this.ReadQuery + DateTime.UtcNow.Ticks.ToString());
+            query.Append($"{this.ReadQuery}{DateTime.UtcNow.Ticks}");
             if (path > 0)
                 query.Append($" and Path = {path}");
             if (organization > 0)
                 query.Append($" and Organization = {organization}");
-            using (SqlConnection connection = Connection())
+            using (SqlConnection connection = NewConnection())
             {
                 ReadingWrapper readingWrapper = await Retry(connection, query.ToString(), ExecuteReaderAsync);
                 if (readingWrapper.ToDeleteIds.Count > 0)
@@ -202,33 +210,43 @@ namespace Rystem.Azure.Queue
         }
         public async Task<bool> CleanAsync()
         {
-            using (SqlConnection connection = Connection())
+            using (SqlConnection connection = NewConnection())
                 return await Retry(connection, CleanRetentionQuery, ExecuteNonQueryAsync) > 0;
         }
         private static async Task<long> ExecuteNonQueryAsync(SqlCommand command)
             => await command.ExecuteNonQueryAsync();
     }
-    /// <summary>
-    /// No business methods
-    /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
+
+    // No business methods
     internal partial class SmartQueueIntegration<TEntity> where TEntity : IQueue
     {
         public async Task<bool> SendAsync(IQueue message, int path, int organization)
-           => await SendingAsync(message, 0, path, organization) > 0;
-        public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, int path, int organization)
-          => await SendingBatchAsync(messages, 0, path, organization);
-        public async Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, int path, int organization)
-            => await SendingAsync(message, delayInSeconds, path, organization);
-        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
         {
-            await SendingBatchAsync(messages, delayInSeconds, path, organization);
-            return new List<long>();
+            using (SqlConnection connection = NewConnection())
+                return await SendingAsync(connection, message, 0, path, organization) > 0;
         }
+        public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, int path, int organization)
+            => (await SendingBatchAsync(messages, 0, path, organization)).IsOk;
+        public async Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, int path, int organization)
+        {
+            using (SqlConnection connection = NewConnection())
+                return await SendingAsync(connection, message, delayInSeconds, path, organization);
+        }
+        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
+            => (await SendingBatchAsync(messages, delayInSeconds, path, organization)).IdMessages;
+        private const string ToReplaceOnQuery = "'";
+        private const string ReplaceWithOnQuery = "''";
+        private string GetNormalizedJson(IQueue message)
+            => message.ToJson().Replace(ToReplaceOnQuery, ReplaceWithOnQuery);
         private class ReadingWrapper
         {
             public IList<TEntity> Messages { get; set; } = new List<TEntity>();
             public IList<long> ToDeleteIds { get; set; } = new List<long>();
+        }
+        private class QueueResult
+        {
+            public bool IsOk { get; set; }
+            public IList<long> IdMessages { get; set; }
         }
     }
 }

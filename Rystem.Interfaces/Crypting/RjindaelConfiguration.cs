@@ -7,9 +7,9 @@ namespace Rystem.Crypting
 {
     public class RjindaelConfiguration : CryptoConfiguration, IRystemConfiguration
     {
-        private static string DefaultPasswordHash = "A9@#d56_";
-        private static string DefaultSaltKey = "7§hg!8@ò";
-        private static string DefaultVIKey = "01tyç°@#78gh_jzx";
+        private const string DefaultPasswordHash = "A9@#d56_";
+        private const string DefaultSaltKey = "7§hg!8@ò";
+        private const string DefaultVIKey = "01tyç°@#78gh_jzx";
 
         public string PasswordHash => this.passowrdHash ?? DefaultPasswordHash;
         public string SaltKey => this.saltKey ?? DefaultSaltKey;
@@ -22,13 +22,12 @@ namespace Rystem.Crypting
         public RijndaelManaged SymmetricKey => new RijndaelManaged() { Mode = CipherMode, Padding = PaddingMode };
         public ICryptoTransform Decryptor => this.SymmetricKey.CreateDecryptor(KeyAsBytes, VIKeyAsBytes);
         public ICryptoTransform Encryptor => this.SymmetricKey.CreateEncryptor(KeyAsBytes, VIKeyAsBytes);
-        private string passowrdHash;
-        private string saltKey;
-        private string vIKey;
-        private CipherMode? cipherMode;
-        private PaddingMode? paddingMode;
+        private readonly string passowrdHash;
+        private readonly string saltKey;
+        private readonly string vIKey;
+        private readonly CipherMode? cipherMode;
+        private readonly PaddingMode? paddingMode;
         public override CryptoType Type => CryptoType.Rijndael;
-        public string Name { get; set; }
         public RjindaelConfiguration() { }
         public RjindaelConfiguration(string passwordHash, string saltKey, string vIKey)
         {

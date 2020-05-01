@@ -1,17 +1,18 @@
 ﻿using Microsoft.WindowsAzure.Storage.Blob;
 using Rystem.Azure.AggregatedData;
 using Rystem.ConsoleApp.Tester;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 {
-    public class BlockBlobStorageTest : ITest
+    public class BlockBlobStorageTest : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             Meatball2 meatball = new Meatball2()
             {

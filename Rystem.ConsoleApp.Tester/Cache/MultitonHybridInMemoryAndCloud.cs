@@ -1,15 +1,16 @@
 ﻿using Rystem.Cache;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Cache
 {
-    public class MultitonHybridInMemoryAndCloud : ITest
+    public class MultitonHybridInMemoryAndCloud : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             HybridTableKey hybridTableKey = new HybridTableKey() { Id = 2 };
             hybridTableKey.Remove();

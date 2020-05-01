@@ -1,17 +1,18 @@
 ﻿using Microsoft.WindowsAzure.Storage.Blob;
 using Rystem.Azure.AggregatedData;
 using Rystem.ConsoleApp.Tester;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 {
-    public class AppendBlobStorageTest : ITest
+    public class AppendBlobStorageTest : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             Meatball meatball = new Meatball()
             {
@@ -21,47 +22,47 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                     ContentType = "text/csv"
                 }
             };
-            meatball.Delete();
+            await meatball.DeleteAsync();
             meatball.A = 3;
-            meatball.Write();
+            await meatball.WriteAsync();
             meatball.A = 5;
-            meatball.Write();
+            await meatball.WriteAsync();
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Write();
-            IList<Meatball> meatball2 = meatball.List().ToList();
+            await meatball.WriteAsync();
+            IList<Meatball> meatball2 = (await meatball.ListAsync()).ToList();
             if (meatball2.Count != 3)
                 return false;
-            IList<AggregatedDataDummy> properties = meatball.FetchProperties();
+            IList<AggregatedDataDummy> properties = await meatball.FetchPropertiesAsync();
             if (properties.Count != 1)
                 return false;
-            if (!meatball.Delete())
+            if (!await meatball.DeleteAsync())
                 return false;
-            if (meatball.Exists())
+            if (await meatball.ExistsAsync())
                 return false;
-            meatball2 = meatball.List().ToList();
+            meatball2 = (await meatball.ListAsync()).ToList();
             if (meatball2.Count != 0)
                 return false;
 
-            meatball.Delete(Enums.Installation.Inst00);
+            await meatball.DeleteAsync(Enums.Installation.Inst00);
             meatball.A = 3;
-            meatball.Write(0, Enums.Installation.Inst00);
+            await meatball.WriteAsync(0, Enums.Installation.Inst00);
             meatball.A = 5;
-            meatball.Write(0, Enums.Installation.Inst00);
+            await meatball.WriteAsync(0, Enums.Installation.Inst00);
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Write(0, Enums.Installation.Inst00);
-            meatball2 = meatball.List(installation: Enums.Installation.Inst00).ToList();
+            await meatball.WriteAsync(0, Enums.Installation.Inst00);
+            meatball2 = (await meatball.ListAsync(installation: Enums.Installation.Inst00)).ToList();
             if (meatball2.Count != 3)
                 return false;
-            properties = meatball.FetchProperties(installation: Enums.Installation.Inst00);
+            properties = await meatball.FetchPropertiesAsync(installation: Enums.Installation.Inst00);
             if (properties.Count != 1)
                 return false;
-            if (!meatball.Delete(Enums.Installation.Inst00))
+            if (!await meatball.DeleteAsync(Enums.Installation.Inst00))
                 return false;
-            if (meatball.Exists(Enums.Installation.Inst00))
+            if (await meatball.ExistsAsync(Enums.Installation.Inst00))
                 return false;
-            meatball2 = meatball.List(installation: Enums.Installation.Inst00).ToList();
+            meatball2 = (await meatball.ListAsync(installation: Enums.Installation.Inst00)).ToList();
             if (meatball2.Count != 0)
                 return false;
 

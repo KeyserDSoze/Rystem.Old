@@ -37,36 +37,6 @@ namespace Rystem.Cache
                 }
             }
         }
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        public IMultiton Instance(IMultitonKey key)
-        {
-            string keyString = key.ToKeyString();
-            if (MemoryIsActive)
-            {
-                if (!InMemory.Exists(keyString))
-                {
-                    lock (TrafficLight)
-                    {
-                        if (!InMemory.Exists(keyString))
-                        {
-                            if (CloudIsActive && InCloud.Exists(keyString))
-                                InMemory.Update(keyString, InCloud.Instance(keyString), default);
-                            else
-                                Update(key, key.Fetch(), default);
-                        }
-                    }
-                }
-                return InMemory.Instance(keyString);
-            }
-            else
-            {
-                if (!InCloud.Exists(keyString))
-                    lock (TrafficLight)
-                        if (!InCloud.Exists(keyString))
-                            Update(key, key.Fetch(), default);
-                return InCloud.Instance(keyString);
-            }
-        }
         public TEntry Instance<TEntry>(IMultitonKey<TEntry> key)
             where TEntry : IMultiton, new()
         {
@@ -97,40 +67,38 @@ namespace Rystem.Cache
                 return (TEntry)(InCloud.Instance(keyString) as IMultiton);
             }
         }
-
-        [Obsolete("This method will be removed in future version. Please use IMultitonKey<TCache> instead of IMultitonKey.")]
-        public bool Update(IMultitonKey key, IMultiton value, TimeSpan expiringTime)
-        {
-            string keyString = key.ToKeyString();
-            if (value == null)
-                value = key.Fetch();
-            return (!MemoryIsActive || InMemory.Update(keyString, (T)value, expiringTime)) &&
-                (!CloudIsActive || InCloud.Update(keyString, (T)value, expiringTime));
-        }
         public bool Update<TEntry>(IMultitonKey<TEntry> key, TEntry value, TimeSpan expiringTime)
             where TEntry : IMultiton, new()
         {
             string keyString = key.ToKeyString();
             if (value == null)
                 value = key.Fetch();
-            return (!MemoryIsActive || InMemory.Update(keyString, (T)(value as IMultiton), expiringTime)) &&
-                (!CloudIsActive || InCloud.Update(keyString, (T)(value as IMultiton), expiringTime));
+            bool result = false;
+            if (MemoryIsActive)
+                result |= InMemory.Update(keyString, (T)(value as IMultiton), expiringTime);
+            if (CloudIsActive)
+                result |= InCloud.Update(keyString, (T)(value as IMultiton), expiringTime);
+            return result;
         }
-
         public bool Exists(IMultiKey key)
         {
             string keyString = key.ToKeyString();
-            return (!MemoryIsActive || InMemory.Exists(keyString))
-                   && (!CloudIsActive || InCloud.Exists(keyString));
+            if (MemoryIsActive)
+                return InMemory.Exists(keyString);
+            else if (CloudIsActive)
+                return InCloud.Exists(keyString);
+            return false;
         }
-
         public bool Delete(IMultiKey key)
         {
             string keyString = key.ToKeyString();
-            return (!MemoryIsActive || InMemory.Delete(keyString))
-                   && (!CloudIsActive || InCloud.Delete(keyString));
+            bool result = false;
+            if (MemoryIsActive)
+                result |= InMemory.Delete(keyString);
+            if (CloudIsActive)
+                result |= InCloud.Delete(keyString);
+            return result;
         }
-
         public IEnumerable<string> List()
         {
             if (CloudIsActive)
@@ -139,6 +107,5 @@ namespace Rystem.Cache
                 return InMemory.List();
             return null;
         }
-
     }
 }

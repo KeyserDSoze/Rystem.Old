@@ -2,18 +2,19 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rystem.Enums;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using Rystem.StreamAnalytics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
 {
-    public class FunctionSimulator : ITest
+    public class FunctionSimulator : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             AggregationInstaller<EventData>.Configure(
                 new AggregationProperty()
@@ -41,8 +42,8 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                                     X = i
                                 }))));
             EventData[] entries = messages.ToArray();
-            IList<EventData> flusheds = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action: " + x), (x, _) => Console.WriteLine("Action on error: " + x));
-            IList<EventData> flusheds2 = aggregationManager.Run(entries, new Logger(), x => Console.WriteLine("action2: " + x), (x, _) => Console.WriteLine("Action on error2: " + x), Installation.Inst00);
+            IList<EventData> flusheds = aggregationManager.Run(entries, new ConsoleLogger(), x => Console.WriteLine("action: " + x), (x, _) => Console.WriteLine("Action on error: " + x));
+            IList<EventData> flusheds2 = aggregationManager.Run(entries, new ConsoleLogger(), x => Console.WriteLine("action2: " + x), (x, _) => Console.WriteLine("Action on error2: " + x), Installation.Inst00);
             return true;
         }
     }
@@ -53,32 +54,11 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
     }
     public class FunctionParser : IAggregationParser
     {
-        public void Parse<T>(string queueName, IList<T> events, ILogger log, Installation installation)
+        public async Task ParseAsync<T>(string queueName, IList<T> events, ILogger log, Installation installation)
         {
+            await Task.Delay(0).ConfigureAwait(false);
             foreach (T a in events)
                 log.LogInformation($"Parsing {a} in queue: {queueName}");
-        }
-    }
-    public class Logger : ILogger, IDisposable
-    {
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            return this;
-        }
-
-        public void Dispose()
-        {
-            return;
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            Console.WriteLine($"{logLevel}: {state}");
         }
     }
 }

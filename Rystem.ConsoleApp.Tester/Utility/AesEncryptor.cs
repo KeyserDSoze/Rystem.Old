@@ -1,15 +1,16 @@
 ﻿using Rystem.Crypting;
 using Rystem.Enums;
-using Rystem.Interfaces.Utility.Tester;
+using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Utility
 {
-    public class AesEncryptor : ITest
+    public class AesEncryptor : IUnitTest
     {
-        public bool DoWork(Action<object> action, params string[] args)
+        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             AesHelper aesHelper2 = new AesHelper() { CryptedMessage = "KTgCoh9Lxls7c6UlGorq3xnMM6b5yOt7IapwcnRbzSb8WVzCrQDNd1RAuYeWAI43fttxVS9id+wj9571c3iIclvAlOfNV50S4nO0iW+uRmpFtr4BDw/4LOB8mELaoIWtwrCwvsF8YS883VA6Sq1p6rY4XImCL9dBxLt7bwA8cU0zRdzgexhKEdbOEw8qA7o6nc7jp+Klw0QShJbwV+Q64Cn2K67Rb8ZqB4WvRkyrnuBcKKIKtInm+sEUEgpSD2/OwvDGzuzjMScGKFUksp60DQ==" };
             Console.WriteLine(aesHelper2.Decrypt().Message);
