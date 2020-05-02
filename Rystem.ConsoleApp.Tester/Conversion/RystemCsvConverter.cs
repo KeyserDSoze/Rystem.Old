@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Conversion
 {
-    public class CsvConverter : IUnitTest
+    public class RystemCsvConverter : IUnitTest
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
@@ -54,8 +54,8 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                     }
                 }
             };
-            string salo = halo.ToStandardCsv();
-            Halo halo3 = salo.FromStandardCsv<Halo>();
+            string salo = halo.ToRystemCsv();
+            Halo halo3 = salo.FromRystemCsv<Halo>();
             string salo2 = halo3.ToStandardJson();
             Console.WriteLine(salo);
             Console.WriteLine(salo2);
