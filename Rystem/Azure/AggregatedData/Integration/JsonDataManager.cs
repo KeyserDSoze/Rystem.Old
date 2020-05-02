@@ -15,7 +15,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         {
             using (StreamReader sr = new StreamReader(dummy.Stream))
             {
-                TEntity dataLake = JsonConvert.DeserializeObject<TEntity>(await sr.ReadToEndAsync(), NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
+                TEntity dataLake = (await sr.ReadToEndAsync().NoContext()).FromStandardJson<TEntity>();
                 dataLake.Properties = dummy.Properties;
                 dataLake.Name = dummy.Name;
                 return dataLake;
@@ -23,7 +23,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         }
         public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
         {
-            await Task.Delay(0);
+            await Task.Delay(0).NoContext();
             return new AggregatedDataDummy()
             {
                 Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/json" },

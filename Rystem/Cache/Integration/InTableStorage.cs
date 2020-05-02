@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
@@ -11,7 +12,7 @@ using Rystem.Const;
 namespace Rystem.Cache
 {
     internal class InTableStorage<T> : IMultitonIntegration<T>
-        where T : IMultiton
+        where T : IMultiton, new()
     {
         private static CloudTable Context;
         private static long ExpireCache = 0;
@@ -23,13 +24,13 @@ namespace Rystem.Cache
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             Context = tableClient.GetTableReference(TableName);
-            Context.CreateIfNotExistsAsync().GetAwaiter().GetResult();
+            Context.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
         }
         public T Instance(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
-            return result.Result != default ? JsonConvert.DeserializeObject<T>(((RystemCache)result.Result).Data, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings) : default;
+            TableResult result = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
+            return result.Result != default ? ((RystemCache)result.Result).Data.FromStandardJson<T>() : default;
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {
@@ -44,7 +45,7 @@ namespace Rystem.Cache
                 E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);
-            TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
+            TableResult esito = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
             return (esito.HttpStatusCode == 204);
         }
         public bool Delete(string key)
@@ -58,7 +59,7 @@ namespace Rystem.Cache
             TableOperation operation = TableOperation.Delete(rystemCache);
             try
             {
-                TableResult esito = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
+                TableResult esito = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
                 return (esito.HttpStatusCode == 204);
             }
             catch (StorageException er)
@@ -71,7 +72,7 @@ namespace Rystem.Cache
         public bool Exists(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = Context.ExecuteAsync(operation).GetAwaiter().GetResult();
+            TableResult result = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
             if (result.Result == null)
                 return false;
             RystemCache cached = (RystemCache)result.Result;
@@ -92,7 +93,7 @@ namespace Rystem.Cache
             List<string> keys = new List<string>();
             do
             {
-                TableQuerySegment tableQuerySegment = Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).GetAwaiter().GetResult();
+                TableQuerySegment tableQuerySegment = Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).NoContext().GetAwaiter().GetResult();
                 IEnumerable<string> keysFromQuery = tableQuerySegment.Results.Select(x => x.RowKey);
                 tableContinuationToken = tableQuerySegment.ContinuationToken;
                 keys.AddRange(keysFromQuery);

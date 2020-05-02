@@ -2,6 +2,7 @@
 using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,6 +45,22 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                     return false;
             for (int i = 0; i < 100; i++)
                 if (csvs2[i].Hotel != csvs2Comparer[i].Hotel)
+                    return false;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (StreamWriter sw = new StreamWriter(memoryStream))
+                {
+                    sw.Write(firstCsv);
+                    sw.Flush();
+                    List<CsvModel> csvsComparer2 = (await memoryStream.FromCsvAsync<CsvModel>().NoContext()).ToList();
+                    for (int i = 0; i < 100; i++)
+                        if (csvs[i].Hotel != csvsComparer2[i].Hotel)
+                            return false;
+                }
+            }
+            List<CsvModel2> csvs2Comparer2 = secondCsv.Split('\n').FromCsv<CsvModel2>('|').ToList();
+            for (int i = 0; i < 100; i++)
+                if (csvs2[i].Hotel != csvs2Comparer2[i].Hotel)
                     return false;
             return true;
         }

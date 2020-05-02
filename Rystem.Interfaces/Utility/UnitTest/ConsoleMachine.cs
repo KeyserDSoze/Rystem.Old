@@ -29,7 +29,7 @@ namespace Rystem.UnitTest
             if (value < 0)
                 value = 0;
             if (value < this.Tests.Count)
-                return await this.Tests[value].DoWorkAsync(action, args);
+                return await this.Tests[value].DoWorkAsync(action, args).NoContext();
             throw new ArgumentException($"{nameof(value)} is greater than {nameof(this.Tests)}. {value} >= {this.Tests.Count}");
         }
         private string WhatDoYouWantToSeeInAction()
@@ -48,7 +48,7 @@ namespace Rystem.UnitTest
         private const string ExitCommand = "exit";
         private const string AllCommand = "all";
         public void Start(Action<object> action = null, params string[] args)
-            => StartAsync(action, args).ConfigureAwait(false).GetAwaiter().GetResult();
+            => StartAsync(action, args).NoContext().GetAwaiter().GetResult();
 
         private async Task StartAsync(Action<object> action = null, params string[] args)
         {
@@ -58,7 +58,7 @@ namespace Rystem.UnitTest
                 {
                     List<(string, bool)> results = new List<(string, bool)>();
                     for (int i = 0; i < this.Tests.Count; i++)
-                        results.Add((this.Tests[i].GetType().Name, await ExecuteAsync(i, action, string.Empty, args)));
+                        results.Add((this.Tests[i].GetType().Name, await ExecuteAsync(i, action, string.Empty, args).NoContext()));
                     Console.WriteLine("------------------------------");
                     Console.WriteLine("Test Resume");
                     Console.WriteLine("------------------------------");
@@ -71,7 +71,7 @@ namespace Rystem.UnitTest
                     }
                 }
                 else
-                    await ExecuteAsync(int.Parse(Result), action, null, args);
+                    await ExecuteAsync(int.Parse(Result), action, null, args).NoContext();
             }
         }
 
@@ -82,7 +82,7 @@ namespace Rystem.UnitTest
             {
                 if (byPassValue == null)
                     Console.WriteLine("Insert your value");
-                bool result = await this.DoWorkAsync(index, action, args.Concat(new string[1] { byPassValue ?? Console.ReadLine() }).ToArray());
+                bool result = await this.DoWorkAsync(index, action, args.Concat(new string[1] { byPassValue ?? Console.ReadLine() }).ToArray()).NoContext();
                 Console.WriteLine($"Result --> {result}");
                 if (byPassValue == null)
                 {

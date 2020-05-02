@@ -36,21 +36,21 @@ namespace Rystem.Azure.AggregatedData
                 }
         }
         public async Task<bool> DeleteAsync(IAggregatedData entity, Installation installation)
-            => await Integrations[installation].DeleteAsync(entity);
+            => await Integrations[installation].DeleteAsync(entity).NoContext();
         public async Task<bool> ExistsAsync(IAggregatedData entity, Installation installation)
-            => await Integrations[installation].ExistsAsync(entity);
+            => await Integrations[installation].ExistsAsync(entity).NoContext();
         public async Task<TEntityLake> FetchAsync<TEntityLake>(IAggregatedData entity, Installation installation)
             where TEntityLake : IAggregatedData
-            => (TEntityLake)(IAggregatedData)(await Integrations[installation].FetchAsync(entity));
+            => (TEntityLake)(IAggregatedData)(await Integrations[installation].FetchAsync(entity).NoContext());
         public async Task<IEnumerable<TEntityLake>> ListAsync<TEntityLake>(IAggregatedData entity, Installation installation, string prefix, int? takeCount)
             where TEntityLake : IAggregatedData
-            => (await Integrations[installation].ListAsync(entity, prefix, takeCount)).Select(x => (TEntityLake)(IAggregatedData)x);
+            => (await Integrations[installation].ListAsync(entity, prefix, takeCount).NoContext()).Select(x => (TEntityLake)(IAggregatedData)x);
         public async Task<IList<string>> SearchAsync(IAggregatedData entity, Installation installation, string prefix, int? takeCount)
-            => await Integrations[installation].SearchAsync(entity, prefix, takeCount);
+            => await Integrations[installation].SearchAsync(entity, prefix, takeCount).NoContext();
         public async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, Installation installation, string prefix, int? takeCount)
-            => await Integrations[installation].FetchPropertiesAsync(entity, prefix, takeCount);
+            => await Integrations[installation].FetchPropertiesAsync(entity, prefix, takeCount).NoContext();
         public async Task<bool> WriteAsync(IAggregatedData entity, Installation installation, long offset)
-            => await Integrations[installation].WriteAsync(entity, offset);
+            => await Integrations[installation].WriteAsync(entity, offset).NoContext();
         public string GetName(Installation installation)
             => this.AggregatedDataConfiguration[installation].Name;
     }

@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Newtonsoft.Json;
 using Rystem.Const;
 
 namespace Rystem.Cache
 {
     internal class InBlobStorage<T> : IMultitonIntegration<T>
-        where T : IMultiton
+        where T : IMultiton, new()
     {
         private static CloudBlobContainer Context;
         private static long ExpireCache = 0;
@@ -22,12 +22,12 @@ namespace Rystem.Cache
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             Context = Client.GetContainerReference(ContainerName);
-            Context.CreateIfNotExistsAsync().GetAwaiter().GetResult();
+            Context.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
         }
         public T Instance(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
-            cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            cloudBlob.FetchAttributesAsync().NoContext().GetAwaiter().GetResult();
             if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
             {
                 this.Delete(key);
@@ -35,8 +35,8 @@ namespace Rystem.Cache
             }
             else
             {
-                using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ConfigureAwait(false).GetAwaiter().GetResult()))
-                    return JsonConvert.DeserializeObject<T>(reader.ReadToEnd(), NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
+                using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).NoContext().GetAwaiter().GetResult()))
+                    return reader.ReadToEnd().FromStandardJson<T>();
             }
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
@@ -48,20 +48,20 @@ namespace Rystem.Cache
             if (expiring > 0)
                 cloudBlob.Properties.CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString();
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToStandardJson())))
-                cloudBlob.UploadFromStreamAsync(stream).ConfigureAwait(false).GetAwaiter().GetResult();
+                cloudBlob.UploadFromStreamAsync(stream).NoContext().GetAwaiter().GetResult();
             return true;
         }
 
         public bool Delete(string key)
-            => Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            => Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().NoContext().GetAwaiter().GetResult();
         public bool Exists(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
-            if (cloudBlob.ExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult())
+            if (cloudBlob.ExistsAsync().NoContext().GetAwaiter().GetResult())
             {
                 if (ExpireCache > 0)
                 {
-                    cloudBlob.FetchAttributesAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                    cloudBlob.FetchAttributesAsync().NoContext().GetAwaiter().GetResult();
                     if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
                     {
                         this.Delete(key);
@@ -79,7 +79,7 @@ namespace Rystem.Cache
             BlobContinuationToken token = null;
             do
             {
-                BlobResultSegment segment = Context.ListBlobsSegmentedAsync(FullName, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { }).ConfigureAwait(false).GetAwaiter().GetResult();
+                BlobResultSegment segment = Context.ListBlobsSegmentedAsync(FullName, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { }).NoContext().GetAwaiter().GetResult();
                 token = segment.ContinuationToken;
                 foreach (IListBlobItem blobItem in segment.Results)
                 {

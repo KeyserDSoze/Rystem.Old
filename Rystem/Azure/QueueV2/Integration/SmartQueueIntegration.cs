@@ -97,10 +97,10 @@ namespace Rystem.Azure.Queue
         private static readonly SqlException SqlExceptionDefault = default;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command")]
-        private async Task<T> Retry<T>(SqlConnection connection, string query, Func<SqlCommand, Task<T>> commandQuery)
+        private async Task<T> RetryAsync<T>(SqlConnection connection, string query, Func<SqlCommand, Task<T>> commandQuery)
         {
             if (connection.State != ConnectionState.Open)
-                await connection.OpenAsync();
+                await connection.OpenAsync().NoContext();
             int attempt = 0;
             SqlException sqlException = SqlExceptionDefault;
             using (SqlCommand command = new SqlCommand(query, connection))
@@ -109,16 +109,17 @@ namespace Rystem.Azure.Queue
                 {
                     try
                     {
-                        return await commandQuery.Invoke(command);
+                        return await commandQuery.Invoke(command).NoContext();
                     }
                     catch (SqlException ex)
                     {
+                        await Task.Delay(100).NoContext();
                         switch (connection.State)
                         {
                             case ConnectionState.Closed:
                             case ConnectionState.Broken:
                             case ConnectionState.Connecting:
-                                await connection.OpenAsync();
+                                await connection.OpenAsync().NoContext();
                                 break;
                         }
                         sqlException = ex;
@@ -133,7 +134,7 @@ namespace Rystem.Azure.Queue
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
             using (SqlConnection connection = NewConnection())
-                return await Retry(connection, $"{DeleteQuery}{messageId}", ExecuteNonQueryAsync) > 0;
+                return await RetryAsync(connection, $"{DeleteQuery}{messageId}", ExecuteNonQueryAsync).NoContext() > 0;
         }
         private async Task<long> SendingAsync(SqlConnection connection, TEntity message, int delayInSeconds, int path, int organization)
         {
@@ -145,11 +146,11 @@ namespace Rystem.Azure.Queue
             sb.Append(InsertQuery);
             sb.Append($"{path},{organization},'{messageToSend}',");
             sb.Append($"'{newDatetime:yyyy-MM-ddTHH:mm:ss}', {newDatetime.Ticks})");
-            return await Retry(connection, sb.ToString(), ExecuteScalarAsync);
+            return await RetryAsync(connection, sb.ToString(), ExecuteScalarAsync).NoContext();
 
             async Task<long> ExecuteScalarAsync(SqlCommand command)
             {
-                object value = await command.ExecuteScalarAsync();
+                object value = await command.ExecuteScalarAsync().NoContext();
                 if (value != null)
                     return Convert.ToInt64(value);
                 else
@@ -167,7 +168,7 @@ namespace Rystem.Azure.Queue
             {
                 foreach (TEntity message in messages)
                 {
-                    long id = await SendingAsync(connection, message, delayInSeconds, path, organization);
+                    long id = await SendingAsync(connection, message, delayInSeconds, path, organization).NoContext();
                     if (id == 0)
                         queueResult.IsOk = false;
                     else
@@ -176,7 +177,7 @@ namespace Rystem.Azure.Queue
             }
             return queueResult;
         }
-        public async Task<IEnumerable<TEntity>> Read(int path, int organization)
+        public async Task<IEnumerable<TEntity>> ReadAsync(int path, int organization)
         {
             StringBuilder query = new StringBuilder();
             query.Append($"{this.ReadQuery}{DateTime.UtcNow.Ticks}");
@@ -186,18 +187,18 @@ namespace Rystem.Azure.Queue
                 query.Append($" and Organization = {organization}");
             using (SqlConnection connection = NewConnection())
             {
-                ReadingWrapper readingWrapper = await Retry(connection, query.ToString(), ExecuteReaderAsync);
+                ReadingWrapper readingWrapper = await RetryAsync(connection, query.ToString(), ExecuteReaderAsync).NoContext();
                 if (readingWrapper.ToDeleteIds.Count > 0)
-                    await Retry(connection, $"{this.DeleteOnReadingQuery}{string.Join(",", readingWrapper.ToDeleteIds)})", ExecuteNonQueryAsync);
+                    await RetryAsync(connection, $"{this.DeleteOnReadingQuery}{string.Join(",", readingWrapper.ToDeleteIds)})", ExecuteNonQueryAsync).NoContext();
                 return readingWrapper.Messages;
             }
 
             async Task<ReadingWrapper> ExecuteReaderAsync(SqlCommand command)
             {
                 ReadingWrapper reading = new ReadingWrapper();
-                using (SqlDataReader myReader = await command.ExecuteReaderAsync())
+                using (SqlDataReader myReader = await command.ExecuteReaderAsync().NoContext())
                 {
-                    while (await myReader.ReadAsync())
+                    while (await myReader.ReadAsync().NoContext())
                     {
                         reading.Messages.Add(myReader["Message"].ToString().ToMessage<TEntity>());
                         reading.ToDeleteIds.Add(int.Parse(myReader["Id"].ToString()));
@@ -206,15 +207,15 @@ namespace Rystem.Azure.Queue
                 }
             }
             async Task<long> ExecuteNonQueryAsync(SqlCommand command)
-                        => await command.ExecuteNonQueryAsync();
+                        => await command.ExecuteNonQueryAsync().NoContext();
         }
         public async Task<bool> CleanAsync()
         {
             using (SqlConnection connection = NewConnection())
-                return await Retry(connection, CleanRetentionQuery, ExecuteNonQueryAsync) > 0;
+                return await RetryAsync(connection, CleanRetentionQuery, ExecuteNonQueryAsync).NoContext() > 0;
         }
         private static async Task<long> ExecuteNonQueryAsync(SqlCommand command)
-            => await command.ExecuteNonQueryAsync();
+            => await command.ExecuteNonQueryAsync().NoContext();
     }
 
     // No business methods
@@ -223,17 +224,17 @@ namespace Rystem.Azure.Queue
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
             using (SqlConnection connection = NewConnection())
-                return await SendingAsync(connection, message, 0, path, organization) > 0;
+                return await SendingAsync(connection, message, 0, path, organization).NoContext() > 0;
         }
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
-            => (await SendingBatchAsync(messages, 0, path, organization)).IsOk;
+            => (await SendingBatchAsync(messages, 0, path, organization).NoContext()).IsOk;
         public async Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
         {
             using (SqlConnection connection = NewConnection())
-                return await SendingAsync(connection, message, delayInSeconds, path, organization);
+                return await SendingAsync(connection, message, delayInSeconds, path, organization).NoContext();
         }
         public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization)
-            => (await SendingBatchAsync(messages, delayInSeconds, path, organization)).IdMessages;
+            => (await SendingBatchAsync(messages, delayInSeconds, path, organization).NoContext()).IdMessages;
         private const string ToReplaceOnQuery = "'";
         private const string ReplaceWithOnQuery = "''";
         private string GetNormalizedJson(TEntity message)

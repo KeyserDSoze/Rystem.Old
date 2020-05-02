@@ -14,13 +14,16 @@ namespace Rystem.Azure.Queue
             => this.Client = EventHubClient.CreateFromConnectionString(
                   new EventHubsConnectionStringBuilder($"{property.ConnectionString};EntityPath={property.Name}").ToString());
 
-        public Task<bool> CleanAsync() => throw new NotImplementedException("Event hub doesn't allow this operation.");
-        public Task<bool> DeleteScheduledAsync(long messageId) => throw new NotImplementedException("Event hub doesn't allow this operation.");
-        public Task<IEnumerable<TEntity>> Read(int path, int organization) => throw new NotImplementedException();
+        public Task<bool> CleanAsync() 
+            => throw new NotImplementedException("Event hub doesn't allow this operation.");
+        public Task<bool> DeleteScheduledAsync(long messageId) 
+            => throw new NotImplementedException("Event hub doesn't allow this operation.");
+        public Task<IEnumerable<TEntity>> ReadAsync(int path, int organization) 
+            => throw new NotImplementedException("Event hub doesn't allow this operation.");
 
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
-            await this.Client.SendAsync(new EventData(message.ToSendable()));
+            await this.Client.SendAsync(new EventData(message.ToSendable())).NoContext();
             return true;
         }
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
@@ -28,10 +31,12 @@ namespace Rystem.Azure.Queue
             EventDataBatch eventDataBatch = this.Client.CreateBatch();
             foreach (TEntity message in messages)
                 eventDataBatch.TryAdd(new EventData(message.ToSendable()));
-            await this.Client.SendAsync(eventDataBatch);
+            await this.Client.SendAsync(eventDataBatch).NoContext();
             return true;
         }
-        public Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization) => throw new NotImplementedException("Event hub doesn't allow this operation.");
-        public Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization) => throw new NotImplementedException("Event hub doesn't allow this operation.");
+        public Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization) 
+            => throw new NotImplementedException("Event hub doesn't allow this operation.");
+        public Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization) 
+            => throw new NotImplementedException("Event hub doesn't allow this operation.");
     }
 }

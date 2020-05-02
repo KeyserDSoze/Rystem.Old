@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData
 {
     public interface IAggregatedDataReader<TEntity>
-        where TEntity : IAggregatedData
+        where TEntity : IAggregatedData, new()
     {
         Task<TEntity> ReadAsync(AggregatedDataDummy dummy);
     }
     public interface IAggregatedDataListReader<TEntity>
-        where TEntity : IAggregatedData
+        where TEntity : IAggregatedData, new()
     {
         Task<IList<TEntity>> ReadAsync(AggregatedDataDummy dummy);
     }

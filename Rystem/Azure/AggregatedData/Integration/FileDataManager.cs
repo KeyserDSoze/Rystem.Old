@@ -21,7 +21,7 @@ namespace Rystem.Azure.AggregatedData.Integration
                 Properties = entity.Properties,
                 Name = entity.Name,
             };
-            await entity.Stream.CopyToAsync(aggregatedDataDummy.Stream);
+            await entity.Stream.CopyToAsync(aggregatedDataDummy.Stream).NoContext();
             return aggregatedDataDummy;
         }
 
@@ -32,7 +32,7 @@ namespace Rystem.Azure.AggregatedData.Integration
                 Properties = dummy.Properties,
                 Name = dummy.Name
             };
-            await dummy.Stream.CopyToAsync((dataLake as IFileData).Stream);
+            await dummy.Stream.CopyToAsync((dataLake as IFileData).Stream).NoContext();
             return dataLake;
         }
     }

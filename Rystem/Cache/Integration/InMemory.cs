@@ -6,7 +6,7 @@ using System.Text;
 namespace Rystem.Cache
 {
     internal class InMemory<T> : IMultitonIntegration<T>
-        where T : IMultiton
+        where T : IMultiton, new()
     {
         private readonly int ExpireMultiton = 0;
         private readonly static Dictionary<string, Dummy> Instances = new Dictionary<string, Dummy>();

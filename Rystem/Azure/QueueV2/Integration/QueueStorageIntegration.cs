@@ -19,7 +19,7 @@ namespace Rystem.Azure.Queue
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(property.ConnectionString);
             CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
             this.Client = queueClient.GetQueueReference(property.Name);
-            this.Client.CreateIfNotExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            this.Client.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
         }
 
         public Task<bool> CleanAsync()
@@ -28,17 +28,17 @@ namespace Rystem.Azure.Queue
         public Task<bool> DeleteScheduledAsync(long messageId)
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
 
-        public async Task<IEnumerable<TEntity>> Read(int path, int organization)
-             => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages)).Select(x => x.AsString).FromMessage<TEntity>();
+        public async Task<IEnumerable<TEntity>> ReadAsync(int path, int organization)
+             => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Select(x => x.AsString).FromMessage<TEntity>();
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
-            await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToJson()));
+            await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToJson())).NoContext();
             return true;
         }
 
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
         {
-            await this.Client.AddMessageAsync(new CloudQueueMessage(messages.ToJson()));
+            await this.Client.AddMessageAsync(new CloudQueueMessage(messages.ToJson())).NoContext();
             return true;
         }
 

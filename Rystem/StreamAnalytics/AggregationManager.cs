@@ -40,7 +40,7 @@ namespace Rystem.StreamAnalytics
                     exceptions.Add(e);
                 }
             }
-            IList<T> flusheds = await this.FlushAsync(log, installation);
+            IList<T> flusheds = await this.FlushAsync(log, installation).NoContext();
             DateTime endTime = DateTime.UtcNow;
             log.LogInformation($"instance: {instance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
             return flusheds;
@@ -71,7 +71,7 @@ namespace Rystem.StreamAnalytics
                 {
                     try
                     {
-                        await parser.ParseAsync(this.QueueName(installation), events, log, installation);
+                        await parser.ParseAsync(this.QueueName(installation), events, log, installation).NoContext();
                         log.LogWarning($"Parsed {parser.GetType().Name}.");
                     }
                     catch (Exception er)
@@ -84,7 +84,7 @@ namespace Rystem.StreamAnalytics
         }
         public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception, T> errorCatcher = null, Installation installation = Installation.Default)
         {
-            return this.RunAsync(events, log, wrappedAction, wrappedError, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+            return this.RunAsync(events, log, wrappedAction, wrappedError, installation).NoContext().GetAwaiter().GetResult();
 
             Task wrappedAction(T t)
             {
@@ -99,7 +99,7 @@ namespace Rystem.StreamAnalytics
         }
 
         public IList<T> Flush(ILogger log, Installation installation)
-            => this.FlushAsync(log, installation).ConfigureAwait(false).GetAwaiter().GetResult();
+            => this.FlushAsync(log, installation).NoContext().GetAwaiter().GetResult();
         private class BufferBearer
         {
             public IList<T> Events { get; set; } = new List<T>();

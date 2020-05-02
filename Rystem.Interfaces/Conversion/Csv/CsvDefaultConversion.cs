@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -21,7 +20,7 @@ namespace System
         private readonly Regex SplittingRegex;
         private static readonly Type CsvIgnoreType = typeof(CsvIgnore);
         private static readonly Type CsvPropertyType = typeof(CsvProperty);
-        private static readonly Dictionary<string, PropertyInfo> Properties;
+        private static readonly Dictionary<string, PropertyInfo> Properties = typeof(TEntity).GetProperties().Where(x => x.GetCustomAttribute(CsvIgnoreType) == null && StringablePrimitive.Check(x.PropertyType)).ToDictionary(x => x.GetCustomAttribute(CsvPropertyType) == null ? x.Name : ((CsvProperty)x.GetCustomAttribute(CsvPropertyType)).Name, x => x);
         private const string BaseRegex = @"(?<=^|{0})(\""(?:[^\""]|\""\"")*\""|[^{0}]*)";
         public CsvDefaultConversion(char splittingChar = ',')
         {
@@ -29,8 +28,6 @@ namespace System
             //this.SplittingRegex = new Regex($"(\\{this.SplittingChar}|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"] *) *)\"|([^\"\\{this.SplittingChar}\\r\\n]*))");
             this.SplittingRegex = new Regex(string.Format(BaseRegex, splittingChar.ToString()));
         }
-        static CsvDefaultConversion()
-            => Properties = typeof(TEntity).GetProperties().Where(x => x.GetCustomAttribute(CsvIgnoreType) == null && StringablePrimitive.Check(x.PropertyType)).ToDictionary(x => x.GetCustomAttribute(CsvPropertyType) == null ? x.Name : ((CsvProperty)x.GetCustomAttribute(CsvPropertyType)).Name, x => x);
 
         public string Write(IEnumerable<TEntity> entities)
         {
@@ -59,6 +56,7 @@ namespace System
         public async Task<IList<TEntity>> ReadAsync(Stream stream)
         {
             IList<TEntity> datas = new List<TEntity>();
+            stream.Position = 0;
             using (StreamReader sr = new StreamReader(stream))
             {
                 MatchCollection properties = this.SplittingRegex.Matches(await sr.ReadLineAsync().NoContext());

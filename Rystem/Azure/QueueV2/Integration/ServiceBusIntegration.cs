@@ -17,44 +17,37 @@ namespace Rystem.Azure.Queue
                     $"{property.ConnectionString};EntityPath={property.Name}"),
                     ReceiveMode.PeekLock);
 
-        public Task<bool> CleanAsync() 
+        public Task<bool> CleanAsync()
             => throw new NotImplementedException("ServiceBus doesn't allow this operation.");
 
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
-            await this.QueueClient.CancelScheduledMessageAsync(messageId);
+            await this.QueueClient.CancelScheduledMessageAsync(messageId).NoContext();
             return true;
         }
 
-        public Task<IEnumerable<TEntity>> Read(int path, int organization) => throw new NotImplementedException();
+        public Task<IEnumerable<TEntity>> ReadAsync(int path, int organization)
+            => throw new NotImplementedException("ServiceBus doesn't allow this operation.");
 
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
-            await this.QueueClient.SendAsync(
-                new Message(message.ToSendable()));
+            await this.QueueClient.SendAsync(new Message(message.ToSendable())).NoContext();
             return true;
         }
 
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
         {
-            await this.QueueClient.SendAsync(
-                new Message(messages.ToSendable()));
+            await this.QueueClient.SendAsync(new Message(messages.ToSendable())).NoContext();
             return true;
         }
 
         public async Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
-        {
-            return await this.QueueClient.ScheduleMessageAsync(
-                 new Message(message.ToSendable()), DateTime.UtcNow.AddSeconds(delayInSeconds));
-        }
+            => await this.QueueClient.ScheduleMessageAsync(new Message(message.ToSendable()), DateTime.UtcNow.AddSeconds(delayInSeconds)).NoContext();
 
         public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization)
-        {
-            return new List<long>()
-            {
-                await this.QueueClient.ScheduleMessageAsync(
-                    new Message(messages.ToSendable()), DateTime.UtcNow.AddSeconds(delayInSeconds))
-            };
-        }
+            => new List<long>()
+                {
+                    await this.QueueClient.ScheduleMessageAsync(new Message(messages.ToSendable()), DateTime.UtcNow.AddSeconds(delayInSeconds)).NoContext()
+                };
     }
 }

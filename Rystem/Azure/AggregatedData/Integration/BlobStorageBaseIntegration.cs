@@ -13,10 +13,10 @@ namespace Rystem.Azure.AggregatedData.Integration
     {
         internal static BlobRequestOptions BlobRequestOptions = new BlobRequestOptions() { DisableContentMD5Validation = true };
         public static async Task<bool> DeleteAsync(ICloudBlob cloudBlob)
-            => await cloudBlob.DeleteIfExistsAsync();
+            => await cloudBlob.DeleteIfExistsAsync().NoContext();
 
         public static async Task<bool> ExistsAsync(ICloudBlob cloudBlob)
-            => await cloudBlob.ExistsAsync();
+            => await cloudBlob.ExistsAsync().NoContext();
 
         public static async Task<IList<string>> SearchAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
         {
@@ -24,7 +24,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             BlobContinuationToken token = null;
             do
             {
-                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, takeCount, token, new BlobRequestOptions(), new OperationContext() { });
+                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, takeCount, token, new BlobRequestOptions(), new OperationContext() { }).NoContext();
                 token = segment.ContinuationToken;
                 foreach (var blobItem in segment.Results)
                     items.Add(blobItem.StorageUri.PrimaryUri.ToString());
@@ -39,11 +39,11 @@ namespace Rystem.Azure.AggregatedData.Integration
             BlobContinuationToken token = null;
             do
             {
-                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { });
+                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { }).NoContext();
                 token = segment.ContinuationToken;
                 foreach (IListBlobItem blobItem in segment.Results)
                 {
-                    await (blobItem as ICloudBlob).FetchAttributesAsync();
+                    await (blobItem as ICloudBlob).FetchAttributesAsync().NoContext();
                     items.Add(new AggregatedDataDummy() { Name = blobItem.Uri.AbsolutePath, Properties = (blobItem as ICloudBlob).Properties.ToAggregatedDataProperties() });
                 }
                 if (takeCount != null && items.Count >= takeCount)
@@ -52,7 +52,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             return items;
         }
 
-        public static async Task<bool> SetBlobPropertyIfNecessary(IAggregatedData entity, ICloudBlob cloudBlob, AggregatedDataDummy dummy)
+        public static async Task<bool> SetBlobPropertyIfNecessaryAsync(IAggregatedData entity, ICloudBlob cloudBlob, AggregatedDataDummy dummy)
         {
             bool changeSomethingInProperty = false;
             if (dummy.Properties != null)
@@ -89,12 +89,12 @@ namespace Rystem.Azure.AggregatedData.Integration
                 }
             }
             if (changeSomethingInProperty)
-                await cloudBlob.SetPropertiesAsync();
+                await cloudBlob.SetPropertiesAsync().NoContext();
             return changeSomethingInProperty;
         }
         public static async Task<Stream> ReadAsync(ICloudBlob cloudBlob)
         {
-            return await cloudBlob.OpenReadAsync(null, BlobRequestOptions, null);
+            return await cloudBlob.OpenReadAsync(null, BlobRequestOptions, null).NoContext();
         }
         internal static AggregatedDataProperties ToAggregatedDataProperties(this BlobProperties blobProperties)
         {

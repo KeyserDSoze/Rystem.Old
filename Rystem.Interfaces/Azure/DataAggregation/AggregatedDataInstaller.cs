@@ -5,7 +5,7 @@ using System.Text;
 namespace Rystem.Azure.AggregatedData
 {
     public class AggregatedDataConfiguration<Entity> : IRystemConfiguration
-        where Entity : IAggregatedData
+        where Entity : IAggregatedData, new()
     {
         public string ConnectionString { get; set; }
         public string Name { get; set; }
@@ -17,15 +17,11 @@ namespace Rystem.Azure.AggregatedData
     public static class AggregatedDataInstaller
     {
         public static void Configure<TEntity>(AggregatedDataConfiguration<TEntity> configuration, Installation installation = Installation.Default)
-            where TEntity : IAggregatedData
-        {
-            Installer<AggregatedDataConfiguration<TEntity>, TEntity>.Configure(configuration, installation);
-        }
+            where TEntity : IAggregatedData, new()
+            => Installer<AggregatedDataConfiguration<TEntity>, TEntity>.Configure(configuration, installation);
         public static IDictionary<Installation, AggregatedDataConfiguration<TEntity>> GetConfiguration<TEntity>()
-            where TEntity : IAggregatedData
-        {
-            return Installer<AggregatedDataConfiguration<TEntity>, TEntity>.GetConfiguration();
-        }
+            where TEntity : IAggregatedData, new()
+            => Installer<AggregatedDataConfiguration<TEntity>, TEntity>.GetConfiguration();
     }
     public enum AggregatedDataType
     {

@@ -13,7 +13,7 @@ namespace Rystem.Azure.Queue
         Task<bool> DeleteScheduledAsync(long messageId);
         Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization);
         Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization);
-        Task<IEnumerable<TEntity>> Read(int path, int organization);
+        Task<IEnumerable<TEntity>> ReadAsync(int path, int organization);
         Task<bool> CleanAsync();
     }
 }

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData.Integration
 {
     internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
-          where TEntity : IAggregatedData
+          where TEntity : IAggregatedData, new()
     {
         private readonly char SplittingChar;
         private const string InCaseOfSplittedChar = "\"{0}\"";
@@ -75,7 +75,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             {
                 while (!sr.EndOfStream)
                 {
-                    TEntity aggregatedData = Deserialize(await sr.ReadLineAsync());
+                    TEntity aggregatedData = Deserialize(await sr.ReadLineAsync().NoContext());
                     aggregatedData.Properties = dummy.Properties;
                     aggregatedData.Name = dummy.Name;
                     aggregatedDatas.Add(aggregatedData);
@@ -86,7 +86,7 @@ namespace Rystem.Azure.AggregatedData.Integration
 
         public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
         {
-            await Task.Delay(0);
+            await Task.Delay(0).NoContext();
             return new AggregatedDataDummy()
             {
                 Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/csv" },

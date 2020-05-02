@@ -27,7 +27,7 @@ namespace Rystem.Azure.NoSql
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(noSqlConfiguration.ConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             this.Context = tableClient.GetTableReference(noSqlConfiguration.Name);
-            this.Context.CreateIfNotExistsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            this.Context.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
             foreach (PropertyInfo pi in typeof(TEntity).GetProperties())
             {
                 if (pi.GetCustomAttribute(typeof(NoTableStorageProperty)) != null)
@@ -53,14 +53,14 @@ namespace Rystem.Azure.NoSql
                 RowKey = entityStorage.RowKey,
                 ETag = "*"
             });
-            return (await this.Context.ExecuteAsync(operation)).HttpStatusCode == 204;
+            return (await this.Context.ExecuteAsync(operation).NoContext()).HttpStatusCode == 204;
         }
 
         public async Task<bool> ExistsAsync(TEntity entity)
         {
             ITableStorage entityStorage = entity as ITableStorage;
             TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entityStorage.PartitionKey, entityStorage.RowKey);
-            TableResult result = await this.Context.ExecuteAsync(operation);
+            TableResult result = await this.Context.ExecuteAsync(operation).NoContext();
             return result.Result != null;
         }
 
@@ -72,7 +72,7 @@ namespace Rystem.Azure.NoSql
             string query = ToQuery(expression?.Body);
             do
             {
-                TableQuerySegment<DynamicTableEntity> seg = await this.Context.ExecuteQuerySegmentedAsync(new TableQuery<DynamicTableEntity>() { FilterString = query, TakeCount = takeCount }, token);
+                TableQuerySegment<DynamicTableEntity> seg = await this.Context.ExecuteQuerySegmentedAsync(new TableQuery<DynamicTableEntity>() { FilterString = query, TakeCount = takeCount }, token).NoContext();
                 token = seg.ContinuationToken;
                 items.AddRange(seg.Select(x => ReadEntity<TSpecialEntity>(x)));
                 if (takeCount != null && items.Count >= takeCount) break;
@@ -94,7 +94,7 @@ namespace Rystem.Azure.NoSql
         public async Task<bool> UpdateAsync(TEntity entity)
         {
             TableOperation operation = TableOperation.InsertOrReplace(WriteEntity(entity));
-            return (await this.Context.ExecuteAsync(operation)).HttpStatusCode == 204;
+            return (await this.Context.ExecuteAsync(operation).NoContext()).HttpStatusCode == 204;
         }
         public async Task<bool> UpdateBatchAsync(IEnumerable<TEntity> entities)
         {
@@ -107,13 +107,13 @@ namespace Rystem.Azure.NoSql
                     batch.InsertOrReplace(WriteEntity((TEntity)entity));
                     if (batch.Count == 100)
                     {
-                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
+                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch).NoContext();
                         result &= results.All(x => x.HttpStatusCode == 204);
                         batch = new TableBatchOperation();
                     }
                 }
                 if (batch.Count > 0)
-                    result &= (await this.Context.ExecuteBatchAsync(batch)).All(x => x.HttpStatusCode == 204);
+                    result &= (await this.Context.ExecuteBatchAsync(batch).NoContext()).All(x => x.HttpStatusCode == 204);
             }
             return result;
         }
@@ -133,13 +133,13 @@ namespace Rystem.Azure.NoSql
                     });
                     if (batch.Count == 100)
                     {
-                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
+                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch).NoContext();
                         result &= (results.All(x => x.HttpStatusCode == 204));
                         batch = new TableBatchOperation();
                     }
                 }
                 if (batch.Count > 0)
-                    result &= (await this.Context.ExecuteBatchAsync(batch)).All(x => x.HttpStatusCode == 204);
+                    result &= (await this.Context.ExecuteBatchAsync(batch).NoContext()).All(x => x.HttpStatusCode == 204);
             }
             return result;
         }

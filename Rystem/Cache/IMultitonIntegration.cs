@@ -5,7 +5,8 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    internal interface IMultitonIntegration<T> where T : IMultiton
+    internal interface IMultitonIntegration<T> 
+        where T : IMultiton, new()
     {
         T Instance(string key);
         bool Update(string key, T value, TimeSpan expiringTime);

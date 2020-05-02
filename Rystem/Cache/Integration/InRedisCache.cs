@@ -10,7 +10,7 @@ using System.Text;
 namespace Rystem.Cache
 {
     internal class InRedisCache<T> : IMultitonIntegration<T>
-        where T : IMultiton
+        where T : IMultiton, new()
     {
         private int RoundRobin = -1;
         private static readonly object TrafficLight = new object();
@@ -45,7 +45,7 @@ namespace Rystem.Cache
         public T Instance(string key)
         {
             string json = Cache.StringGet(CloudKeyToString(key));
-            return JsonConvert.DeserializeObject<T>(json, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
+            return json.FromStandardJson<T>();
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {
