@@ -13,9 +13,9 @@ namespace Rystem.Azure.AggregatedData
     internal class BlockBlobStorageIntegration<TEntity> : IAggregatedDataIntegration<TEntity>
         where TEntity : IAggregatedData, new()
     {
-        private CloudBlobContainer Context;
-        private IAggregatedDataReader<TEntity> Reader;
-        private IAggregatedDataWriter<TEntity> Writer;
+        private readonly CloudBlobContainer Context;
+        private readonly IAggregatedDataReader<TEntity> Reader;
+        private readonly IAggregatedDataWriter<TEntity> Writer;
         internal BlockBlobStorageIntegration(AggregatedDataConfiguration<TEntity> configuration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);

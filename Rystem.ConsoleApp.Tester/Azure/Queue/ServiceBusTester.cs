@@ -13,7 +13,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
-            MyAbstractionOfServiceBus myServiceBus = new MyServiceBus()
+            MyServiceBus myServiceBus = new MyServiceBus()
             {
                 A = "dsad",
                 B = new MyObject()
@@ -21,7 +21,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                     K = "dasdsa"
                 }
             };
-            List<MyAbstractionOfServiceBus> myServiceBuses = new List<MyAbstractionOfServiceBus>()
+            List<MyServiceBus> myServiceBuses = new List<MyServiceBus>()
             {
                 myServiceBus,
                 myServiceBus
@@ -45,22 +45,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
-            messageId = myServiceBus.SendScheduled(120, installation:Installation.Inst00);
+            messageId = myServiceBus.SendScheduled(120, installation: Installation.Inst00);
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, installation:Installation.Inst00);
+            returned = myServiceBus.DeleteScheduled(messageId, installation: Installation.Inst00);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120, installation:Installation.Inst00).FirstOrDefault();
+            messageId = myServiceBuses.SendScheduledBatch(120, installation: Installation.Inst00).FirstOrDefault();
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, installation:Installation.Inst00);
+            returned = myServiceBus.DeleteScheduled(messageId, installation: Installation.Inst00);
             if (!returned)
                 return false;
-            debugMessage = myServiceBus.DebugSend(120, installation:Installation.Inst00);
+            debugMessage = myServiceBus.DebugSend(120, installation: Installation.Inst00);
             if (!debugMessage.ServiceBusMessage.Contains("dsad"))
                 return false;
-            debugMessage2 = myServiceBuses.DebugSendBatch(120, installation:Installation.Inst00);
+            debugMessage2 = myServiceBuses.DebugSendBatch(120, installation: Installation.Inst00);
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
@@ -79,29 +79,29 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             //long aa = connectionMessage.SendFurther(30);
             return true;
         }
-    }
-    public abstract class MyAbstractionOfServiceBus : IQueue
-    {
-        public string A { get; set; }
-        public MyObject B { get; set; }
-    }
-    public class MyServiceBus : MyAbstractionOfServiceBus
-    {
-        static MyServiceBus()
+        private class MyServiceBus : IQueue
         {
-            QueueInstaller.Configure<MyAbstractionOfServiceBus>(new QueueConfiguration()
+            public string A { get; set; }
+            public MyObject B { get; set; }
+            static MyServiceBus()
             {
-                ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
-                Type = QueueType.ServiceBus,
-                Name = "dario"
-            });
-            QueueInstaller.Configure<MyAbstractionOfServiceBus>(new QueueConfiguration()
-            {
-                ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
-                Type = QueueType.ServiceBus,
-                Name = "aloa"
-            },Installation.Inst00);
+                QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
+                {
+                    ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
+                    Type = QueueType.ServiceBus,
+                    Name = "dario"
+                });
+                QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
+                {
+                    ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
+                    Type = QueueType.ServiceBus,
+                    Name = "aloa"
+                }, Installation.Inst00);
+            }
         }
-
+        private class MyObject
+        {
+            public string K { get; set; }
+        }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Rystem.Crypting
 {
-    public class CryptoInstaller
+    public static class CryptoInstaller
     {
         public static void ConfigureAsDefault(CryptoConfiguration configuration)
            => Installer<CryptoConfiguration>.ConfigureAsDefault(configuration);

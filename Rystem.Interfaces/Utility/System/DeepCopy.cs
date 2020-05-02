@@ -12,9 +12,8 @@ namespace System
 #warning Controllare che le proprietà siano oltre che in get anche in set, altrimenti non posso impostarle.
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static dynamic DeepCopy(this object original, params object[] args)
-        {
-            return InternalCopy(original, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
-        }
+            => InternalCopy(original, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
+
         private static readonly MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private static Object InternalCopy(object originalObject, IDictionary<Object, Object> visited, params object[] args)
@@ -95,59 +94,17 @@ namespace System
         {
             return (T)Copy((Object)original);
         }
-    }
-
-    public class ReferenceEqualityComparer : EqualityComparer<Object>
-    {
-        public override bool Equals(object x, object y)
+        private class ReferenceEqualityComparer : EqualityComparer<Object>
         {
-            return ReferenceEquals(x, y);
-        }
-        public override int GetHashCode(object obj)
-        {
-            if (obj == null) return 0;
-            return obj.GetHashCode();
-        }
-    }
-    public static class ArrayExtensions
-    {
-        public static void ForEach(this Array array, Action<Array, int[]> action)
-        {
-            if (array.LongLength == 0) return;
-            ArrayTraverse walker = new ArrayTraverse(array);
-            do action(array, walker.Position);
-            while (walker.Step());
-        }
-    }
-    internal class ArrayTraverse
-    {
-        public readonly int[] Position;
-        public readonly int[] MaxLengths;
-
-        public ArrayTraverse(Array array)
-        {
-            MaxLengths = new int[array.Rank];
-            for (int i = 0; i < array.Rank; ++i)
+            public override bool Equals(object x, object y)
             {
-                MaxLengths[i] = array.GetLength(i) - 1;
+                return ReferenceEquals(x, y);
             }
-            Position = new int[array.Rank];
-        }
-        public bool Step()
-        {
-            for (int i = 0; i < Position.Length; ++i)
+            public override int GetHashCode(object obj)
             {
-                if (Position[i] < MaxLengths[i])
-                {
-                    Position[i]++;
-                    for (int j = 0; j < i; j++)
-                    {
-                        Position[j] = 0;
-                    }
-                    return true;
-                }
+                if (obj == null) return 0;
+                return obj.GetHashCode();
             }
-            return false;
         }
     }
 }

@@ -64,31 +64,31 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                 return false;
             return true;
         }
-    }
-    public class Halo
-    {
-        public string A { get; set; }
-        [CsvIgnore]
-        public string B { get; set; }
-        public int C { get; set; }
-        public IHalo2 Halo2 { get; set; }
-        public IList<int> Integers { get; set; }
-        public IDictionary<int, IHalo2> Halos2 { get; set; }
+        private class Halo
+        {
+            public string A { get; set; }
+            [CsvIgnore]
+            public string B { get; set; }
+            public int C { get; set; }
+            public IHalo2 Halo2 { get; set; }
+            public IList<int> Integers { get; set; }
+            public IDictionary<int, IHalo2> Halos2 { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Test")]
-        public IHalo2[] Array { get; set; }
-    }
-    public interface IHalo2
-    {
-        string A { get; set; }
-        int C { get; set; }
-        int D { get; set; }
-    }
-    public class Halo2 : IHalo2
-    {
-        [CsvIgnore]
-        public string A { get; set; }
-        public int C { get; set; }
-        public int D { get; set; }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Test")]
+            public IHalo2[] Array { get; set; }
+        }
+        private interface IHalo2
+        {
+            string A { get; set; }
+            int C { get; set; }
+            int D { get; set; }
+        }
+        private class Halo2 : IHalo2
+        {
+            [CsvIgnore]
+            public string A { get; set; }
+            public int C { get; set; }
+            public int D { get; set; }
+        }
     }
 }

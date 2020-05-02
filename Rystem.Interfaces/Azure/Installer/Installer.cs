@@ -18,9 +18,8 @@ namespace Rystem
     internal static class Installer<TConfiguration, TEntity>
         where TConfiguration : IRystemConfiguration
     {
-        private static string FullNameConfiguration = typeof(TConfiguration).FullName;
-        private static string FullName = typeof(TEntity).FullName;
-        private static IDictionary<Installation, TConfiguration> Contexts = new Dictionary<Installation, TConfiguration>();
+        private static readonly string FullName = typeof(TEntity).FullName;
+        private static readonly IDictionary<Installation, TConfiguration> Contexts = new Dictionary<Installation, TConfiguration>();
         internal static void Configure(TConfiguration configuration, Installation installation)
         {
             configuration.Name = configuration.Name ?? typeof(TEntity).Name;

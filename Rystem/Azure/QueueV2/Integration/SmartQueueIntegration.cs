@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal partial class SmartQueueIntegration<TEntity> : IQueueIntegration<TEntity>
-        where TEntity : IQueue
+        where TEntity : IQueue, new()
     {
         private readonly string InsertQuery;
         private readonly string IfOnInsert;
@@ -135,7 +135,7 @@ namespace Rystem.Azure.Queue
             using (SqlConnection connection = NewConnection())
                 return await Retry(connection, $"{DeleteQuery}{messageId}", ExecuteNonQueryAsync) > 0;
         }
-        private async Task<long> SendingAsync(SqlConnection connection, IQueue message, int delayInSeconds, int path, int organization)
+        private async Task<long> SendingAsync(SqlConnection connection, TEntity message, int delayInSeconds, int path, int organization)
         {
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
             string messageToSend = GetNormalizedJson(message);
@@ -156,7 +156,7 @@ namespace Rystem.Azure.Queue
                     return 0;
             }
         }
-        private async Task<QueueResult> SendingBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
+        private async Task<QueueResult> SendingBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization)
         {
             QueueResult queueResult = new QueueResult()
             {
@@ -165,7 +165,7 @@ namespace Rystem.Azure.Queue
             };
             using (SqlConnection connection = NewConnection())
             {
-                foreach (IQueue message in messages)
+                foreach (TEntity message in messages)
                 {
                     long id = await SendingAsync(connection, message, delayInSeconds, path, organization);
                     if (id == 0)
@@ -218,25 +218,25 @@ namespace Rystem.Azure.Queue
     }
 
     // No business methods
-    internal partial class SmartQueueIntegration<TEntity> where TEntity : IQueue
+    internal partial class SmartQueueIntegration<TEntity>
     {
-        public async Task<bool> SendAsync(IQueue message, int path, int organization)
+        public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
             using (SqlConnection connection = NewConnection())
                 return await SendingAsync(connection, message, 0, path, organization) > 0;
         }
-        public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, int path, int organization)
+        public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
             => (await SendingBatchAsync(messages, 0, path, organization)).IsOk;
-        public async Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, int path, int organization)
+        public async Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
         {
             using (SqlConnection connection = NewConnection())
                 return await SendingAsync(connection, message, delayInSeconds, path, organization);
         }
-        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
+        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization)
             => (await SendingBatchAsync(messages, delayInSeconds, path, organization)).IdMessages;
         private const string ToReplaceOnQuery = "'";
         private const string ReplaceWithOnQuery = "''";
-        private string GetNormalizedJson(IQueue message)
+        private string GetNormalizedJson(TEntity message)
             => message.ToJson().Replace(ToReplaceOnQuery, ReplaceWithOnQuery);
         private class ReadingWrapper
         {

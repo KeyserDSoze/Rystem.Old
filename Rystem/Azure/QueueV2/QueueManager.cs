@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal class QueueManager<TEntity> : IQueueManager
-        where TEntity : IQueue
+        where TEntity : IQueue, new()
     {
         private readonly IDictionary<Installation, IQueueIntegration<TEntity>> Integrations = new Dictionary<Installation, IQueueIntegration<TEntity>>();
         private readonly IDictionary<Installation, QueueConfiguration> QueueConfiguration;
@@ -36,24 +36,24 @@ namespace Rystem.Azure.Queue
                 }
         }
         public async Task<bool> SendAsync(IQueue message, Installation installation, int path, int organization)
-            => await Integrations[installation].SendAsync(message, path, organization);
+            => await Integrations[installation].SendAsync((TEntity)message, path, organization);
         public async Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, Installation installation, int path, int organization)
-            => await Integrations[installation].SendScheduledAsync(message, delayInSeconds, path, organization);
+            => await Integrations[installation].SendScheduledAsync((TEntity)message, delayInSeconds, path, organization);
         public async Task<bool> DeleteScheduledAsync(long messageId, Installation installation)
             => await Integrations[installation].DeleteScheduledAsync(messageId);
         public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, Installation installation, int path, int organization)
-            => await Integrations[installation].SendBatchAsync(messages, path, organization);
+            => await Integrations[installation].SendBatchAsync(messages.Select(x => (TEntity)x), path, organization);
         public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization)
-            => await Integrations[installation].SendScheduledBatchAsync(messages, delayInSeconds, path, organization);
+            => await Integrations[installation].SendScheduledBatchAsync(messages.Select(x => (TEntity)x), delayInSeconds, path, organization);
         public async Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds, Installation installation, int path, int organization)
         {
             await Task.Delay(0);
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = message.ToJson(), SmartMessage = message.ToJson(), EventDatas = new EventData[1] { new EventData(message.ToSendable()) } };
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = ((TEntity)message).ToJson(), SmartMessage = ((TEntity)message).ToJson(), EventDatas = new EventData[1] { new EventData(((TEntity)message).ToSendable()) } };
         }
         public async Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization)
         {
             await Task.Delay(0);
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.ToJson(), SmartMessage = messages.ToJson(), EventDatas = messages.Select(x => new EventData(x.ToSendable())).ToArray() };
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.Select(x => (TEntity)x).ToJson(), SmartMessage = messages.Select(x => (TEntity)x).ToJson(), EventDatas = messages.Select(x => new EventData(((TEntity)x).ToSendable())).ToArray() };
         }
         public string GetName(Installation installation) => QueueConfiguration[installation].Name;
 

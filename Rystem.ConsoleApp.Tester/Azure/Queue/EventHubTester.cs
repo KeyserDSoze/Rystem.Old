@@ -10,7 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
-            MyAbstractionEventHub myEventHub = new MyEventHub()
+            MyEventHub myEventHub = new MyEventHub()
             {
                 A = "dsad",
                 B = new MyObject()
@@ -18,7 +18,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                     K = "dasdsa"
                 }
             };
-            List<MyAbstractionEventHub> myAbstractionEventHubs = new List<MyAbstractionEventHub>()
+            List<MyEventHub> myAbstractionEventHubs = new List<MyEventHub>()
             {
                 myEventHub,
                 myEventHub
@@ -35,33 +35,29 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 return false;
             return true;
         }
-    }
-    public abstract class MyAbstractionEventHub : IQueue
-    {
-
-    }
-    public class MyEventHub : MyAbstractionEventHub
-    {
-        public string A { get; set; }
-        public MyObject B { get; set; }
-        static MyEventHub()
+        private class MyEventHub : IQueue
         {
-            QueueInstaller.Configure<MyAbstractionEventHub>(new QueueConfiguration()
+            public string A { get; set; }
+            public MyObject B { get; set; }
+            static MyEventHub()
             {
-                ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
-                Name = "queue",
-                Type = QueueType.EventHub
-            });
-            QueueInstaller.Configure<MyAbstractionEventHub>(new QueueConfiguration()
-            {
-                ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
-                Name = "aloa",
-                Type = QueueType.EventHub
-            },Installation.Inst00);
-        }  
-    }
-    public class MyObject
-    {
-        public string K { get; set; }
+                QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
+                {
+                    ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
+                    Name = "queue",
+                    Type = QueueType.EventHub
+                });
+                QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
+                {
+                    ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
+                    Name = "aloa",
+                    Type = QueueType.EventHub
+                }, Installation.Inst00);
+            }
+        }
+        private class MyObject
+        {
+            public string K { get; set; }
+        }
     }
 }

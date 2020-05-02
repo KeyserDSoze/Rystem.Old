@@ -8,8 +8,9 @@ namespace Rystem.Crypting
 {
     internal class Rijndael : ICryptoIntegration
     {
-        private RjindaelConfiguration CryptoConfiguration;
-        public Rijndael(RjindaelConfiguration configuration) => this.CryptoConfiguration = configuration;
+        private readonly RjindaelConfiguration CryptoConfiguration;
+        public Rijndael(RjindaelConfiguration configuration)
+            => this.CryptoConfiguration = configuration;
         public string Decrypt(string encryptedMessage)
         {
             byte[] cipherTextBytes = Convert.FromBase64String(encryptedMessage);

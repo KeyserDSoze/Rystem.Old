@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal class QueueStorageIntegration<TEntity> : IQueueIntegration<TEntity>
-        where TEntity : IQueue
+        where TEntity : IQueue, new()
     {
         private readonly CloudQueue Client;
         private readonly QueueConfiguration QueueConfiguration;
@@ -30,22 +30,22 @@ namespace Rystem.Azure.Queue
 
         public async Task<IEnumerable<TEntity>> Read(int path, int organization)
              => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages)).Select(x => x.AsString).FromMessage<TEntity>();
-        public async Task<bool> SendAsync(IQueue message, int path, int organization)
+        public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
             await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToJson()));
             return true;
         }
 
-        public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, int path, int organization)
+        public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
         {
             await this.Client.AddMessageAsync(new CloudQueueMessage(messages.ToJson()));
             return true;
         }
 
-        public Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, int path, int organization)
+        public Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
 
-        public Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, int path, int organization)
+        public Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization)
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
     }
 }

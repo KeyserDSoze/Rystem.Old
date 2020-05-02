@@ -18,6 +18,10 @@ namespace Rystem.Azure.NoSql
         private readonly CloudTable Context;
         private readonly IList<PropertyInfo> Properties = new List<PropertyInfo>();
         private readonly IList<PropertyInfo> SpecialProperties = new List<PropertyInfo>();
+        private const string PartitionKey = "PartitionKey";
+        private const string RowKey = "RowKey";
+        private const string Timestamp = "Timestamp";
+        private const string ETag = "ETag";
         internal TableStorageIntegration(NoSqlConfiguration noSqlConfiguration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(noSqlConfiguration.ConnectionString);
@@ -28,7 +32,7 @@ namespace Rystem.Azure.NoSql
             {
                 if (pi.GetCustomAttribute(typeof(NoTableStorageProperty)) != null)
                     continue;
-                if (pi.Name == "PartitionKey" || pi.Name == "RowKey" || pi.Name == "Timestamp" || pi.Name == "ETag")
+                if (pi.Name == PartitionKey || pi.Name == RowKey || pi.Name == Timestamp || pi.Name == ETag)
                     continue;
                 if (pi.PropertyType == typeof(int) || pi.PropertyType == typeof(long) ||
                     pi.PropertyType == typeof(double) || pi.PropertyType == typeof(string) ||
@@ -94,24 +98,50 @@ namespace Rystem.Azure.NoSql
         }
         public async Task<bool> UpdateBatchAsync(IEnumerable<TEntity> entities)
         {
-            TableBatchOperation batch = new TableBatchOperation();
-            foreach (TEntity entity in entities)
-                batch.InsertOrReplace(WriteEntity(entity));
-            IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
-            return (results.All(x => x.HttpStatusCode == 204));
+            bool result = true;
+            foreach (var groupedEntity in entities.Select(x => x as ITableStorage).GroupBy(x => x.PartitionKey))
+            {
+                TableBatchOperation batch = new TableBatchOperation();
+                foreach (ITableStorage entity in groupedEntity)
+                {
+                    batch.InsertOrReplace(WriteEntity((TEntity)entity));
+                    if (batch.Count == 100)
+                    {
+                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
+                        result &= results.All(x => x.HttpStatusCode == 204);
+                        batch = new TableBatchOperation();
+                    }
+                }
+                if (batch.Count > 0)
+                    result &= (await this.Context.ExecuteBatchAsync(batch)).All(x => x.HttpStatusCode == 204);
+            }
+            return result;
         }
         public async Task<bool> DeleteBatchAsync(IEnumerable<TEntity> entities)
         {
-            TableBatchOperation batch = new TableBatchOperation();
-            foreach (ITableStorage entity in entities.Select(x => x as ITableStorage))
-                batch.Delete(new DummyTableStorage()
+            bool result = true;
+            foreach (var groupedEntity in entities.Select(x => x as ITableStorage).GroupBy(x => x.PartitionKey))
+            {
+                TableBatchOperation batch = new TableBatchOperation();
+                foreach (ITableStorage entity in groupedEntity)
                 {
-                    PartitionKey = entity.PartitionKey,
-                    RowKey = entity.RowKey,
-                    ETag = "*"
-                });
-            IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
-            return (results.All(x => x.HttpStatusCode == 204));
+                    batch.Delete(new DummyTableStorage()
+                    {
+                        PartitionKey = entity.PartitionKey,
+                        RowKey = entity.RowKey,
+                        ETag = "*"
+                    });
+                    if (batch.Count == 100)
+                    {
+                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch);
+                        result &= (results.All(x => x.HttpStatusCode == 204));
+                        batch = new TableBatchOperation();
+                    }
+                }
+                if (batch.Count > 0)
+                    result &= (await this.Context.ExecuteBatchAsync(batch)).All(x => x.HttpStatusCode == 204);
+            }
+            return result;
         }
         private static readonly DateTime DateTimeDefault = default;
         private DynamicTableEntity WriteEntity(TEntity entity)
