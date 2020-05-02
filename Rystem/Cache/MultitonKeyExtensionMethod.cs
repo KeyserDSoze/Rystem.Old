@@ -41,15 +41,14 @@ namespace System
         public static bool IsPresent<TEntry>(this IMultitonKey<TEntry> entry)
             where TEntry : IMultiton, new()
             => Manager<TEntry>(entry.GetType()).Exists(entry);
-        public static IList<TKey> Keys<TKey, TEntry>(this IMultitonKey<TEntry> entry)
-            where TKey : IMultitonKey<TEntry>, new()
+        public static IList<IMultitonKey<TEntry>> Keys<TEntry>(this IMultitonKey<TEntry> entry)
             where TEntry : IMultiton, new()
         {
             Type keyType = entry.GetType();
-            IList<TKey> keys = new List<TKey>();
+            IList<IMultitonKey<TEntry>> keys = new List<IMultitonKey<TEntry>>();
             foreach (string key in Manager<TEntry>(keyType).List())
             {
-                TKey multitonKey = new TKey();
+                IMultitonKey<TEntry> multitonKey = (IMultitonKey<TEntry>)Activator.CreateInstance(keyType);
                 IEnumerator<string> keyValues = PropertyValue(key);
                 if (!keyValues.MoveNext())
                     continue;

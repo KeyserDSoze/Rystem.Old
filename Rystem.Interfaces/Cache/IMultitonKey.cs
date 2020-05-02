@@ -6,6 +6,10 @@ namespace Rystem.Cache
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1813:Avoid unsealed attributes", Justification = "<Pending>")]
     public class NoMultitonKey : Attribute { }
+    /// <summary>
+    /// Interface to implement Multiton logic. Please don't use in your string key this value '╬'
+    /// </summary>
+    /// <typeparam name="TCache"></typeparam>
     public interface IMultitonKey<TCache> : IMulti, IMultiKey
         where TCache : IMultiton
     {

@@ -10,9 +10,9 @@ namespace Rystem.Conversion
 {
     public static class CsvConvert
     {
-        public static string ToCsv<T>(T data)
+        public static string ToCsv<T>(this T data)
            where T : new() => new StartConversion().Serialize(data);
-        public static T FromCsv<T>(string value)
+        public static T FromCsv<T>(this string value)
            where T : new() => new StartConversion().Deserialize(typeof(T), value);
     }
 }

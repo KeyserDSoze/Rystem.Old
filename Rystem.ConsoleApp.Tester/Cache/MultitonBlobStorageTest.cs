@@ -24,13 +24,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             smallBlobKey.Restore(new SmallBlob() { Id = 4 });
             if ((smallBlobKey.Instance() as SmallBlob).Id != 4)
                 return false;
-            if (smallBlobKey.Keys<SmallBlobKey, SmallBlob>().Count != 1)
+            if (smallBlobKey.Keys().Count != 1)
                 return false;
             if (!smallBlobKey.Remove())
                 return false;
             if (smallBlobKey.IsPresent())
                 return false;
-            if (smallBlobKey.Keys<SmallBlobKey, SmallBlob>().Count != 0)
+            if (smallBlobKey.Keys().Count != 0)
                 return false;
             smallBlob = smallBlobKey.Instance();
             Thread.Sleep(200);

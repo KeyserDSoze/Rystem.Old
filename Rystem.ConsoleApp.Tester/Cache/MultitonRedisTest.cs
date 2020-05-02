@@ -24,13 +24,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             serviceKey.Restore(new Service() { A = "4", C = 0 });
             if ((serviceKey.Instance() as Service).A != "4")
                 return false;
-            if (serviceKey.Keys<ServiceKey, Service>().Count != 1)
+            if (serviceKey.Keys().Count != 1)
                 return false;
             if (!serviceKey.Remove())
                 return false;
             if (serviceKey.IsPresent())
                 return false;
-            if (serviceKey.Keys<ServiceKey, Service>().Count != 0)
+            if (serviceKey.Keys().Count != 0)
                 return false;
             service = serviceKey.Instance() as Service;
             Thread.Sleep(200);

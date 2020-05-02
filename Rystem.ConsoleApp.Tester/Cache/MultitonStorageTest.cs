@@ -23,13 +23,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             smallTableKey.Restore(new SmallTable() { Id = 4 });
             if ((smallTableKey.Instance() as SmallTable).Id != 4)
                 return false;
-            if (smallTableKey.Keys<SmallTableKey, SmallTable>().Count != 1)
+            if (smallTableKey.Keys().Count != 1)
                 return false;
             if (!smallTableKey.Remove())
                 return false;
             if (smallTableKey.IsPresent())
                 return false;
-            if (smallTableKey.Keys<SmallTableKey, SmallTable>().Count != 0)
+            if (smallTableKey.Keys().Count != 0)
                 return false;
             smallTable = smallTableKey.Instance() as SmallTable;
             Thread.Sleep(200);
