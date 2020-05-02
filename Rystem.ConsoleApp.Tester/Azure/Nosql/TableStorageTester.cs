@@ -1,5 +1,4 @@
 ﻿using Rystem.Azure.NoSql;
-using Rystem.Enums;
 using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;

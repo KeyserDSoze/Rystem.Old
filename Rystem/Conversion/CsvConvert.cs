@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    public static class CsvConvert
+    internal static class CsvConvert
     {
         public static string ToCsv<T>(this T data)
            where T : new() => new StartConversion().Serialize(data);

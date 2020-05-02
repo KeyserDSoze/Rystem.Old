@@ -45,22 +45,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
-            messageId = myServiceBus.SendScheduled(120, installation: Enums.Installation.Inst00);
+            messageId = myServiceBus.SendScheduled(120, installation:Installation.Inst00);
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, installation: Enums.Installation.Inst00);
+            returned = myServiceBus.DeleteScheduled(messageId, installation:Installation.Inst00);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120, installation: Enums.Installation.Inst00).FirstOrDefault();
+            messageId = myServiceBuses.SendScheduledBatch(120, installation:Installation.Inst00).FirstOrDefault();
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, installation: Enums.Installation.Inst00);
+            returned = myServiceBus.DeleteScheduled(messageId, installation:Installation.Inst00);
             if (!returned)
                 return false;
-            debugMessage = myServiceBus.DebugSend(120, installation: Enums.Installation.Inst00);
+            debugMessage = myServiceBus.DebugSend(120, installation:Installation.Inst00);
             if (!debugMessage.ServiceBusMessage.Contains("dsad"))
                 return false;
-            debugMessage2 = myServiceBuses.DebugSendBatch(120, installation: Enums.Installation.Inst00);
+            debugMessage2 = myServiceBuses.DebugSendBatch(120, installation:Installation.Inst00);
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
@@ -68,8 +68,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             //{
             //    Attempt = 0,
             //    Container = myServiceBus,
-            //    Flow = Enums.FlowType.Flow0,
-            //    Version = Enums.VersionType.V0,
+            //    Flow =FlowType.Flow0,
+            //    Version =VersionType.V0,
             //};
             //myServiceBus = connectionMessage.ToObject<MyServiceBus>();
             //string jsonSent = connectionMessage.ToJson();
@@ -100,7 +100,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
                 Type = QueueType.ServiceBus,
                 Name = "aloa"
-            }, Enums.Installation.Inst00);
+            },Installation.Inst00);
         }
 
     }

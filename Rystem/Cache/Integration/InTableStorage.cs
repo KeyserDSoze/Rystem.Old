@@ -40,7 +40,7 @@ namespace Rystem.Cache
             {
                 PartitionKey = FullName,
                 RowKey = key,
-                Data = JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings),
+                Data = value.ToStandardJson(),
                 E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);

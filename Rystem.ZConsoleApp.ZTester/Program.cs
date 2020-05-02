@@ -1,14 +1,4 @@
-﻿using Rystem.Azure.AggregatedData;
-using Rystem.Conversion;
-using Rystem.Enums;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rystem.ZConsoleApp.ZTester
+﻿namespace Rystem.ZConsoleApp.ZTester
 {
     class Program
     {

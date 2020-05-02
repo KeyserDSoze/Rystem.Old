@@ -1,10 +1,7 @@
 ﻿using Rystem.Azure.Queue;
-using Rystem.Debug;
-using Rystem.Enums;
 using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.Queue
@@ -60,7 +57,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
                 Name = "aloa",
                 Type = QueueType.EventHub
-            }, Enums.Installation.Inst00);
+            },Installation.Inst00);
         }  
     }
     public class MyObject

@@ -53,9 +53,9 @@ namespace Rystem.Cache
             if (expiringTime == default)
                 expiringTime = ExpireCache;
             if (expiringTime.Ticks > 0)
-                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings), expiringTime);
+                code = Cache.StringSet(CloudKeyToString(key), value.ToStandardJson(), expiringTime);
             else
-                code = Cache.StringSet(CloudKeyToString(key), JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings));
+                code = Cache.StringSet(CloudKeyToString(key), value.ToStandardJson());
             return code;
         }
         public bool Exists(string key)

@@ -7,14 +7,8 @@ using System.Text;
 
 namespace System
 {
-    public static class Conversion
+    public static class CsvConversionExtesions
     {
-        public static string ToStandardJson<T>(this T entity)
-            where T : new()
-            => JsonConvert.SerializeObject(entity, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
-        public static T FromStandardJson<T>(this string entry)
-            where T : new()
-            => JsonConvert.DeserializeObject<T>(entry, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
         public static string ToStandardCsv<T>(this T entity)
             where T : new()
             => entity.ToCsv();

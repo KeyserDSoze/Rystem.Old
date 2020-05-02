@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData
 {
     internal class BlockBlobStorageIntegration<TEntity> : IAggregatedDataIntegration<TEntity>
-        where TEntity : IAggregatedData
+        where TEntity : IAggregatedData, new()
     {
         private CloudBlobContainer Context;
         private IAggregatedDataReader<TEntity> Reader;

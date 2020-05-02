@@ -44,25 +44,25 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             if (meatball2.Count != 0)
                 return false;
 
-            await meatball.DeleteAsync(Enums.Installation.Inst00);
+            await meatball.DeleteAsync(Installation.Inst00);
             meatball.A = 3;
-            await meatball.WriteAsync(0, Enums.Installation.Inst00);
+            await meatball.WriteAsync(0,Installation.Inst00);
             meatball.A = 5;
-            await meatball.WriteAsync(0, Enums.Installation.Inst00);
+            await meatball.WriteAsync(0,Installation.Inst00);
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            await meatball.WriteAsync(0, Enums.Installation.Inst00);
-            meatball2 = (await meatball.ListAsync(installation: Enums.Installation.Inst00)).ToList();
+            await meatball.WriteAsync(0,Installation.Inst00);
+            meatball2 = (await meatball.ListAsync(installation:Installation.Inst00)).ToList();
             if (meatball2.Count != 3)
                 return false;
-            properties = await meatball.FetchPropertiesAsync(installation: Enums.Installation.Inst00);
+            properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst00);
             if (properties.Count != 1)
                 return false;
-            if (!await meatball.DeleteAsync(Enums.Installation.Inst00))
+            if (!await meatball.DeleteAsync(Installation.Inst00))
                 return false;
-            if (await meatball.ExistsAsync(Enums.Installation.Inst00))
+            if (await meatball.ExistsAsync(Installation.Inst00))
                 return false;
-            meatball2 = (await meatball.ListAsync(installation: Enums.Installation.Inst00)).ToList();
+            meatball2 = (await meatball.ListAsync(installation:Installation.Inst00)).ToList();
             if (meatball2.Count != 0)
                 return false;
 
@@ -90,7 +90,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                     Type = AggregatedDataType.AppendBlob,
                     Name = "kollipop"
                 },
-                Enums.Installation.Inst00
+               Installation.Inst00
                 );
         }
         public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";

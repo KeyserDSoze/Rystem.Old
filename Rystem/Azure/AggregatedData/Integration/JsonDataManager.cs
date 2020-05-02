@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData.Integration
 {
     internal class JsonDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
-        where TEntity : IAggregatedData
+        where TEntity : IAggregatedData, new()
     {
         public async Task<TEntity> ReadAsync(AggregatedDataDummy dummy)
         {
@@ -28,7 +28,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             {
                 Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/json" },
                 Name = entity.Name,
-                Stream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(entity, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings)))
+                Stream = new MemoryStream(Encoding.UTF8.GetBytes(entity.ToStandardJson()))
             };
         }
     }

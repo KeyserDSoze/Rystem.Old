@@ -6,7 +6,7 @@ using System.Text;
 namespace Rystem.Cache
 {
     internal class MultitonManager<T> : IMultitonManager
-        where T : IMultiton
+        where T : IMultiton, new()
     {
         private readonly IMultitonIntegration<T> InMemory;
         private readonly bool MemoryIsActive = false;

@@ -2,7 +2,7 @@
 using Rystem.Azure.Queue;
 using Rystem.Const;
 using Rystem.Debug;
-using Rystem.Enums;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -91,17 +91,19 @@ namespace System
             where TEntity : IQueue
             => Manager<TEntity>().GetName(installation);
 
-        public static string ToJson(this IQueue message)
-           => JsonConvert.SerializeObject(message, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
-        public static byte[] ToSendable(this IQueue message)
+        public static string ToJson<TEntry>(this TEntry message)
+            where TEntry : IQueue
+           => message.ToStandardJson();
+        public static byte[] ToSendable<TEntry>(this TEntry message)
+            where TEntry : IQueue
             => Encoding.UTF8.GetBytes(message.ToJson());
         public static string ToJson(this IEnumerable<IQueue> messages)
-            => JsonConvert.SerializeObject(messages, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
+            => messages.ToStandardJson();
         public static byte[] ToSendable(this IEnumerable<IQueue> messages)
             => Encoding.UTF8.GetBytes(messages.ToJson());
         internal static TEntity ToMessage<TEntity>(this string message)
-            => JsonConvert.DeserializeObject<TEntity>(message, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
-        internal static IEnumerable<TEntity> ToMessage<TEntity>(this IEnumerable<string> messages)
+            => message.FromStandardJson<TEntity>();
+        internal static IEnumerable<TEntity> FromMessage<TEntity>(this IEnumerable<string> messages)
         {
             IList<TEntity> entities = new List<TEntity>();
             foreach (string message in messages)

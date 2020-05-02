@@ -54,12 +54,14 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                     }
                 }
             };
-            string salo = CsvConvert.ToCsv(halo);
-            Halo halo3 = CsvConvert.FromCsv<Halo>(salo);
-            string salo2 = JsonConvert.SerializeObject(halo3, Const.NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
+            string salo = halo.ToStandardCsv();
+            Halo halo3 = salo.FromStandardCsv<Halo>();
+            string salo2 = halo3.ToStandardJson();
             Console.WriteLine(salo);
             Console.WriteLine(salo2);
             Console.WriteLine(salo.Length + " vs " + salo2.Length);
+            if (salo.Length > salo2.Length)
+                return false;
             return true;
         }
     }

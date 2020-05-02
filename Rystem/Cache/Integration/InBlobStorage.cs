@@ -47,7 +47,7 @@ namespace Rystem.Cache
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
             if (expiring > 0)
                 cloudBlob.Properties.CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString();
-            using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings))))
+            using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToStandardJson())))
                 cloudBlob.UploadFromStreamAsync(stream).ConfigureAwait(false).GetAwaiter().GetResult();
             return true;
         }

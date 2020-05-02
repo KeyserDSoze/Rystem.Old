@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System.Linq;
-using Rystem.Enums;
+
 using System.Threading.Tasks;
 
 namespace Rystem.StreamAnalytics

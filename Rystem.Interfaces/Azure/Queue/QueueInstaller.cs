@@ -1,4 +1,4 @@
-﻿using Rystem.Enums;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Rystem.Azure.Queue

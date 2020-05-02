@@ -1,4 +1,4 @@
-﻿using Rystem.Enums;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData
 {
     internal class AggregatedDataManager<TEntity> : IAggregatedDataManager
-        where TEntity : IAggregatedData
+        where TEntity : IAggregatedData, new()
     {
         private readonly IDictionary<Installation, IAggregatedDataIntegration<TEntity>> Integrations;
         private readonly IDictionary<Installation, AggregatedDataConfiguration<TEntity>> AggregatedDataConfiguration;

@@ -132,7 +132,7 @@ namespace Rystem.Azure.NoSql
             }
             foreach (PropertyInfo pi in this.SpecialProperties)
                 dummy.Properties.Add(pi.Name, new EntityProperty(
-                    JsonConvert.SerializeObject(pi.GetValue(entity), NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings)));
+                    pi.GetValue(entity).ToStandardJson()));
             return dummy;
         }
         private static readonly MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);

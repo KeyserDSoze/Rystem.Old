@@ -29,7 +29,7 @@ namespace Rystem.Azure.Queue
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
 
         public async Task<IEnumerable<TEntity>> Read(int path, int organization)
-             => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages)).Select(x => x.AsString).ToMessage<TEntity>();
+             => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages)).Select(x => x.AsString).FromMessage<TEntity>();
         public async Task<bool> SendAsync(IQueue message, int path, int organization)
         {
             await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToJson()));

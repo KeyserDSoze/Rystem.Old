@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Rystem.Enums;
 using Rystem.UnitTest;
 using Rystem.StreamAnalytics;
 using System;
