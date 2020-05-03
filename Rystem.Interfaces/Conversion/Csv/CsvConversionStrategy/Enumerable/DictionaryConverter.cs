@@ -7,7 +7,7 @@ namespace Rystem.Conversion
 {
     internal class DictionaryConverter : Converter, ICsvInterpreter
     {
-        public DictionaryConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
+        public DictionaryConverter(int index, IDictionary<string, string> abstractionInterfaceMapping, IDictionary<string, string> headerMapping) : base(index, abstractionInterfaceMapping, headerMapping) { }
 
         public dynamic Deserialize(Type type, string value)
         {

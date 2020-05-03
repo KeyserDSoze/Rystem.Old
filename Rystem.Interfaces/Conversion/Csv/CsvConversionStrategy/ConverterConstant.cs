@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rystem.Conversion
+﻿namespace Rystem.Conversion
 {
     internal static class ConverterConstant
     {
-        internal static char AbstractionInterfaceDictionary = (char)65535;
-        internal static int AbstractionInterface = 64900;
-        internal static int Enumerable = 63900;
-        internal static int Dictionarable = 63800;
-        internal static int ArrayLength = 63700;
-        internal static int Start = 60000;
+        internal static char CsvPacket = (char)ushort.MaxValue;
+        internal static int AbstractionInterface = 65_000;
+        internal static int HeaderInterface = 64_000;
+        internal static int Enumerable = 63_000;
+        internal static int Dictionarable = 62_00;
+        internal static int ArrayLength = 61_000;
+        internal static int Start = 60_000;
     }
 }

@@ -18,21 +18,7 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                 B = "BHalo",
                 C = 3,
                 Integers = new List<int>() { 10, 11, 12 },
-                Halos2 = new Dictionary<int, IHalo2>()
-                {
-                    { 48, new Halo2()
-                    {
-                        A = "dddd",
-                        C = 90,
-                        D = 990
-                    } },
-                    { 49, new Halo2()
-                    {
-                        A = "dddddd",
-                        C = 900,
-                        D = 9900
-                    } }
-                },
+                Halos2 = new Dictionary<int, IHalo2>(),
                 Halo2 = new Halo2()
                 {
                     A = "AHalo2",
@@ -55,15 +41,58 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                     }
                 }
             };
+            for (int i = 0; i < 10000; i++)
+                halo.Halos2.Add(i,
+                 new Halo2()
+                 {
+                     A = new string('"', i + 1),
+                     C = i * 2,
+                     D = i * 3
+                 });
             string salo = halo.ToRystemCsv();
             Halo halo3 = salo.FromRystemCsv<Halo>();
             string salo2 = halo3.ToStandardJson();
-            Console.WriteLine(salo);
-            Console.WriteLine(salo2);
             Console.WriteLine(salo.Length + " vs " + salo2.Length);
-            //if (salo.Length > salo2.Length)
-            //    return false;
+            if (salo.Length > salo2.Length)
+                return false;
+            Model1 model1 = new Model1()
+            {
+                A = 4,
+                Model2 = new Model2()
+                {
+                    A = "dddd",
+                    B = "Darua"
+                }
+            };
+            string salo3 = model1.ToRystemCsv();
+            if (!salo3.Contains("Fregene"))
+                return false;
+            Model3 model3 = salo3.FromRystemCsv<Model3>();
+            if (model3.Model4.Fregene != "Darua")
+                return false;
             return true;
+        }
+        private class Model1
+        {
+            public int A { get; set; }
+            public Model2 Model2 { get; set; }
+        }
+        private class Model2
+        {
+            public string A { get; set; }
+            [CsvProperty("Fregene")]
+            public string B { get; set; }
+        }
+        private class Model3
+        {
+            [CsvProperty("Model2")]
+            public Model4 Model4 { get; set; }
+            public int A { get; set; }
+        }
+        private class Model4
+        {
+            public string Fregene { get; set; }
+            public string A { get; set; }
         }
         private class Halo
         {

@@ -7,7 +7,7 @@ namespace Rystem.Conversion
 {
     internal class PrimitiveConverter : Converter, ICsvInterpreter
     {
-        public PrimitiveConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
+        public PrimitiveConverter(int index, IDictionary<string, string> abstractionInterfaceMapping, IDictionary<string, string> headerMapping) : base(index, abstractionInterfaceMapping, headerMapping) { }
 
         public dynamic Deserialize(Type type, string value)
         {
@@ -28,7 +28,9 @@ namespace Rystem.Conversion
             }
         }
 
-        public string Serialize(object value) 
-            => value.ToString();
+        public string Serialize(object value)
+        {
+            return value.ToString();
+        }
     }
 }

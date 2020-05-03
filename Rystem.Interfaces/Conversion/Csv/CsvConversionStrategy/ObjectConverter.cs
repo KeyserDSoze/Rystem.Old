@@ -1,6 +1,7 @@
 ﻿using Rystem.Conversion;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -8,16 +9,24 @@ namespace Rystem.Conversion
 {
     internal class ObjectConverter : Converter, ICsvInterpreter
     {
-        public ObjectConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
-        private static readonly Type Ignore = typeof(CsvIgnore);
+        public ObjectConverter(int index, IDictionary<string, string> abstractionInterfaceMapping, IDictionary<string, string> headerMapping) : base(index, abstractionInterfaceMapping, headerMapping) { }
+        private static readonly Type CsvIgnoreAttribute = typeof(CsvIgnore);
+        private static readonly Type CsvPropertyAttribute = typeof(CsvProperty);
         public string Serialize(object value)
         {
             if (value == null)
                 return string.Empty;
             StringBuilder stringBuilder = new StringBuilder();
-            foreach (PropertyInfo property in Properties.Fetch(value.GetType(), Ignore))
-                stringBuilder.Append($"{this.HelpToSerialize(property.PropertyType, property.GetValue(value))}{this.IndexAsChar}");
+            foreach (PropertyInfo property in Properties.Fetch(value.GetType(), CsvIgnoreAttribute))
+                stringBuilder.Append($"{SetHeader(property.GetCustomAttribute(CsvPropertyAttribute) is CsvProperty csvProperty ? csvProperty.Name : property.Name)}{this.Header}{this.HelpToSerialize(property.PropertyType, property.GetValue(value))}{this.IndexAsChar}");
             return stringBuilder.ToString().Trim(this.IndexAsChar);
+
+            string SetHeader(string propertyName)
+            {
+                if (!this.HeaderMapping.ContainsKey(propertyName))
+                    this.HeaderMapping.Add(propertyName, this.HeaderMapping.Count.ToString());
+                return this.HeaderMapping[propertyName];
+            }
         }
 
         public dynamic Deserialize(Type type, string value)
@@ -25,13 +34,17 @@ namespace Rystem.Conversion
             if (value == null)
                 return default;
             dynamic startValue = Activator.CreateInstance(type);
-            int count = 0;
             string[] values = value.Split(this.IndexAsChar);
-            foreach (PropertyInfo property in Properties.Fetch(type, Ignore))
+            PropertyInfo[] propertyInfo = Properties.Fetch(type, CsvIgnoreAttribute);
+            foreach (string v in values)
             {
-                if (count >= values.Length)
-                    break;
-                property.SetValue(startValue, this.HelpToDeserialize(property.PropertyType, values[count++]));
+                string[] propertyAsString = v.Split(this.Header);
+                if (this.HeaderMapping.ContainsKey(propertyAsString[0]))
+                {
+                    PropertyInfo property = propertyInfo.FirstOrDefault(x => (x.GetCustomAttribute(CsvPropertyAttribute) != null ? (x.GetCustomAttribute(CsvPropertyAttribute) as CsvProperty).Name : x.Name) == this.HeaderMapping[propertyAsString[0]]);
+                    if (property != null)
+                        property.SetValue(startValue, this.HelpToDeserialize(property.PropertyType, propertyAsString[1]));
+                }
             }
             return startValue;
         }

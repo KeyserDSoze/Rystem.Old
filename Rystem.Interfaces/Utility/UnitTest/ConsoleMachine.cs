@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Rystem.UnitTest
@@ -49,7 +50,7 @@ namespace Rystem.UnitTest
         private const string AllCommand = "all";
         public void Start(Action<object> action = null, params string[] args)
             => StartAsync(action, args).NoContext().GetAwaiter().GetResult();
-
+        private static readonly Regex Numbers = new Regex("[0-9]*");
         private async Task StartAsync(Action<object> action = null, params string[] args)
         {
             while ((Result = this.WhatDoYouWantToSeeInAction()) != ExitCommand)
@@ -70,8 +71,10 @@ namespace Rystem.UnitTest
                         Console.ResetColor();
                     }
                 }
-                else
+                else if (Result != string.Empty && Numbers.Replace(Result, string.Empty) == string.Empty)
                     await ExecuteAsync(int.Parse(Result), action, null, args).NoContext();
+                else
+                    Console.WriteLine($"please insert a valid input");
             }
         }
 

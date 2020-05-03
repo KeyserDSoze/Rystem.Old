@@ -6,7 +6,7 @@ namespace Rystem.Conversion
 {
     internal class ArrayConverter : Converter, ICsvInterpreter
     {
-        public ArrayConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
+        public ArrayConverter(int index, IDictionary<string, string> abstractionInterfaceMapping, IDictionary<string, string> headerMapping) : base(index, abstractionInterfaceMapping, headerMapping) { }
 
         public dynamic Deserialize(Type type, string value)
         {
@@ -23,7 +23,7 @@ namespace Rystem.Conversion
             return array;
         }
 
-        public string Serialize(object value) 
-            => $"{(value as Array).Length}{this.ArrayLength}{new EnumerableConverter(this.Index, this.AbstractionInterfaceMapping).Serialize(value)}";
+        public string Serialize(object value)
+            => $"{(value as Array).Length}{this.ArrayLength}{new EnumerableConverter(this.Index, this.AbstractionInterfaceMapping, this.HeaderMapping).Serialize(value)}";
     }
 }

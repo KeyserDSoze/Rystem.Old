@@ -8,7 +8,7 @@ namespace Rystem.Conversion
 {
     internal class AbstractInterfaceConverter : Converter, ICsvInterpreter
     {
-        public AbstractInterfaceConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
+        public AbstractInterfaceConverter(int index, IDictionary<string, string> abstractionInterfaceMapping, IDictionary<string, string> headerMapping) : base(index, abstractionInterfaceMapping, headerMapping) { }
         public dynamic Deserialize(Type type, string value)
         {
             string[] values = value.Split(this.AbstractionInterface);
