@@ -1,5 +1,4 @@
-﻿using Rystem.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Rystem.Azure.NoSql

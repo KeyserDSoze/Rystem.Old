@@ -20,6 +20,7 @@ namespace Rystem.Cache
         public static bool ClearAllTableStorage(string connectionString) 
             => ClearAllTableStorageAsync(connectionString).NoContext().GetAwaiter().GetResult();
 #warning Alessandro Rapiti - da terminare
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<bool> ClearAllTableStorageAsync(string connectionString)
         {
             await Task.Delay(0).NoContext();

@@ -22,56 +22,55 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                     ContentType = "text/json"
                 }
             };
-            meatball.Delete(Installation.Inst01);
+            await meatball.DeleteAsync(Installation.Inst01);
             meatball.A = 3;
-            meatball.Write(installation:Installation.Inst01);
-            if (!meatball.Exists(Installation.Inst01))
+            await meatball.WriteAsync(installation:Installation.Inst01);
+            if (!await meatball.ExistsAsync(Installation.Inst01))
                 return false;
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Write(installation:Installation.Inst01);
-            if (meatball.Fetch(Installation.Inst01).A != meatball.A)
+            await meatball.WriteAsync(installation:Installation.Inst01);
+            if ((await meatball.FetchAsync(Installation.Inst01)).A != meatball.A)
                 return false;
-            IList<Meatball2> meatball2 = meatball.List(installation:Installation.Inst01).ToList();
+            IList<Meatball2> meatball2 = await meatball.ToListAsync(installation:Installation.Inst01);
             if (meatball2.Count != 1)
                 return false;
-            IList<AggregatedDataDummy> properties = meatball.FetchProperties(installation:Installation.Inst01);
+            IList<AggregatedDataDummy> properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst01);
             if (properties.Count != 1)
                 return false;
             if (meatball2.FirstOrDefault().B != "dsadsadsa")
                 return false;
-            if (!meatball.Delete(Installation.Inst01))
+            if (!await meatball.DeleteAsync(Installation.Inst01))
                 return false;
-            if (meatball.Exists(Installation.Inst01))
+            if (await meatball.ExistsAsync(Installation.Inst01))
                 return false;
-            meatball2 = meatball.List(installation:Installation.Inst01).ToList();
+            meatball2 = await meatball.ToListAsync(installation:Installation.Inst01);
             if (meatball2.Count != 0)
                 return false;
 
-            meatball.Delete(Installation.Inst00);
+            await meatball.DeleteAsync(Installation.Inst00);
             meatball.A = 3;
-            meatball.Write(installation:Installation.Inst00);
-            if (!meatball.Exists(Installation.Inst00))
+            await meatball.WriteAsync(installation:Installation.Inst00);
+            if (!await meatball.ExistsAsync(Installation.Inst00))
                 return false;
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            meatball.Write(installation:Installation.Inst00);
-            if (meatball.Fetch(Installation.Inst00).A != meatball.A)
+            await meatball.WriteAsync(installation:Installation.Inst00);
+            if ((await meatball.FetchAsync(Installation.Inst00)).A != meatball.A)
                 return false;
-            meatball2 = meatball.List(installation:Installation.Inst00).ToList();
+            meatball2 = await meatball.ToListAsync(installation:Installation.Inst00);
             if (meatball2.Count != 1)
                 return false;
-            properties = meatball.FetchProperties(installation:Installation.Inst00);
+            properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst00);
             if (properties.Count != 1)
                 return false;
             if (meatball2.FirstOrDefault().B != "dsadsadsa")
                 return false;
-            if (!meatball.Delete(Installation.Inst00))
+            if (!await meatball.DeleteAsync(Installation.Inst00))
                 return false;
-            if (meatball.Exists(Installation.Inst00))
+            if (await meatball.ExistsAsync(Installation.Inst00))
                 return false;
-            meatball2 = meatball.List(installation:Installation.Inst00).ToList();
-            if (meatball2.Count != 0)
+            if (await meatball.CountAsync(installation: Installation.Inst00) != 0)
                 return false;
 
             return true;

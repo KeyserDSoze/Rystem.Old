@@ -12,6 +12,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
+            await Task.Delay(0).NoContext();
             HybridTableKey hybridTableKey = new HybridTableKey() { Id = 2 };
             hybridTableKey.Remove();
 

@@ -8,11 +8,11 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    internal static class CsvConvert
+    internal static class CsvConvertExtensions
     {
         public static string ToObjectCsv<T>(this T data)
            where T : new() => new StartConversion().Serialize(data);
         public static T FromObjectCsv<T>(this string value)
-           where T : new() => new StartConversion().Deserialize(typeof(T), value);
+           where T : new() => (T)new StartConversion().Deserialize(typeof(T), value);
     }
 }

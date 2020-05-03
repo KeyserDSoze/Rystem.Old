@@ -6,11 +6,11 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    internal class ObjectConverter : Converter
+    internal class ObjectConverter : Converter, ICsvInterpreter
     {
-        public ObjectConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
+        public ObjectConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
         private static readonly Type Ignore = typeof(CsvIgnore);
-        internal override string Serialize(object value)
+        public string Serialize(object value)
         {
             if (value == null)
                 return string.Empty;
@@ -20,7 +20,7 @@ namespace Rystem.Conversion
             return stringBuilder.ToString().Trim(this.IndexAsChar);
         }
 
-        internal override dynamic Deserialize(Type type, string value)
+        public dynamic Deserialize(Type type, string value)
         {
             if (value == null)
                 return default;

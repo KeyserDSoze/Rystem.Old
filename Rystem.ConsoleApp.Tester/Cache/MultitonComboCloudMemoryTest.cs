@@ -14,6 +14,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
+            await Task.Delay(0).NoContext();
             Service3Key serviceKey = new Service3Key() { Id = 2 };
             if (serviceKey.IsPresent())
                 return false;

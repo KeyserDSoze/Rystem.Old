@@ -26,41 +26,41 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 myServiceBus,
                 myServiceBus
             };
-            long messageId = myServiceBus.SendScheduled(120);
+            long messageId = await myServiceBus.SendScheduledAsync(120);
             if (messageId <= 0)
                 return false;
-            bool returned = myServiceBus.DeleteScheduled(messageId);
+            bool returned = await myServiceBus.DeleteScheduledAsync(messageId);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120).FirstOrDefault();
+            messageId = (await myServiceBuses.SendScheduledBatchAsync(120)).FirstOrDefault();
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId);
+            returned = await myServiceBus.DeleteScheduledAsync(messageId);
             if (!returned)
                 return false;
-            DebugMessage debugMessage = myServiceBus.DebugSend(120);
+            DebugMessage debugMessage = await myServiceBus.DebugSendAsync(120);
             if (!debugMessage.ServiceBusMessage.Contains("dsad"))
                 return false;
-            DebugMessage debugMessage2 = myServiceBuses.DebugSendBatch(120);
+            DebugMessage debugMessage2 = await myServiceBuses.DebugSendBatchAsync(120);
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 
-            messageId = myServiceBus.SendScheduled(120, installation: Installation.Inst00);
+            messageId = await myServiceBus.SendScheduledAsync(120, installation: Installation.Inst00);
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, installation: Installation.Inst00);
+            returned = await myServiceBus.DeleteScheduledAsync(messageId, installation: Installation.Inst00);
             if (!returned)
                 return false;
-            messageId = myServiceBuses.SendScheduledBatch(120, installation: Installation.Inst00).FirstOrDefault();
+            messageId = (await myServiceBuses.SendScheduledBatchAsync(120, installation: Installation.Inst00)).FirstOrDefault();
             if (messageId <= 0)
                 return false;
-            returned = myServiceBus.DeleteScheduled(messageId, installation: Installation.Inst00);
+            returned = await myServiceBus.DeleteScheduledAsync(messageId, installation: Installation.Inst00);
             if (!returned)
                 return false;
-            debugMessage = myServiceBus.DebugSend(120, installation: Installation.Inst00);
+            debugMessage = await myServiceBus.DebugSendAsync(120, installation: Installation.Inst00);
             if (!debugMessage.ServiceBusMessage.Contains("dsad"))
                 return false;
-            debugMessage2 = myServiceBuses.DebugSendBatch(120, installation: Installation.Inst00);
+            debugMessage2 = await myServiceBuses.DebugSendBatchAsync(120, installation: Installation.Inst00);
             if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
                 return false;
 

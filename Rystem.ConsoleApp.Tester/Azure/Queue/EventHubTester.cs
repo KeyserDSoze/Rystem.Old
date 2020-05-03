@@ -23,15 +23,15 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 myEventHub,
                 myEventHub
             };
-            if (!myEventHub.Send())
+            if (!await myEventHub.SendAsync())
                 return false;
-            if (!myAbstractionEventHubs.SendBatch())
+            if (!await myAbstractionEventHubs.SendBatchAsync())
                 return false;
-            myEventHub.DebugSend(0, installation: Installation.Inst00);
-            myAbstractionEventHubs.DebugSendBatch(0, installation: Installation.Inst00);
-            if (!myEventHub.Send(installation: Installation.Inst00))
+            await myEventHub.DebugSendAsync(0, installation: Installation.Inst00);
+            await myAbstractionEventHubs.DebugSendBatchAsync(0, installation: Installation.Inst00);
+            if (!await myEventHub.SendAsync(installation: Installation.Inst00))
                 return false;
-            if (!myAbstractionEventHubs.SendBatch(installation: Installation.Inst00))
+            if (!await myAbstractionEventHubs.SendBatchAsync(installation: Installation.Inst00))
                 return false;
             return true;
         }

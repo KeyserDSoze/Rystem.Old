@@ -15,6 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
+            await Task.Delay(0).NoContext();
             AggregationInstaller<EventData>.Configure(
                 new AggregationProperty()
                 {

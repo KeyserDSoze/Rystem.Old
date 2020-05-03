@@ -67,4 +67,20 @@ namespace System
             where TEntity : INoSql
         => Manager<TEntity>().GetName(installation);
     }
+
+    public static class NoSqlLinqExtensions
+    {
+        public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, Installation installation = Installation.Default)
+            where TEntity : INoSql
+           => (await entity.GetAsync(expression, 1, installation).NoContext()).FirstOrDefault();
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, Installation installation = Installation.Default)
+            where TEntity : INoSql
+           => (await entity.GetAsync(expression, null, installation).NoContext());
+        public static async Task<IList<TEntity>> TakeAsync<TEntity>(this TEntity entity, int takeCount, Expression<Func<TEntity, bool>> expression = null, Installation installation = Installation.Default)
+            where TEntity : INoSql
+           => await entity.GetAsync(expression, takeCount, installation).NoContext();
+        public static async Task<int> CountAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, Installation installation = Installation.Default)
+           where TEntity : INoSql
+          => (await entity.GetAsync(expression, null, installation).NoContext()).Count;
+    }
 }

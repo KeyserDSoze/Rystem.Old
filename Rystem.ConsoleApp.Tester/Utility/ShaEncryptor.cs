@@ -12,6 +12,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
+            await Task.Delay(0).NoContext();
             ShaHelper shaHelper = new ShaHelper()
             {
                 Message = "a.rapiti@vetrya.com"

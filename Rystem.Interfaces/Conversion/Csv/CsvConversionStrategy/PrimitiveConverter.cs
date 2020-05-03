@@ -5,11 +5,11 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    internal class PrimitiveConverter : Converter
+    internal class PrimitiveConverter : Converter, ICsvInterpreter
     {
-        public PrimitiveConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
+        public PrimitiveConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
 
-        internal override dynamic Deserialize(Type type, string value)
+        public dynamic Deserialize(Type type, string value)
         {
             if (value == null)
                 return default;
@@ -28,9 +28,7 @@ namespace Rystem.Conversion
             }
         }
 
-        internal override string Serialize(object value)
-        {
-            return value.ToString();
-        }
+        public string Serialize(object value) 
+            => value.ToString();
     }
 }

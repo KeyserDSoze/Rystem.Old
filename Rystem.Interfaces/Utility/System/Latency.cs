@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Rystem.Interfaces.Utility
+namespace Rystem.Utility
 {
     public class LatencyMeter
     {

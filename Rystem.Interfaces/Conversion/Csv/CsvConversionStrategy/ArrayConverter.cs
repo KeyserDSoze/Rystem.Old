@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    internal class ArrayConverter : Converter
+    internal class ArrayConverter : Converter, ICsvInterpreter
     {
-        public ArrayConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
+        public ArrayConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
 
-        internal override dynamic Deserialize(Type type, string value)
+        public dynamic Deserialize(Type type, string value)
         {
             Type elementType = type.GetElementType();
             string[] splitted = value.Split(this.ArrayLength);
@@ -23,9 +23,7 @@ namespace Rystem.Conversion
             return array;
         }
 
-        internal override string Serialize(object value)
-        {
-            return $"{(value as Array).Length}{this.ArrayLength}{new EnumerableConverter(this.Factory, this.Index, this.AbstractionInterfaceMapping).Serialize(value)}";
-        }
+        public string Serialize(object value) 
+            => $"{(value as Array).Length}{this.ArrayLength}{new EnumerableConverter(this.Index, this.AbstractionInterfaceMapping).Serialize(value)}";
     }
 }

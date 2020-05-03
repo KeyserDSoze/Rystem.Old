@@ -72,4 +72,20 @@ namespace System
             => Manager<TEntity>().GetName(installation);
 #pragma warning restore IDE0060 // Remove unused parameter
     }
+
+    public static class AggregatedDataLinqExtensions
+    {
+        public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this TEntity entity, string prefix = null, Installation installation = Installation.Default)
+            where TEntity : IAggregatedData, new()
+           => (await entity.ListAsync(prefix, 1, installation).NoContext()).FirstOrDefault();
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this TEntity entity, string prefix = null, Installation installation = Installation.Default)
+            where TEntity : IAggregatedData, new()
+           => (await entity.ListAsync(prefix, null, installation).NoContext()).ToList();
+        public static async Task<IEnumerable<TEntity>> TakeAsync<TEntity>(this TEntity entity, int takeCount, string prefix = null, Installation installation = Installation.Default)
+            where TEntity : IAggregatedData, new()
+           => await entity.ListAsync(prefix, takeCount, installation).NoContext();
+        public static async Task<int> CountAsync<TEntity>(this TEntity entity, string prefix = null, Installation installation = Installation.Default)
+           where TEntity : IAggregatedData, new()
+          => (await entity.SearchAsync(prefix, null, installation).NoContext()).Count;
+    }
 }

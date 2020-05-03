@@ -5,11 +5,11 @@ using System.Text;
 
 namespace Rystem.Conversion
 {
-    internal class DictionaryConverter : Converter
+    internal class DictionaryConverter : Converter, ICsvInterpreter
     {
-        public DictionaryConverter(IConverterFactory factory, int index, IDictionary<string, string> abstractionInterfaceMapping) : base(factory, index, abstractionInterfaceMapping) { }
+        public DictionaryConverter(int index, IDictionary<string, string> abstractionInterfaceMapping) : base(index, abstractionInterfaceMapping) { }
 
-        internal override dynamic Deserialize(Type type, string value)
+        public dynamic Deserialize(Type type, string value)
         {
             IDictionary dictionary = (IDictionary)Activator.CreateInstance(type);
             Type[] keyValueType = type.GetGenericArguments();
@@ -24,7 +24,7 @@ namespace Rystem.Conversion
             return dictionary;
         }
 
-        internal override string Serialize(object values)
+        public string Serialize(object values)
         {
             StringBuilder stringBuilder = new StringBuilder();
             foreach (DictionaryEntry entry in values as IDictionary)

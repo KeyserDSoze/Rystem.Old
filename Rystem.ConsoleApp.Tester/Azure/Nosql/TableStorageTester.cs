@@ -24,20 +24,19 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             };
             try
             {
-                example.Delete();
+                await example.DeleteAsync();
             }
             catch { }
-            if (!example.Update())
+            if (!await example.UpdateAsync())
                 return false;
-            IEnumerable<Example> examples = example.Get(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd");
-            //IEnumerable<Example> examples = example.Get(x => x.PartitionKey.GreaterThan("A"));
+            IEnumerable<Example> examples = await example.GetAsync(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd");
             if (examples.Count() != 1)
                 return false;
-            if (!example.Exists())
+            if (!await example.ExistsAsync())
                 return false;
-            if (!example.Delete())
+            if (!await example.DeleteAsync())
                 return false;
-            if (example.Exists())
+            if (await example.ExistsAsync())
                 return false;
             examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd");
             if (examples.Count() != 0)

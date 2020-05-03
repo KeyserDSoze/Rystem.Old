@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 
-namespace Rystem.Interfaces.Utility
+namespace Rystem.Utility
 {
     public static class Assembler
     {
