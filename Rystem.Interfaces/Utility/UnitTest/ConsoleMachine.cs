@@ -51,7 +51,7 @@ namespace Rystem.UnitTest
         public void Start(Action<object> action = null, params string[] args)
             => StartAsync(action, args).NoContext().GetAwaiter().GetResult();
         private static readonly Regex Numbers = new Regex("[0-9]*");
-        private async Task StartAsync(Action<object> action = null, params string[] args)
+        public async Task StartAsync(Action<object> action = null, params string[] args)
         {
             while ((Result = this.WhatDoYouWantToSeeInAction()) != ExitCommand)
             {
