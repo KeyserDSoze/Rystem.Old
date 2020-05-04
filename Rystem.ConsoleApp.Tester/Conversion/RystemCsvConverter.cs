@@ -51,7 +51,7 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                  });
             string salo = halo.ToRystemCsv();
             Halo halo3 = salo.FromRystemCsv<Halo>();
-            string salo2 = halo3.ToStandardJson();
+            string salo2 = halo3.ToDefaultJson();
             Console.WriteLine(salo.Length + " vs " + salo2.Length);
             if (salo.Length > salo2.Length)
                 return false;

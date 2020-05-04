@@ -15,7 +15,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         {
             using (StreamReader sr = new StreamReader(dummy.Stream))
             {
-                TEntity dataLake = (await sr.ReadToEndAsync().NoContext()).FromStandardJson<TEntity>();
+                TEntity dataLake = (await sr.ReadToEndAsync().NoContext()).FromDefaultJson<TEntity>();
                 dataLake.Properties = dummy.Properties;
                 dataLake.Name = dummy.Name;
                 return dataLake;
@@ -28,7 +28,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             {
                 Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/json" },
                 Name = entity.Name,
-                Stream = new MemoryStream(Encoding.UTF8.GetBytes(entity.ToStandardJson()))
+                Stream = new MemoryStream(Encoding.UTF8.GetBytes(entity.ToDefaultJson()))
             };
         }
     }

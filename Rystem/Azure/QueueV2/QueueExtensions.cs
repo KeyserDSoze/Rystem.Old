@@ -107,19 +107,19 @@ namespace System
 
         public static string ToJson<TEntry>(this TEntry message)
             where TEntry : IQueue, new()
-           => message.ToStandardJson();
+           => message.ToDefaultJson();
         public static byte[] ToSendable<TEntry>(this TEntry message)
             where TEntry : IQueue, new()
             => Encoding.UTF8.GetBytes(message.ToJson());
         public static string ToJson<TEntry>(this IEnumerable<TEntry> messages)
             where TEntry : IQueue, new()
-            => messages.ToStandardJson();
+            => messages.ToDefaultJson();
         public static byte[] ToSendable<TEntry>(this IEnumerable<TEntry> messages)
             where TEntry : IQueue, new()
             => Encoding.UTF8.GetBytes(messages.ToJson());
         internal static TEntity ToMessage<TEntity>(this string message)
             where TEntity : IQueue, new()
-            => message.FromStandardJson<TEntity>();
+            => message.FromDefaultJson<TEntity>();
         internal static IEnumerable<TEntity> FromMessage<TEntity>(this IEnumerable<string> messages)
             where TEntity : IQueue, new()
         {

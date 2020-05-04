@@ -36,7 +36,7 @@ namespace Rystem.Cache
             else
             {
                 using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ToResult()))
-                    return reader.ReadToEnd().FromStandardJson<T>();
+                    return reader.ReadToEnd().FromDefaultJson<T>();
             }
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
@@ -47,7 +47,7 @@ namespace Rystem.Cache
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
             if (expiring > 0)
                 cloudBlob.Properties.CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString();
-            using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToStandardJson())))
+            using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToDefaultJson())))
                 cloudBlob.UploadFromStreamAsync(stream).ToResult();
             return true;
         }

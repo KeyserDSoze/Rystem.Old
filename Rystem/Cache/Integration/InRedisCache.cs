@@ -45,7 +45,7 @@ namespace Rystem.Cache
         public T Instance(string key)
         {
             string json = Cache.StringGet(CloudKeyToString(key));
-            return json.FromStandardJson<T>();
+            return json.FromDefaultJson<T>();
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {
@@ -53,9 +53,9 @@ namespace Rystem.Cache
             if (expiringTime == default)
                 expiringTime = ExpireCache;
             if (expiringTime.Ticks > 0)
-                code = Cache.StringSet(CloudKeyToString(key), value.ToStandardJson(), expiringTime);
+                code = Cache.StringSet(CloudKeyToString(key), value.ToDefaultJson(), expiringTime);
             else
-                code = Cache.StringSet(CloudKeyToString(key), value.ToStandardJson());
+                code = Cache.StringSet(CloudKeyToString(key), value.ToDefaultJson());
             return code;
         }
         public bool Exists(string key)

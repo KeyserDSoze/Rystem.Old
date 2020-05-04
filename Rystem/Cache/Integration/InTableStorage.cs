@@ -30,7 +30,7 @@ namespace Rystem.Cache
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
             TableResult result = Context.ExecuteAsync(operation).ToResult();
-            return result.Result != default ? ((RystemCache)result.Result).Data.FromStandardJson<T>() : default;
+            return result.Result != default ? ((RystemCache)result.Result).Data.FromDefaultJson<T>() : default;
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
         {
@@ -41,7 +41,7 @@ namespace Rystem.Cache
             {
                 PartitionKey = FullName,
                 RowKey = key,
-                Data = value.ToStandardJson(),
+                Data = value.ToDefaultJson(),
                 E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);

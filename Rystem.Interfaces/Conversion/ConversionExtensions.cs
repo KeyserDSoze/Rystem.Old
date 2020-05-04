@@ -9,17 +9,14 @@ namespace System
 {
     public static class JsonConversionExtensions
     {
-        public static string ToStandardJson<T>(this T entity)
+        public static string ToDefaultJson<T>(this T entity)
             => JsonConvert.SerializeObject(entity, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
-        public static T FromStandardJson<T>(this string entry)
-            where T : new()
+        public static T FromDefaultJson<T>(this string entry)
             => JsonConvert.DeserializeObject<T>(entry, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
 
         public static string ToRystemCsv<T>(this T entity)
-           where T : new()
            => entity.ToObjectCsv();
         public static T FromRystemCsv<T>(this string entry)
-            where T : new()
             => entry.FromObjectCsv<T>();
 
         public static string ToCsv<T>(this IEnumerable<T> entities, char splittingChar = ',')

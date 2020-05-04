@@ -12,23 +12,23 @@ namespace Rystem.ZConsoleApp.Tester.Utility
         {
             await Task.Delay(0).ConfigureAwait(false);
             SuperTest superTest = new SuperTest { A = "Hello", B = "Hello2" };
-            string value = superTest.ToAesString();
-            SuperTest superTest1 = value.FromAesString<SuperTest>();
+            string value = superTest.DefaultEncrypt();
+            SuperTest superTest1 = value.DefaultDecrypt<SuperTest>();
             if (superTest.A != superTest1.A)
                 return false;
-            string value2 = superTest.ToAesString();
+            string value2 = superTest.DefaultEncrypt();
             if (value == value2)
                 return false;
-            value = superTest.ToSha256String();
-            value2 = superTest.ToSha256String();
+            value = superTest.DefaultHash();
+            value2 = superTest.DefaultHash();
             if (value != value2)
                 return false;
-            string value3 = value.ToSha256String();
-            string value4 = value.ToSha256String();
+            string value3 = value.DefaultHash();
+            string value4 = value.DefaultHash();
             if (value3 != value4)
                 return false;
-            string colo = value.EncryptToStandardAes();
-            string valu = colo.DecryptFromStandardAes();
+            string colo = value.DefaultEncrypt();
+            string valu = colo.DefaultDecrypt<string>();
             if (valu != value)
                 return false;
             return true;
