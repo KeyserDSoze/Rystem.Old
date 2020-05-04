@@ -93,7 +93,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                 {
 
                     ConnectionString = StorageConnectionString,
-                    Type = AggregatedDataType.BlockBlob,
+                    Type = AggregatedDataType.AppendBlob,
                     Name = "kollipop"
                 },
                Installation.Inst00

@@ -14,49 +14,63 @@ namespace System
     {
         private readonly static Dictionary<string, IQueueManager> Managers = new Dictionary<string, IQueueManager>();
         private readonly static object TrafficLight = new object();
-        private static IQueueManager Manager<TEntity>()
+        private static IQueueManager Manager<TEntity>(this TEntity entity)
             where TEntity : IQueue, new()
         {
-            string name = typeof(TEntity).FullName;
-            if (!Managers.ContainsKey(name))
+            Type entityType = entity.GetType();
+            if (!Managers.ContainsKey(entityType.FullName))
                 lock (TrafficLight)
-                    if (!Managers.ContainsKey(name))
-                        Managers.Add(name, new QueueManager<TEntity>());
-            return Managers[name];
+                    if (!Managers.ContainsKey(entityType.FullName))
+                    {
+                        Type genericType = typeof(QueueManager<>).MakeGenericType(entityType);
+                        Managers.Add(entityType.FullName, (IQueueManager)Activator.CreateInstance(genericType));
+                    }
+            return Managers[entityType.FullName];
         }
         public static async Task<bool> SendAsync<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().SendAsync(message, installation, path, organization).NoContext();
+            => await message.Manager().SendAsync(message, installation, path, organization).NoContext();
         public static async Task<long> SendScheduledAsync<TEntity>(this TEntity message, int delayInSeconds, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-           => await Manager<TEntity>().SendScheduledAsync(message, delayInSeconds, installation, path, organization).NoContext();
+           => await message.Manager().SendScheduledAsync(message, delayInSeconds, installation, path, organization).NoContext();
 
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<bool> DeleteScheduledAsync<TEntity>(this TEntity message, long messageId, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().DeleteScheduledAsync(messageId, installation).NoContext();
+            => await message.Manager().DeleteScheduledAsync(messageId, installation).NoContext();
         public static async Task<bool> SendBatchAsync<TEntity>(this IEnumerable<TEntity> messages, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().SendBatchAsync(messages.Select(x => x as IQueue), installation, path, organization).NoContext();
+        {
+            bool result = true;
+            foreach (var msgs in messages.GroupBy(x => x.GetType().FullName))
+                result &= await msgs.FirstOrDefault().Manager().SendBatchAsync(msgs.Select(x => x as IQueue), installation, path, organization).NoContext();
+            return result;
+        }
+
         public static async Task<IEnumerable<long>> SendScheduledBatchAsync<TEntity>(this IEnumerable<TEntity> messages, int delayInSeconds, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().SendScheduledBatchAsync(messages.Select(x => x as IQueue), delayInSeconds, installation, path, organization).NoContext();
+        {
+            List<long> aggregatedResponse = new List<long>();
+            foreach (var msgs in messages.GroupBy(x => x.GetType().FullName))
+                aggregatedResponse.AddRange(await msgs.FirstOrDefault().Manager().SendScheduledBatchAsync(msgs.Select(x => x as IQueue), delayInSeconds, installation, path, organization).NoContext());
+            return aggregatedResponse;
+        }
 
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<IEnumerable<TEntity>> ReadAsync<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().ReadAsync<TEntity>(installation, path, organization).NoContext();
+            => await message.Manager().ReadAsync<TEntity>(installation, path, organization).NoContext();
 
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<bool> CleanAsync<TEntity>(this TEntity message, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().CleanAsync(installation).NoContext();
+            => await message.Manager().CleanAsync(installation).NoContext();
         public static async Task<DebugMessage> DebugSendAsync<TEntity>(this TEntity message, int delayInSeconds = 0, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().DebugSendAsync(message, delayInSeconds, installation, path, organization).NoContext();
+            => await message.Manager().DebugSendAsync(message, delayInSeconds, installation, path, organization).NoContext();
         public static async Task<DebugMessage> DebugSendBatchAsync<TEntity>(this IEnumerable<TEntity> messages, int delayInSeconds = 0, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => await Manager<TEntity>().DebugSendBatchAsync(messages.Select(x => x as IQueue), delayInSeconds, installation, path, organization).NoContext();
+            => await messages.FirstOrDefault().Manager().DebugSendBatchAsync(messages.Select(x => x as IQueue), delayInSeconds, installation, path, organization).NoContext();
 
         public static bool Send<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
@@ -89,7 +103,7 @@ namespace System
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static string GetName<TEntity>(this TEntity message, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => Manager<TEntity>().GetName(installation);
+            => message.Manager().GetName(installation);
 
         public static string ToJson<TEntry>(this TEntry message)
             where TEntry : IQueue, new()

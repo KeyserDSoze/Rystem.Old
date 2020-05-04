@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
-            Example example = new Example()
+            Solute example = new Example()
             {
                 PartitionKey = "Alto",
                 RowKey = "aaaaa",
@@ -29,7 +29,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             catch { }
             if (!await example.UpdateAsync())
                 return false;
-            IEnumerable<Example> examples = await example.GetAsync(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd");
+            IEnumerable<Solute> examples = await example.GetAsync(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd");
             if (examples.Count() != 1)
                 return false;
             if (!await example.ExistsAsync())
@@ -38,66 +38,82 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
                 return false;
             if (await example.ExistsAsync())
                 return false;
-            examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd");
+            examples = await example.GetAsync(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd");
             if (examples.Count() != 0)
                 return false;
 
             try
             {
-                example.Delete(Installation.Inst00);
+                await example.DeleteAsync(Installation.Inst00);
             }
             catch { }
-            if (!example.Update(Installation.Inst00))
+            if (!await example.UpdateAsync(Installation.Inst00))
                 return false;
-            examples = example.Get(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd", installation: Installation.Inst00);
+            examples = await example.GetAsync(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd", installation: Installation.Inst00);
             //IEnumerable<Example> examples = example.Get(x => x.PartitionKey.GreaterThan("A"));
             if (examples.Count() != 1)
                 return false;
-            if (!example.Exists(Installation.Inst00))
+            if (!await example.ExistsAsync(Installation.Inst00))
                 return false;
-            if (!example.Delete(Installation.Inst00))
+            if (!await example.DeleteAsync(Installation.Inst00))
                 return false;
-            if (example.Exists(Installation.Inst00))
+            if (await example.ExistsAsync(Installation.Inst00))
                 return false;
-            examples = example.Get(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd", installation: Installation.Inst00);
+            examples = await example.GetAsync(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd", installation: Installation.Inst00);
             if (examples.Count() != 0)
                 return false;
 
-            List<Example> examplesForBatch = new List<Example>();
+            List<Solute> examplesForBatch = new List<Solute>();
             for (int i = 0; i < 200; i++)
                 examplesForBatch.Add(new Example() { PartitionKey = "A", RowKey = i.ToString() });
-            for (int i = 0; i < 205; i++)
+            for (int i = 0; i < 105; i++)
+                examplesForBatch.Add(new Caruni() { PartitionKey = "B", RowKey = i.ToString() });
+            for (int i = 0; i < 100; i++)
                 examplesForBatch.Add(new Example() { PartitionKey = "B", RowKey = i.ToString() });
             if (!examplesForBatch.UpdateBatch())
                 return false;
-            examplesForBatch = new Example().Get().ToList();
-            if (examplesForBatch.Count != 405)
+            if ((await new Example().ToListAsync()).Count != 300)
                 return false;
-            if (!examplesForBatch.DeleteBatch())
+            if ((await new Caruni().ToListAsync()).Count != 105)
                 return false;
-            examplesForBatch = new Example().Get().ToList();
-            if (examplesForBatch.Count != 0)
+            if (!await examplesForBatch.DeleteBatchAsync())
+                return false;
+            if ((await new Example().ToListAsync()).Count != 0)
+                return false;
+            if ((await new Caruni().ToListAsync()).Count != 0)
                 return false;
 
             return true;
         }
-    }
-    public class Example : ITableStorage
-    {
-        static Example()
+        private class Solute : ITableStorage
         {
-            NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
-            NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger" }, Installation.Inst00);
+            public string PartitionKey { get; set; }
+            public string RowKey { get; set; }
+            public DateTime Timestamp { get; set; }
+            public string ETag { get; set; }
+            public string Alo { get; set; }
         }
-        public string PartitionKey { get; set; }
-        public string RowKey { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string ETag { get; set; }
-        public string Alo { get; set; }
-        public Lazlo Lazlo { get; set; }
-    }
-    public class Lazlo
-    {
-        public int A { get; set; }
+        private class Example : Solute
+        {
+            static Example()
+            {
+                NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
+                NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger" }, Installation.Inst00);
+            }
+            public Lazlo Lazlo { get; set; }
+        }
+        private class Caruni : Solute
+        {
+            static Caruni()
+            {
+                NoSqlInstaller.Configure<Caruni>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
+                NoSqlInstaller.Configure<Caruni>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger2" }, Installation.Inst00);
+            }
+            public Lazlo Lazlo { get; set; }
+        }
+        public class Lazlo
+        {
+            public int A { get; set; }
+        }
     }
 }

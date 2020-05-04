@@ -1,5 +1,4 @@
 ﻿using Rystem.Azure.NoSql;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,34 +12,49 @@ namespace System
     {
         private readonly static Dictionary<string, INoSqlManager> Managers = new Dictionary<string, INoSqlManager>();
         private readonly static object TrafficLight = new object();
-        private static INoSqlManager Manager<TEntity>()
+        private static INoSqlManager Manager<TEntity>(this TEntity entity)
             where TEntity : INoSql
         {
-            string name = typeof(TEntity).FullName;
-            if (!Managers.ContainsKey(name))
+            Type entityType = entity.GetType();
+            if (!Managers.ContainsKey(entityType.FullName))
                 lock (TrafficLight)
-                    if (!Managers.ContainsKey(name))
-                        Managers.Add(name, new NoSqlManager<TEntity>());
-            return Managers[name];
+                    if (!Managers.ContainsKey(entityType.FullName))
+                    {
+                        Type genericType = typeof(NoSqlManager<>).MakeGenericType(entityType);
+                        Managers.Add(entityType.FullName, (INoSqlManager)Activator.CreateInstance(genericType));
+                    }
+            return Managers[entityType.FullName];
         }
         public static async Task<bool> UpdateAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => await Manager<TEntity>().UpdateAsync(entity, installation).NoContext();
+           => await entity.Manager().UpdateAsync(entity, installation).NoContext();
         public static async Task<bool> UpdateBatchAsync<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => await Manager<TEntity>().UpdateBatchAsync(entities.Select(x => (INoSql)x), installation).NoContext();
+        {
+            bool result = true;
+            foreach (var ents in entities.GroupBy(x => x.GetType().FullName))
+                result &= await ents.FirstOrDefault().Manager().UpdateBatchAsync(ents.Select(x => (INoSql)x), installation).NoContext();
+            return result;
+        }
+
         public static async Task<bool> DeleteAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => await Manager<TEntity>().DeleteAsync(entity, installation).NoContext();
+           => await entity.Manager().DeleteAsync(entity, installation).NoContext();
         public static async Task<bool> DeleteBatchAsync<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => await Manager<TEntity>().DeleteBatchAsync(entities.Select(x => (INoSql)x), installation).NoContext();
+        {
+            bool result = true;
+            foreach (var ents in entities.GroupBy(x => x.GetType().FullName))
+                result &= await ents.FirstOrDefault().Manager().DeleteBatchAsync(ents.Select(x => (INoSql)x), installation).NoContext();
+            return result;
+        }
+
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => await Manager<TEntity>().ExistsAsync(entity, installation).NoContext();
+           => await entity.Manager().ExistsAsync(entity, installation).NoContext();
         public static async Task<IList<TEntity>> GetAsync<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => await Manager<TEntity>().GetAsync(entity, installation, expression, takeCount).NoContext();
+           => await entity.Manager().GetAsync(entity, installation, expression, takeCount).NoContext();
 
         public static bool Update<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : INoSql
@@ -65,7 +79,7 @@ namespace System
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static string GetName<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
-        => Manager<TEntity>().GetName(installation);
+        => entity.Manager<TEntity>().GetName(installation);
     }
 
     public static class NoSqlLinqExtensions

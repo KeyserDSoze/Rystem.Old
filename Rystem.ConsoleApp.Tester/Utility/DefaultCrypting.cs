@@ -27,6 +27,10 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             string value4 = value.ToSha256String();
             if (value3 != value4)
                 return false;
+            string colo = value.EncryptToStandardAes();
+            string valu = colo.DecryptFromStandardAes();
+            if (valu != value)
+                return false;
             return true;
         }
         private class SuperTest

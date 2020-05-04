@@ -13,37 +13,40 @@ namespace System
     {
         private readonly static Dictionary<string, IAggregatedDataManager> Managers = new Dictionary<string, IAggregatedDataManager>();
         private readonly static object TrafficLight = new object();
-        private static IAggregatedDataManager Manager<TEntity>()
+        private static IAggregatedDataManager Manager<TEntity>(this TEntity entity)
             where TEntity : IAggregatedData, new()
         {
-            string name = typeof(TEntity).FullName;
-            if (!Managers.ContainsKey(name))
+            Type entityType = entity.GetType();
+            if (!Managers.ContainsKey(entityType.FullName))
                 lock (TrafficLight)
-                    if (!Managers.ContainsKey(name))
-                        Managers.Add(name, new AggregatedDataManager<TEntity>());
-            return Managers[name];
+                    if (!Managers.ContainsKey(entityType.FullName))
+                    {
+                        Type genericType = typeof(AggregatedDataManager<>).MakeGenericType(entityType);
+                        Managers.Add(entityType.FullName, (IAggregatedDataManager)Activator.CreateInstance(genericType));
+                    }
+            return Managers[entityType.FullName];
         }
         public static async Task<bool> WriteAsync<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-            => await Manager<TEntity>().WriteAsync(entity, installation, offset).NoContext();
+            => await entity.Manager().WriteAsync(entity, installation, offset).NoContext();
         public static async Task<bool> DeleteAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => await Manager<TEntity>().DeleteAsync(entity, installation).NoContext();
+           => await entity.Manager().DeleteAsync(entity, installation).NoContext();
         public static async Task<bool> ExistsAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => await Manager<TEntity>().ExistsAsync(entity, installation).NoContext();
+           => await entity.Manager().ExistsAsync(entity, installation).NoContext();
         public static async Task<TEntity> FetchAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => await Manager<TEntity>().FetchAsync<TEntity>(entity, installation).NoContext();
+           => await entity.Manager().FetchAsync<TEntity>(entity, installation).NoContext();
         public static async Task<IEnumerable<TEntity>> ListAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => await Manager<TEntity>().ListAsync<TEntity>(entity, installation, prefix, takeCount).NoContext();
+           => await entity.Manager().ListAsync<TEntity>(entity, installation, prefix, takeCount).NoContext();
         public static async Task<IList<string>> SearchAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => await Manager<TEntity>().SearchAsync(entity, installation, prefix, takeCount).NoContext();
+           => await entity.Manager().SearchAsync(entity, installation, prefix, takeCount).NoContext();
         public static async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => await Manager<TEntity>().FetchPropertiesAsync(entity, installation, prefix, takeCount).NoContext();
+           => await entity.Manager().FetchPropertiesAsync(entity, installation, prefix, takeCount).NoContext();
 
         public static bool Write<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
@@ -59,18 +62,16 @@ namespace System
             => ExistsAsync(entity, installation).ToResult();
         public static IEnumerable<TEntity> List<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => ListAsync<TEntity>(entity, prefix, takeCount, installation).ToResult();
+           => ListAsync(entity, prefix, takeCount, installation).ToResult();
         public static IList<string> Search<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
            => SearchAsync(entity, prefix, takeCount, installation).ToResult();
         public static IList<AggregatedDataDummy> FetchProperties<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
            => FetchPropertiesAsync(entity, prefix, takeCount, installation).ToResult();
-#pragma warning disable IDE0060 // Remove unused parameter
         public static string GetName<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : IAggregatedData, new()
-            => Manager<TEntity>().GetName(installation);
-#pragma warning restore IDE0060 // Remove unused parameter
+            => entity.Manager().GetName(installation);
     }
 
     public static class AggregatedDataLinqExtensions
