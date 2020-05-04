@@ -24,12 +24,12 @@ namespace Rystem.Cache
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             Context = tableClient.GetTableReference(TableName);
-            Context.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
+            Context.CreateIfNotExistsAsync().ToResult();
         }
         public T Instance(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
+            TableResult result = Context.ExecuteAsync(operation).ToResult();
             return result.Result != default ? ((RystemCache)result.Result).Data.FromStandardJson<T>() : default;
         }
         public bool Update(string key, T value, TimeSpan expiringTime)
@@ -45,7 +45,7 @@ namespace Rystem.Cache
                 E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);
-            TableResult esito = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
+            TableResult esito = Context.ExecuteAsync(operation).ToResult();
             return (esito.HttpStatusCode == 204);
         }
         public bool Delete(string key)
@@ -59,7 +59,7 @@ namespace Rystem.Cache
             TableOperation operation = TableOperation.Delete(rystemCache);
             try
             {
-                TableResult esito = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
+                TableResult esito = Context.ExecuteAsync(operation).ToResult();
                 return (esito.HttpStatusCode == 204);
             }
             catch (StorageException er)
@@ -72,7 +72,7 @@ namespace Rystem.Cache
         public bool Exists(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = Context.ExecuteAsync(operation).NoContext().GetAwaiter().GetResult();
+            TableResult result = Context.ExecuteAsync(operation).ToResult();
             if (result.Result == null)
                 return false;
             RystemCache cached = (RystemCache)result.Result;
@@ -93,7 +93,7 @@ namespace Rystem.Cache
             List<string> keys = new List<string>();
             do
             {
-                TableQuerySegment tableQuerySegment = Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).NoContext().GetAwaiter().GetResult();
+                TableQuerySegment tableQuerySegment = Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).ToResult();
                 IEnumerable<string> keysFromQuery = tableQuerySegment.Results.Select(x => x.RowKey);
                 tableContinuationToken = tableQuerySegment.ContinuationToken;
                 keys.AddRange(keysFromQuery);

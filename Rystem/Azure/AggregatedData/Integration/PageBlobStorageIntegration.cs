@@ -21,7 +21,7 @@ namespace Rystem.Azure.AggregatedData
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             this.Context = Client.GetContainerReference(configuration.Name.ToLower());
-            this.Context.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
+            this.Context.CreateIfNotExistsAsync().ToResult();
             this.Writer = configuration.Writer ?? new CsvDataManager<TEntity>();
             this.ListReader = configuration.ListReader ?? new CsvDataManager<TEntity>();
         }
@@ -75,8 +75,8 @@ namespace Rystem.Azure.AggregatedData
             AggregatedDataDummy dummy = await this.Writer.WriteAsync((TEntity)entity).NoContext();
             if (!await pageBlob.ExistsAsync().NoContext())
                 lock (TrafficLight)
-                    if (!pageBlob.ExistsAsync().NoContext().GetAwaiter().GetResult())
-                        pageBlob.CreateAsync(Size).NoContext().GetAwaiter().GetResult();
+                    if (!pageBlob.ExistsAsync().ToResult())
+                        pageBlob.CreateAsync(Size).ToResult();
             long sized = Size - dummy.Stream.Length;
             if (sized != 0)
             {

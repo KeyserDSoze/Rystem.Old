@@ -44,22 +44,22 @@ namespace System
 
         public static bool Update<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : INoSql
-          => UpdateAsync(entity, installation).NoContext().GetAwaiter().GetResult();
+          => UpdateAsync(entity, installation).ToResult();
         public static bool UpdateBatch<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
            where TEntity : INoSql
-          => UpdateBatchAsync(entities, installation).NoContext().GetAwaiter().GetResult();
+          => UpdateBatchAsync(entities, installation).ToResult();
         public static bool Delete<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => DeleteAsync(entity, installation).NoContext().GetAwaiter().GetResult();
+           => DeleteAsync(entity, installation).ToResult();
         public static bool DeleteBatch<TEntity>(this IEnumerable<TEntity> entities, Installation installation = Installation.Default)
            where TEntity : INoSql
-          => DeleteBatchAsync(entities, installation).NoContext().GetAwaiter().GetResult();
+          => DeleteBatchAsync(entities, installation).ToResult();
         public static bool Exists<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => ExistsAsync(entity, installation).NoContext().GetAwaiter().GetResult();
+           => ExistsAsync(entity, installation).ToResult();
         public static IList<TEntity> Get<TEntity>(this TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : INoSql
-           => GetAsync(entity, expression, takeCount, installation).NoContext().GetAwaiter().GetResult();
+           => GetAsync(entity, expression, takeCount, installation).ToResult();
 
 
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]

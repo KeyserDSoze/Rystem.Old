@@ -21,7 +21,7 @@ namespace Rystem.Azure.AggregatedData
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             this.Context = Client.GetContainerReference(configuration.Name.ToLower());
-            this.Context.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
+            this.Context.CreateIfNotExistsAsync().ToResult();
             this.Reader = configuration.Reader ?? new JsonDataManager<TEntity>();
             this.Writer = configuration.Writer ?? new JsonDataManager<TEntity>();
         }

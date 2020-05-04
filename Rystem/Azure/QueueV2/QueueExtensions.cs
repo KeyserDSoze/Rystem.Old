@@ -60,31 +60,31 @@ namespace System
 
         public static bool Send<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-           => message.SendAsync(path, organization, installation).NoContext().GetAwaiter().GetResult();
+           => message.SendAsync(path, organization, installation).ToResult();
         public static long SendScheduled<TEntity>(this TEntity message, int delayInSeconds, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => message.SendScheduledAsync(delayInSeconds, path, organization, installation).NoContext().GetAwaiter().GetResult();
+            => message.SendScheduledAsync(delayInSeconds, path, organization, installation).ToResult();
         public static bool DeleteScheduled<TEntity>(this TEntity message, long messageId, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => message.DeleteScheduledAsync(messageId, installation).NoContext().GetAwaiter().GetResult();
+            => message.DeleteScheduledAsync(messageId, installation).ToResult();
         public static bool SendBatch<TEntity>(this IEnumerable<TEntity> messages, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => messages.SendBatchAsync(path, organization, installation).NoContext().GetAwaiter().GetResult();
+            => messages.SendBatchAsync(path, organization, installation).ToResult();
         public static IEnumerable<long> SendScheduledBatch<TEntity>(this IEnumerable<TEntity> messages, int delayInSeconds, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => messages.SendScheduledBatchAsync(delayInSeconds, path, organization, installation).NoContext().GetAwaiter().GetResult();
+            => messages.SendScheduledBatchAsync(delayInSeconds, path, organization, installation).ToResult();
         public static IEnumerable<TEntity> Read<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => message.ReadAsync(path, organization, installation).NoContext().GetAwaiter().GetResult();
+            => message.ReadAsync(path, organization, installation).ToResult();
         public static bool Clean<TEntity>(this TEntity message, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => message.CleanAsync(installation).NoContext().GetAwaiter().GetResult();
+            => message.CleanAsync(installation).ToResult();
         public static DebugMessage DebugSend<TEntity>(this TEntity message, int delayInSeconds = 0, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => message.DebugSendAsync(delayInSeconds, path, organization, installation).NoContext().GetAwaiter().GetResult();
+            => message.DebugSendAsync(delayInSeconds, path, organization, installation).ToResult();
         public static DebugMessage DebugSendBatch<TEntity>(this IEnumerable<TEntity> messages, int delayInSeconds = 0, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue, new()
-            => messages.DebugSendBatchAsync(delayInSeconds, path, organization, installation).NoContext().GetAwaiter().GetResult();
+            => messages.DebugSendBatchAsync(delayInSeconds, path, organization, installation).ToResult();
 
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static string GetName<TEntity>(this TEntity message, Installation installation = Installation.Default)

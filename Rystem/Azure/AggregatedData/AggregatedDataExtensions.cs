@@ -47,25 +47,25 @@ namespace System
 
         public static bool Write<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-            => WriteAsync(entity, offset, installation).NoContext().GetAwaiter().GetResult();
+            => WriteAsync(entity, offset, installation).ToResult();
         public static TEntity Fetch<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : IAggregatedData, new()
-           => FetchAsync(entity, installation).NoContext().GetAwaiter().GetResult();
+           => FetchAsync(entity, installation).ToResult();
         public static bool Delete<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-            => DeleteAsync(entity, installation).NoContext().GetAwaiter().GetResult();
+            => DeleteAsync(entity, installation).ToResult();
         public static bool Exists<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-            => ExistsAsync(entity, installation).NoContext().GetAwaiter().GetResult();
+            => ExistsAsync(entity, installation).ToResult();
         public static IEnumerable<TEntity> List<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => ListAsync<TEntity>(entity, prefix, takeCount, installation).NoContext().GetAwaiter().GetResult();
+           => ListAsync<TEntity>(entity, prefix, takeCount, installation).ToResult();
         public static IList<string> Search<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => SearchAsync(entity, prefix, takeCount, installation).NoContext().GetAwaiter().GetResult();
+           => SearchAsync(entity, prefix, takeCount, installation).ToResult();
         public static IList<AggregatedDataDummy> FetchProperties<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IAggregatedData, new()
-           => FetchPropertiesAsync(entity, prefix, takeCount, installation).NoContext().GetAwaiter().GetResult();
+           => FetchPropertiesAsync(entity, prefix, takeCount, installation).ToResult();
 #pragma warning disable IDE0060 // Remove unused parameter
         public static string GetName<TEntity>(this TEntity entity, Installation installation = Installation.Default)
            where TEntity : IAggregatedData, new()

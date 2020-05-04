@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
-    internal class FileDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
+    public class FileDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
           where TEntity : IFileData, new()
     {
         public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)

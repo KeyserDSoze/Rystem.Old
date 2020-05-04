@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
-    internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
+    public class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
           where TEntity : IAggregatedData, new()
     {
         private readonly char SplittingChar;

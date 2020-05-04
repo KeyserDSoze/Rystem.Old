@@ -49,7 +49,7 @@ namespace Rystem.UnitTest
         private const string ExitCommand = "exit";
         private const string AllCommand = "all";
         public void Start(Action<object> action = null, params string[] args)
-            => StartAsync(action, args).NoContext().GetAwaiter().GetResult();
+            => StartAsync(action, args).ToResult();
         private static readonly Regex Numbers = new Regex("[0-9]*");
         public async Task StartAsync(Action<object> action = null, params string[] args)
         {

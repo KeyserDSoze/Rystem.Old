@@ -4,6 +4,7 @@ using System.IO;
 
 namespace Rystem.Utility
 {
+    [Obsolete("Exists in .Net Core in staticfiles nuget")]
     public static class MimeMapping
     {
         private static MimeMappingDictionaryBase _mappingDictionary = new MimeMappingDictionaryClassic();

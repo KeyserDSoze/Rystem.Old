@@ -8,7 +8,7 @@ namespace Rystem.Cache
     public static class MultitonUtility
     {
         public static bool ClearAllCache(string connectionString) 
-            => ClearAllCacheAsync(connectionString).NoContext().GetAwaiter().GetResult();
+            => ClearAllCacheAsync(connectionString).ToResult();
         public static async Task<bool> ClearAllCacheAsync(string connectionString)
         {
             ConnectionMultiplexer Connection = ConnectionMultiplexer.Connect(connectionString);
@@ -18,7 +18,7 @@ namespace Rystem.Cache
             return true;
         }
         public static bool ClearAllTableStorage(string connectionString) 
-            => ClearAllTableStorageAsync(connectionString).NoContext().GetAwaiter().GetResult();
+            => ClearAllTableStorageAsync(connectionString).ToResult();
 #warning Alessandro Rapiti - da terminare
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<bool> ClearAllTableStorageAsync(string connectionString)

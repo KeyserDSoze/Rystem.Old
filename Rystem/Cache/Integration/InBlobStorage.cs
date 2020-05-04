@@ -22,12 +22,12 @@ namespace Rystem.Cache
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             Context = Client.GetContainerReference(ContainerName);
-            Context.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
+            Context.CreateIfNotExistsAsync().ToResult();
         }
         public T Instance(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
-            cloudBlob.FetchAttributesAsync().NoContext().GetAwaiter().GetResult();
+            cloudBlob.FetchAttributesAsync().ToResult();
             if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
             {
                 this.Delete(key);
@@ -35,7 +35,7 @@ namespace Rystem.Cache
             }
             else
             {
-                using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).NoContext().GetAwaiter().GetResult()))
+                using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ToResult()))
                     return reader.ReadToEnd().FromStandardJson<T>();
             }
         }
@@ -48,20 +48,20 @@ namespace Rystem.Cache
             if (expiring > 0)
                 cloudBlob.Properties.CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString();
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToStandardJson())))
-                cloudBlob.UploadFromStreamAsync(stream).NoContext().GetAwaiter().GetResult();
+                cloudBlob.UploadFromStreamAsync(stream).ToResult();
             return true;
         }
 
         public bool Delete(string key)
-            => Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().NoContext().GetAwaiter().GetResult();
+            => Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().ToResult();
         public bool Exists(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
-            if (cloudBlob.ExistsAsync().NoContext().GetAwaiter().GetResult())
+            if (cloudBlob.ExistsAsync().ToResult())
             {
                 if (ExpireCache > 0)
                 {
-                    cloudBlob.FetchAttributesAsync().NoContext().GetAwaiter().GetResult();
+                    cloudBlob.FetchAttributesAsync().ToResult();
                     if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
                     {
                         this.Delete(key);
@@ -79,7 +79,7 @@ namespace Rystem.Cache
             BlobContinuationToken token = null;
             do
             {
-                BlobResultSegment segment = Context.ListBlobsSegmentedAsync(FullName, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { }).NoContext().GetAwaiter().GetResult();
+                BlobResultSegment segment = Context.ListBlobsSegmentedAsync(FullName, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { }).ToResult();
                 token = segment.ContinuationToken;
                 foreach (IListBlobItem blobItem in segment.Results)
                 {

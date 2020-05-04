@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
-    internal class JsonDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
+    public class JsonDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
         where TEntity : IAggregatedData, new()
     {
         public async Task<TEntity> ReadAsync(AggregatedDataDummy dummy)

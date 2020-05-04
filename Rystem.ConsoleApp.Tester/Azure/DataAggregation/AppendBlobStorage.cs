@@ -46,28 +46,33 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 
             await meatball.DeleteAsync(Installation.Inst00);
             meatball.A = 3;
-            await meatball.WriteAsync(0,Installation.Inst00);
+            await meatball.WriteAsync(0, Installation.Inst00);
             meatball.A = 5;
-            await meatball.WriteAsync(0,Installation.Inst00);
+            await meatball.WriteAsync(0, Installation.Inst00);
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            await meatball.WriteAsync(0,Installation.Inst00);
-            meatball2 = (await meatball.ListAsync(installation:Installation.Inst00)).ToList();
+            await meatball.WriteAsync(0, Installation.Inst00);
+            meatball2 = (await meatball.ListAsync(installation: Installation.Inst00)).ToList();
             if (meatball2.Count != 3)
                 return false;
-            properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst00);
+            properties = await meatball.FetchPropertiesAsync(installation: Installation.Inst00);
             if (properties.Count != 1)
                 return false;
             if (!await meatball.DeleteAsync(Installation.Inst00))
                 return false;
             if (await meatball.ExistsAsync(Installation.Inst00))
                 return false;
-            meatball2 = (await meatball.ListAsync(installation:Installation.Inst00)).ToList();
+            meatball2 = (await meatball.ListAsync(installation: Installation.Inst00)).ToList();
             if (meatball2.Count != 0)
                 return false;
 
             return true;
         }
+    }
+    public enum MeatballType
+    {
+        MyDefault = -1,
+        OtherRepository
     }
 
     public class Meatball : IAggregatedData
@@ -80,14 +85,15 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 
                     ConnectionString = StorageConnectionString,
                     Type = AggregatedDataType.AppendBlob
-                }
+                },
+                MeatballType.MyDefault.ToInstallation()
                 );
             AggregatedDataInstaller.Configure(
                 new AggregatedDataConfiguration<Meatball>()
                 {
 
                     ConnectionString = StorageConnectionString,
-                    Type = AggregatedDataType.AppendBlob,
+                    Type = AggregatedDataType.BlockBlob,
                     Name = "kollipop"
                 },
                Installation.Inst00

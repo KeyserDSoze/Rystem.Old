@@ -19,7 +19,7 @@ namespace Rystem.Azure.Queue
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(property.ConnectionString);
             CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
             this.Client = queueClient.GetQueueReference(property.Name);
-            this.Client.CreateIfNotExistsAsync().NoContext().GetAwaiter().GetResult();
+            this.Client.CreateIfNotExistsAsync().ToResult();
         }
 
         public Task<bool> CleanAsync()

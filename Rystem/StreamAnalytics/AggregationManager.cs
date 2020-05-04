@@ -84,7 +84,7 @@ namespace Rystem.StreamAnalytics
         }
         public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception, T> errorCatcher = null, Installation installation = Installation.Default)
         {
-            return this.RunAsync(events, log, wrappedAction, wrappedError, installation).NoContext().GetAwaiter().GetResult();
+            return this.RunAsync(events, log, wrappedAction, wrappedError, installation).ToResult();
 
             Task wrappedAction(T t)
             {
@@ -99,7 +99,7 @@ namespace Rystem.StreamAnalytics
         }
 
         public IList<T> Flush(ILogger log, Installation installation)
-            => this.FlushAsync(log, installation).NoContext().GetAwaiter().GetResult();
+            => this.FlushAsync(log, installation).ToResult();
         private class BufferBearer
         {
             public IList<T> Events { get; set; } = new List<T>();
