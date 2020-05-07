@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData
 {
     public interface IAggregatedDataWriter<TEntity>
-        where TEntity : IAggregatedData, new()
+        where TEntity : IAggregatedData
     {
         Task<AggregatedDataDummy> WriteAsync(TEntity entity);
     }

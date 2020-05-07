@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal interface IQueueIntegration<TEntity>
-        where TEntity : IQueue, new()
+        where TEntity : IQueue
     {
         Task<bool> SendAsync(TEntity message, int path, int organization);
         Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization);

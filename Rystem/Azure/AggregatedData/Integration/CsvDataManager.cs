@@ -37,7 +37,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         }
         private TEntity Deserialize(string value)
         {
-            TEntity dataLake = (TEntity)Activator.CreateInstance(typeof(TEntity));
+            TEntity dataLake = new TEntity();
             string[] splitting = SplittingRegex.Split(value).Where(x => !string.IsNullOrWhiteSpace(x) && x[0] != SplittingChar).ToArray();
             int count = 0;
             foreach (PropertyInfo propertyInfo in Property(dataLake.GetType()))

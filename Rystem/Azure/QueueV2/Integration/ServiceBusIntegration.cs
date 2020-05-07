@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal class ServiceBusIntegration<TEntity> : IQueueIntegration<TEntity>
-        where TEntity : IQueue, new()
+        where TEntity : IQueue
     {
         private readonly QueueClient QueueClient;
         internal ServiceBusIntegration(QueueConfiguration property) =>

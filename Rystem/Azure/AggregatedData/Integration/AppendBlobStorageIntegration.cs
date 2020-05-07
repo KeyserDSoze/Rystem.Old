@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData
 {
     internal class AppendBlobStorageIntegration<TEntity> : IAggregatedDataIntegration<TEntity>
-        where TEntity : IAggregatedData, new()
+        where TEntity : IAggregatedData
     {
         private readonly CloudBlobContainer Context;
         private readonly IAggregatedDataWriter<TEntity> Writer;
@@ -32,7 +32,7 @@ namespace Rystem.Azure.AggregatedData
         public async Task<bool> ExistsAsync(IAggregatedData entity)
             => await BlobStorageBaseIntegration.ExistsAsync(this.Context.GetAppendBlobReference(entity.Name)).NoContext();
 
-        public Task<TEntity> FetchAsync(IAggregatedData entity) 
+        public Task<TEntity> FetchAsync(IAggregatedData entity)
             => throw new NotImplementedException($"With appendblob you can retrieve only a list of your items. Please use {nameof(ListAsync)}");
         private async Task<IList<TEntity>> ReadAsync(ICloudBlob cloudBlob)
         {
@@ -67,7 +67,8 @@ namespace Rystem.Azure.AggregatedData
             => await BlobStorageBaseIntegration.SearchAsync(this.Context, prefix, takeCount).NoContext();
         public async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, string prefix, int? takeCount)
             => await BlobStorageBaseIntegration.FetchPropertiesAsync(this.Context, prefix, takeCount).NoContext();
-
+        private const string BlobDoesntExist = "The specified blob does not exist.";
+        private const string BlobNotFound = "(404) Not Found";
         public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
         {
             int attempt = 0;
@@ -90,7 +91,7 @@ namespace Rystem.Azure.AggregatedData
                 }
                 catch (Exception er)
                 {
-                    if (er.Message == "The specified blob does not exist.")
+                    if (er.Message == BlobDoesntExist || er.Message.Contains(BlobNotFound))
                         await appendBlob.CreateOrReplaceAsync().NoContext();
                     else if (er.HResult == -2146233088)
                     {

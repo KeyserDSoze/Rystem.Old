@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal class QueueManager<TEntity> : IQueueManager
-        where TEntity : IQueue, new()
+        where TEntity : IQueue
     {
         private readonly IDictionary<Installation, IQueueIntegration<TEntity>> Integrations = new Dictionary<Installation, IQueueIntegration<TEntity>>();
         private readonly IDictionary<Installation, QueueConfiguration> QueueConfiguration;

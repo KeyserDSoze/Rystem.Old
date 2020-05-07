@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData
 {
     internal class AggregatedDataManager<TEntity> : IAggregatedDataManager
-        where TEntity : IAggregatedData, new()
+        where TEntity : IAggregatedData
     {
         private readonly IDictionary<Installation, IAggregatedDataIntegration<TEntity>> Integrations;
         private readonly IDictionary<Installation, AggregatedDataConfiguration<TEntity>> AggregatedDataConfiguration;

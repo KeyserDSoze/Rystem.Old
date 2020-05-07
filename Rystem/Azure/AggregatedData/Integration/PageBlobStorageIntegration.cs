@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.AggregatedData
 {
     internal class PageBlobStorageIntegration<TEntity> : IAggregatedDataIntegration<TEntity>
-        where TEntity : IAggregatedData, new()
+        where TEntity : IAggregatedData
     {
         private readonly CloudBlobContainer Context;
         private readonly IAggregatedDataWriter<TEntity> Writer;

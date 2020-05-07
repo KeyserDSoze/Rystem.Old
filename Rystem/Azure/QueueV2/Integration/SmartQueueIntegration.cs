@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal partial class SmartQueueIntegration<TEntity> : IQueueIntegration<TEntity>
-        where TEntity : IQueue, new()
+        where TEntity : IQueue
     {
         private readonly string InsertQuery;
         private readonly string IfOnInsert;
