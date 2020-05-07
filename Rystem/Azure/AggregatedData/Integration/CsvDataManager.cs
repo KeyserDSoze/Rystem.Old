@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.AggregatedData.Integration
 {
-    public class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
-          where TEntity : IAggregatedData, new()
+    internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
+          where TEntity : IAggregatedData
     {
         private readonly char SplittingChar;
         private const string InCaseOfSplittedChar = "\"{0}\"";
@@ -37,7 +37,7 @@ namespace Rystem.Azure.AggregatedData.Integration
         }
         private TEntity Deserialize(string value)
         {
-            TEntity dataLake = new TEntity();
+            TEntity dataLake = (TEntity)Activator.CreateInstance(typeof(TEntity));
             string[] splitting = SplittingRegex.Split(value).Where(x => !string.IsNullOrWhiteSpace(x) && x[0] != SplittingChar).ToArray();
             int count = 0;
             foreach (PropertyInfo propertyInfo in Property(dataLake.GetType()))
