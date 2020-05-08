@@ -20,11 +20,11 @@ namespace Rystem.Cache
     }
     public class InCloudMultitonProperties : ExpiringProperties
     {
-        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, ExpireTime expireTime, int numberOfClients = 10) : this(connectionString, cloudType, (int)expireTime, numberOfClients)
+        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, ExpireTime expireTime, int numberOfClients = 5) : this(connectionString, cloudType, (int)expireTime, numberOfClients)
         {
         }
 
-        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, int secondsToExpire, int numberOfClients = 10) : base(secondsToExpire)
+        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, int secondsToExpire, int numberOfClients = 5) : base(secondsToExpire)
         {
             this.ConnectionString = connectionString;
             this.CloudType = cloudType;
