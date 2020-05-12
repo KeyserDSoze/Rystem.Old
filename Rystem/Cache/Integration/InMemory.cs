@@ -8,20 +8,23 @@ namespace Rystem.Cache
     internal class InMemory<T> : IMultitonIntegration<T>
         where T : IMultiton, new()
     {
-        private readonly int ExpireMultiton = 0;
+        private readonly ExpiringProperties ExpiringProperties;
         private readonly static Dictionary<string, Dummy> Instances = new Dictionary<string, Dummy>();
         internal InMemory(ExpiringProperties configuration)
-            => ExpireMultiton = configuration.ExpireSeconds;
+            => ExpiringProperties = configuration;
         public T Instance(string key)
             => Instances[key].Instance;
         public bool Update(string key, T value, TimeSpan expireTime)
         {
-            long multitonExpireTime = ExpireMultiton;
+            if (value == null)
+                return false;
+            long multitonExpireTime = ExpiringProperties.ExpireSeconds;
             if (expireTime != default)
                 multitonExpireTime = (long)expireTime.TotalSeconds;
             if (!Instances.ContainsKey(key))
                 Instances.Add(key, new Dummy());
-            Instances[key].Instance = value;
+            if (Instances[key].Instance == null || !ExpiringProperties.Consistency || Instances[key].Instance.ToDefaultJson() != value.ToDefaultJson())
+                Instances[key].Instance = value;
             if (multitonExpireTime > (int)ExpireTime.Infinite)
                 Instances[key].ExpiringTime = DateTime.UtcNow.AddSeconds(multitonExpireTime).Ticks;
             return true;
@@ -30,7 +33,7 @@ namespace Rystem.Cache
         {
             if (Instances.ContainsKey(key))
             {
-                if (ExpireMultiton == (int)ExpireTime.Infinite || (Instances[key]?.ExpiringTime ?? 0) >= DateTime.UtcNow.Ticks)
+                if (ExpiringProperties.ExpireSeconds == (int)ExpireTime.Infinite || (Instances[key]?.ExpiringTime ?? 0) >= DateTime.UtcNow.Ticks)
                     return true;
                 else
                     Instances.Remove(key);

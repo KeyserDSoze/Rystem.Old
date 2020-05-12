@@ -24,7 +24,7 @@ namespace Rystem.Cache
         {
         }
 
-        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, int secondsToExpire, int numberOfClients = 5) : base(secondsToExpire)
+        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, int secondsToExpire, int numberOfClients = 5) : base(secondsToExpire, false)
         {
             this.ConnectionString = connectionString;
             this.CloudType = cloudType;
@@ -38,10 +38,14 @@ namespace Rystem.Cache
     public class ExpiringProperties
     {
         public int ExpireSeconds { get; }
-        public TimeSpan ExpireTimeSpan => TimeSpan.FromSeconds(this.ExpireSeconds);
-        public ExpiringProperties(ExpireTime expireTime)
-            => this.ExpireSeconds = (int)expireTime;
-        public ExpiringProperties(int secondsToExpire)
-            => ExpireSeconds = secondsToExpire;
+        public bool Consistency { get; }
+        public TimeSpan ExpireTimeSpan
+            => TimeSpan.FromSeconds(this.ExpireSeconds);
+        public ExpiringProperties(ExpireTime expireTime, bool consistency = false) : this((int)expireTime, consistency) { }
+        public ExpiringProperties(int secondsToExpire, bool consistency)
+        {
+            ExpireSeconds = secondsToExpire;
+            Consistency = consistency;
+        }
     }
 }
