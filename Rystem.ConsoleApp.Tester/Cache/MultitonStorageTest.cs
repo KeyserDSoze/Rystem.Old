@@ -57,12 +57,12 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         {
             MultitonInstaller.Configure<SmallTableKey, SmallTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.FiveSeconds)));
         }
-        public SmallTable Fetch()
+        public Task<SmallTable> FetchAsync()
         {
-            return new SmallTable()
+            return Task.FromResult(new SmallTable()
             {
                 Id = this.Id
-            };
+            });
         }
     }
     public class SmallTable : IMultiton

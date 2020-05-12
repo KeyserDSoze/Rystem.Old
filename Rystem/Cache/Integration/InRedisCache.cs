@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
@@ -42,34 +43,34 @@ namespace Rystem.Cache
                     return connectionMultiplexer;
                 }));
         }
-        public T Instance(string key)
+        public async Task<T> InstanceAsync(string key)
         {
-            string json = Cache.StringGet(CloudKeyToString(key));
+            string json = await Cache.StringGetAsync(CloudKeyToString(key)).NoContext();
             return json.FromDefaultJson<T>();
         }
-        public bool Update(string key, T value, TimeSpan expiringTime)
+        public async Task<bool> UpdateAsync(string key, T value, TimeSpan expiringTime)
         {
             bool code;
             if (expiringTime == default)
                 expiringTime = ExpireCache;
             if (expiringTime.Ticks > 0)
-                code = Cache.StringSet(CloudKeyToString(key), value.ToDefaultJson(), expiringTime);
+                code = await Cache.StringSetAsync(CloudKeyToString(key), value.ToDefaultJson(), expiringTime).NoContext();
             else
-                code = Cache.StringSet(CloudKeyToString(key), value.ToDefaultJson());
+                code = await Cache.StringSetAsync(CloudKeyToString(key), value.ToDefaultJson()).NoContext();
             return code;
         }
-        public bool Exists(string key)
-            => Cache.KeyExists(CloudKeyToString(key));
-        public bool Delete(string key)
-            => Cache.KeyDelete(CloudKeyToString(key));
-        public IEnumerable<string> List()
+        public async Task<bool> ExistsAsync(string key)
+            => await Cache.KeyExistsAsync(CloudKeyToString(key)).NoContext();
+        public async Task<bool> DeleteAsync(string key)
+            => await Cache.KeyDeleteAsync(CloudKeyToString(key)).NoContext();
+        public Task<IEnumerable<string>> ListAsync()
         {
             string toReplace = $"{FullName}{MultitonConst.Separator}";
             List<string> keys = new List<string>();
             foreach (string redisKey in Cache.Multiplexer.GetServer(Cache.Multiplexer.GetEndPoints().First()).Keys())
                 if (redisKey.Contains(toReplace))
                     keys.Add(redisKey.Replace(toReplace, string.Empty));
-            return keys;
+            return Task.FromResult(keys.Select(x => x));
         }
         private string CloudKeyToString(string keyString)
            => $"{FullName}{MultitonConst.Separator}{keyString}";

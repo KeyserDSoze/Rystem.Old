@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace System
 {
@@ -18,35 +19,40 @@ namespace System
                 valueBuilder.Append($"{MultitonConst.Separator}{propertyInfo.GetValue(multitonKey)}");
             return valueBuilder.ToString();
         }
-        private readonly static Dictionary<string, IMultitonManager> Managers = new Dictionary<string, IMultitonManager>();
-        private readonly static object TrafficLight = new object();
-        private static IMultitonManager Manager<TEntry>(Type keyType)
+        private class ManagerContainer<TEntry>
+             where TEntry : IMultiton, new()
+        {
+            public readonly static Dictionary<string, IMultitonManager<TEntry>> Managers = new Dictionary<string, IMultitonManager<TEntry>>();
+            public readonly static object TrafficLight = new object();
+        }
+        private static IMultitonManager<TEntry> Manager<TEntry>(Type keyType)
             where TEntry : IMultiton, new()
         {
-            if (!Managers.ContainsKey(keyType.FullName))
-                lock (TrafficLight)
-                    if (!Managers.ContainsKey(keyType.FullName))
-                        Managers.Add(keyType.FullName, new MultitonManager<TEntry>(MultitonInstaller.GetConfiguration(keyType)));
-            return Managers[keyType.FullName];
+            if (!ManagerContainer<TEntry>.Managers.ContainsKey(keyType.FullName))
+                lock (ManagerContainer<TEntry>.TrafficLight)
+                    if (!ManagerContainer<TEntry>.Managers.ContainsKey(keyType.FullName))
+                        ManagerContainer<TEntry>.Managers.Add(keyType.FullName, new MultitonManager<TEntry>(MultitonInstaller.GetConfiguration(keyType)));
+            return ManagerContainer<TEntry>.Managers[keyType.FullName];
         }
-        public static TEntry Instance<TEntry>(this IMultitonKey<TEntry> entry)
+
+        public static async Task<TEntry> InstanceAsync<TEntry>(this IMultitonKey<TEntry> entry)
             where TEntry : IMultiton, new()
-            => Manager<TEntry>(entry.GetType()).Instance(entry);
-        public static bool Remove<TEntry>(this IMultitonKey<TEntry> entry)
+            => await Manager<TEntry>(entry.GetType()).InstanceAsync(entry).NoContext();
+        public static async Task<bool> RemoveAsync<TEntry>(this IMultitonKey<TEntry> entry)
             where TEntry : IMultiton, new()
-            => Manager<TEntry>(entry.GetType()).Delete(entry);
-        public static bool Restore<TEntry>(this IMultitonKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
-            where TEntry : IMultiton, new()
-            => Manager<TEntry>(entry.GetType()).Update(entry, value, expiringTime);
-        public static bool IsPresent<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
-            => Manager<TEntry>(entry.GetType()).Exists(entry);
-        public static IList<IMultitonKey<TEntry>> Keys<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
+            => await Manager<TEntry>(entry.GetType()).DeleteAsync(entry).NoContext();
+        public static async Task<bool> RestoreAsync<TEntry>(this IMultitonKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
+           where TEntry : IMultiton, new()
+           => await Manager<TEntry>(entry.GetType()).UpdateAsync(entry, value, expiringTime).NoContext();
+        public static async Task<bool> IsPresentAsync<TEntry>(this IMultitonKey<TEntry> entry)
+           where TEntry : IMultiton, new()
+           => await Manager<TEntry>(entry.GetType()).ExistsAsync(entry).NoContext();
+        public static async Task<IList<IMultitonKey<TEntry>>> KeysAsync<TEntry>(this IMultitonKey<TEntry> entry)
+           where TEntry : IMultiton, new()
         {
             Type keyType = entry.GetType();
             IList<IMultitonKey<TEntry>> keys = new List<IMultitonKey<TEntry>>();
-            foreach (string key in Manager<TEntry>(keyType).List())
+            foreach (string key in await Manager<TEntry>(keyType).ListAsync())
             {
                 IMultitonKey<TEntry> multitonKey = (IMultitonKey<TEntry>)Activator.CreateInstance(keyType);
                 IEnumerator<string> keyValues = PropertyValue(key);
@@ -67,5 +73,21 @@ namespace System
                     yield return s;
             }
         }
+
+        public static TEntry Instance<TEntry>(this IMultitonKey<TEntry> entry)
+            where TEntry : IMultiton, new()
+            => entry.InstanceAsync().ToResult();
+        public static bool Remove<TEntry>(this IMultitonKey<TEntry> entry)
+            where TEntry : IMultiton, new()
+            => entry.RemoveAsync().ToResult();
+        public static bool Restore<TEntry>(this IMultitonKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
+           where TEntry : IMultiton, new()
+           => entry.RestoreAsync(value, expiringTime).ToResult();
+        public static bool IsPresent<TEntry>(this IMultitonKey<TEntry> entry)
+            where TEntry : IMultiton, new()
+            => entry.IsPresentAsync().ToResult();
+        public static IList<IMultitonKey<TEntry>> Keys<TEntry>(this IMultitonKey<TEntry> entry)
+            where TEntry : IMultiton, new()
+            => entry.KeysAsync().ToResult();
     }
 }

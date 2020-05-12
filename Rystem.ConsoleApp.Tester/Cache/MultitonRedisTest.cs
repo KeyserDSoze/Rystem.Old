@@ -54,13 +54,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class ServiceKey : IMultitonKey<Service>
     {
         public int Id { get; set; }
-        public Service Fetch()
+        public Task<Service> FetchAsync()
         {
-            return new Service()
+            return Task.FromResult(new Service()
             {
                 A = Alea.GetTimedKey(),
                 C = Alea.GetNumber(100)
-            };
+            });
         }
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()

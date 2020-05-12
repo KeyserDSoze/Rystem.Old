@@ -1,7 +1,9 @@
 ﻿using Rystem.Cache;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
@@ -12,12 +14,12 @@ namespace Rystem.Cache
         private readonly static Dictionary<string, Dummy> Instances = new Dictionary<string, Dummy>();
         internal InMemory(ExpiringProperties configuration)
             => ExpiringProperties = configuration;
-        public T Instance(string key)
-            => Instances[key].Instance;
-        public bool Update(string key, T value, TimeSpan expireTime)
+        public Task<T> InstanceAsync(string key)
+            => Task.FromResult(Instances[key].Instance);
+        public Task<bool> UpdateAsync(string key, T value, TimeSpan expireTime)
         {
             if (value == null)
-                return false;
+                return Task.FromResult(false);
             long multitonExpireTime = ExpiringProperties.ExpireSeconds;
             if (expireTime != default)
                 multitonExpireTime = (long)expireTime.TotalSeconds;
@@ -27,24 +29,24 @@ namespace Rystem.Cache
                 Instances[key].Instance = value;
             if (multitonExpireTime > (int)ExpireTime.Infinite)
                 Instances[key].ExpiringTime = DateTime.UtcNow.AddSeconds(multitonExpireTime).Ticks;
-            return true;
+            return Task.FromResult(true);
         }
-        public bool Exists(string key)
+        public Task<bool> ExistsAsync(string key)
         {
             if (Instances.ContainsKey(key))
             {
                 if (ExpiringProperties.ExpireSeconds == (int)ExpireTime.Infinite || (Instances[key]?.ExpiringTime ?? 0) >= DateTime.UtcNow.Ticks)
-                    return true;
+                    return Task.FromResult(true);
                 else
                     Instances.Remove(key);
             }
-            return false;
+            return Task.FromResult(false);
         }
 
-        public bool Delete(string key)
-            => Instances.Remove(key);
-        public IEnumerable<string> List()
-            => Instances.Keys;
+        public Task<bool> DeleteAsync(string key)
+            => Task.FromResult(Instances.Remove(key));
+        public Task<IEnumerable<string>> ListAsync()
+            => Task.FromResult(Instances.Keys.Select(x => x));
         private class Dummy
         {
             internal T Instance { get; set; }

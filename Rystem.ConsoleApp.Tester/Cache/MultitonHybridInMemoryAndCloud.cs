@@ -33,12 +33,12 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         {
             MultitonInstaller.Configure<HybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true)));
         }
-        public HybridTable Fetch()
+        public Task<HybridTable> FetchAsync()
         {
-            return new HybridTable()
+            return Task.FromResult(new HybridTable()
             {
                 Id = 5
-            };
+            });
         }
     }
     public class SecondHybridTableKey : IMultitonKey<HybridTable>
@@ -49,12 +49,12 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         {
             MultitonInstaller.Configure<SecondHybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true)));
         }
-        public HybridTable Fetch()
+        public Task<HybridTable> FetchAsync()
         {
-            return new HybridTable()
+            return Task.FromResult(new HybridTable()
             {
                 Id = this.Id
-            };
+            });
         }
     }
     public class HybridTable : IMultiton

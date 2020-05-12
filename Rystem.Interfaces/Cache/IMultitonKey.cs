@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
@@ -18,6 +19,6 @@ namespace Rystem.Cache
         /// </summary>
         /// <param name="key">Your istance Id.</param>
         /// <returns>This istance.</returns>
-        TCache Fetch();
+        Task<TCache> FetchAsync();
     }
 }

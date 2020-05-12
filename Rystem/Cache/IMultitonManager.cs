@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
-    internal interface IMultitonManager
+    internal interface IMultitonManager<TCache>
+        where TCache : IMultiton, new()
     {
-        TEntry Instance<TEntry>(IMultitonKey<TEntry> key) where TEntry : IMultiton, new();
-        bool Update<TEntry>(IMultitonKey<TEntry> key, TEntry value, TimeSpan expiringTime) where TEntry : IMultiton, new();
-        bool Exists(IMultiKey key);
-        bool Delete(IMultiKey key);
-        IEnumerable<string> List();
+        Task<TCache> InstanceAsync(IMultitonKey<TCache> key);
+        Task<bool> UpdateAsync(IMultitonKey<TCache> key, TCache value, TimeSpan expiringTime);
+        Task<bool> ExistsAsync(IMultiKey key);
+        Task<bool> DeleteAsync(IMultiKey key);
+        Task<IEnumerable<string>> ListAsync();
     }
 }

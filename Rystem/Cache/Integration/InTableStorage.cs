@@ -26,13 +26,13 @@ namespace Rystem.Cache
             Context = tableClient.GetTableReference(TableName);
             Context.CreateIfNotExistsAsync().ToResult();
         }
-        public T Instance(string key)
+        public async Task<T> InstanceAsync(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = Context.ExecuteAsync(operation).ToResult();
+            TableResult result = await Context.ExecuteAsync(operation).NoContext();
             return result.Result != default ? ((RystemCache)result.Result).Data.FromDefaultJson<T>() : default;
         }
-        public bool Update(string key, T value, TimeSpan expiringTime)
+        public async Task<bool> UpdateAsync(string key, T value, TimeSpan expiringTime)
         {
             long expiring = ExpireCache;
             if (expiringTime != default)
@@ -45,10 +45,10 @@ namespace Rystem.Cache
                 E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);
-            TableResult esito = Context.ExecuteAsync(operation).ToResult();
-            return (esito.HttpStatusCode == 204);
+            TableResult result = await Context.ExecuteAsync(operation).NoContext();
+            return result.HttpStatusCode == 204;
         }
-        public bool Delete(string key)
+        public async Task<bool> DeleteAsync(string key)
         {
             RystemCache rystemCache = new RystemCache()
             {
@@ -59,8 +59,8 @@ namespace Rystem.Cache
             TableOperation operation = TableOperation.Delete(rystemCache);
             try
             {
-                TableResult esito = Context.ExecuteAsync(operation).ToResult();
-                return (esito.HttpStatusCode == 204);
+                TableResult result = await Context.ExecuteAsync(operation).NoContext();
+                return result.HttpStatusCode == 204;
             }
             catch (StorageException er)
             {
@@ -69,21 +69,21 @@ namespace Rystem.Cache
                 throw er;
             }
         }
-        public bool Exists(string key)
+        public async Task<bool> ExistsAsync(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = Context.ExecuteAsync(operation).ToResult();
+            TableResult result = await Context.ExecuteAsync(operation).NoContext();
             if (result.Result == null)
                 return false;
             RystemCache cached = (RystemCache)result.Result;
             if (DateTime.UtcNow.Ticks > cached.E)
             {
-                this.Delete(key);
+                await this.DeleteAsync(key).NoContext();
                 return false;
             }
             return true;
         }
-        public IEnumerable<string> List()
+        public async Task<IEnumerable<string>> ListAsync()
         {
             TableQuery tableQuery = new TableQuery
             {
@@ -93,7 +93,7 @@ namespace Rystem.Cache
             List<string> keys = new List<string>();
             do
             {
-                TableQuerySegment tableQuerySegment = Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).ToResult();
+                TableQuerySegment tableQuerySegment = await Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).NoContext();
                 IEnumerable<string> keysFromQuery = tableQuerySegment.Results.Select(x => x.RowKey);
                 tableContinuationToken = tableQuerySegment.ContinuationToken;
                 keys.AddRange(keysFromQuery);

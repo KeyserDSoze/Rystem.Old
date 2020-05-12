@@ -48,13 +48,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-        public Service3 Fetch()
+        public Task<Service3> FetchAsync()
         {
-            return new Service3()
+            return Task.FromResult(new Service3()
             {
                 A = Alea.GetTimedKey(),
                 C = Alea.GetNumber(100)
-            };
+            });
         }
         static Service3Key()
             => MultitonInstaller.Configure<Service3Key, Service3>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.BlobStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds)));

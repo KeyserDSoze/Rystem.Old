@@ -39,7 +39,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             Thread.Sleep(800);
             if (serviceKey.IsPresent())
                 return false;
-            serviceKey.Restore(expiringTime : new TimeSpan(0, 0, 5));
+            serviceKey.Restore(expiringTime: new TimeSpan(0, 0, 5));
             Thread.Sleep(2000);
             if (!serviceKey.IsPresent())
                 return false;
@@ -52,13 +52,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class Service2Key : IMultitonKey<Service2>
     {
         public int Id { get; set; }
-        public Service2 Fetch()
+        public Task<Service2> FetchAsync()
         {
-            return new Service2()
+            return Task.FromResult(new Service2()
             {
                 A = Alea.GetTimedKey(),
                 C = Alea.GetNumber(100)
-            };
+            });
         }
         static Service2Key()
         {

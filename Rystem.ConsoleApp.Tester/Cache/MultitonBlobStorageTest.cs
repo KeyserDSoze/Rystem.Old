@@ -59,12 +59,12 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             MultitonInstaller.Configure<SmallBlobKey, SmallBlob>(
                 new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.BlobStorage, ExpireTime.FiveSeconds)));
         }
-        public SmallBlob Fetch()
+        public Task<SmallBlob> FetchAsync()
         {
-            return new SmallBlob()
+            return Task.FromResult(new SmallBlob()
             {
                 Id = this.Id
-            };
+            });
         }
     }
     public class SmallBlob : IMultiton
