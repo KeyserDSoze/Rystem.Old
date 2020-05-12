@@ -1,6 +1,7 @@
 ﻿using Rystem.Cache;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,17 +44,26 @@ namespace Rystem.Cache
         private static readonly object UpdatePromiseTrafficLight = new object();
         private static readonly Dictionary<string, PromisedCache> Promised = new Dictionary<string, PromisedCache>();
         private static readonly Dictionary<string, UpdatePromisedCache> UpdatePromised = new Dictionary<string, UpdatePromisedCache>();
+
         public async Task<TCache> InstanceAsync(IMultitonKey<TCache> key)
         {
             TCache cache = default;
             string keyString = key.ToKeyString();
-            if ((MemoryIsActive && !(await InMemory.ExistsAsync(keyString).NoContext())) || (CloudIsActive && !(await InCloud.ExistsAsync(keyString).NoContext())))
+            bool cloudChecked = false;
+            if ((MemoryIsActive && !(await InMemory.ExistsAsync(keyString).NoContext())) || ((cloudChecked = true) && CloudIsActive && !(await InCloud.ExistsAsync(keyString).NoContext())))
             {
                 if (!Promised.ContainsKey(keyString))
                     lock (PromiseTrafficLight)
                     {
                         if (!Promised.ContainsKey(keyString))
-                            Promised.Add(keyString, new PromisedCache(keyString, key.FetchAsync));
+                        {
+                            Fetcher fetcher = CloudIsActive ?
+                                new Fetcher(keyString, key.FetchAsync, CloudIsActive, cloudChecked, InCloud.InstanceAsync, InCloud.ExistsAsync)
+                                : new Fetcher(keyString, key.FetchAsync);
+                            Promised.Add(keyString, new PromisedCache(keyString,
+                                fetcher.GetValueAsync
+                            ));
+                        }
                     }
                 while (Promised.ContainsKey(keyString) && !Promised[keyString].IsCompleted)
                 {
@@ -65,10 +75,10 @@ namespace Rystem.Cache
                     {
                         if (Promised.ContainsKey(keyString))
                         {
-                            cache = Promised[keyString].Value.Result;
+                            cache = Promised[keyString].Value.Result.CachedData;
                             if (MemoryIsActive)
                                 InMemory.UpdateAsync(keyString, cache, default).ToResult();
-                            if (CloudIsActive)
+                            if (CloudIsActive && !Promised[keyString].Value.Result.FromCloud)
                                 UpdatePromised.Add(keyString, new UpdatePromisedCache(keyString, cache, InCloud.UpdateAsync));
                             Promised.Remove(keyString);
                         }
@@ -131,15 +141,53 @@ namespace Rystem.Cache
                 return await InMemory.ListAsync().NoContext();
             return null;
         }
+        private class Fetcher
+        {
+            public string Key { get; }
+            public Func<Task<TCache>> FetcherFunc { get; }
+            public bool CloudIsActive { get; }
+            public bool CloudChecked { get; }
+            public Func<string, Task<TCache>> CloudFetcher { get; }
+            public Func<string, Task<bool>> CloudExists { get; }
+            public Fetcher(string key, Func<Task<TCache>> fetcher, bool cloudIsActive, bool cloudChecked, Func<string, Task<TCache>> cloudFetcher, Func<string, Task<bool>> cloudExists) : this(key, fetcher)
+            {
+                this.CloudIsActive = cloudIsActive;
+                this.CloudChecked = cloudChecked;
+                this.CloudFetcher = cloudFetcher;
+                this.CloudExists = cloudExists;
+            }
+            public Fetcher(string key, Func<Task<TCache>> fetcher)
+            {
+                this.Key = key;
+                this.FetcherFunc = fetcher;
+            }
+            public async Task<FetcherResult> GetValueAsync()
+            {
+                if (CloudIsActive && !CloudChecked && await CloudExists.Invoke(Key))
+                    return new FetcherResult(await CloudFetcher.Invoke(Key), true);
+                else
+                    return new FetcherResult(await FetcherFunc.Invoke(), false);
+            }
+        }
+        private class FetcherResult
+        {
+            public TCache CachedData { get; }
+            public bool FromCloud { get; }
+            public FetcherResult(TCache value, bool fromCloud)
+            {
+                this.CachedData = value;
+                this.FromCloud = fromCloud;
+            }
+        }
         private class PromisedCache
         {
             public string Key { get; }
-            public PromisedCache(string key, Func<Task<TCache>> fetch)
+            public PromisedCache(string key, Func<Task<FetcherResult>> fetch)
             {
                 this.Key = key;
                 this.Value = fetch.Invoke();
             }
-            public Task<TCache> Value { get; set; }
+            public Task<FetcherResult> Value { get; set; }
             public bool HasValue => this.Value.Status == TaskStatus.RanToCompletion;
             public bool IsCompleted => this.Value.Status == TaskStatus.RanToCompletion || this.Value.Status == TaskStatus.Faulted || this.Value.Status == TaskStatus.Canceled;
         }
