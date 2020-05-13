@@ -27,7 +27,7 @@ namespace Rystem.Azure.NoSql
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(noSqlConfiguration.ConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             this.Context = tableClient.GetTableReference(noSqlConfiguration.Name);
-            this.Context.CreateIfNotExistsAsync().ToResult();
+            try { this.Context.CreateIfNotExistsAsync().ToResult(); } catch { }
             foreach (PropertyInfo pi in typeof(TEntity).GetProperties())
             {
                 if (pi.GetCustomAttribute(typeof(NoTableStorageProperty)) != null)

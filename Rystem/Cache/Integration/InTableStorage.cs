@@ -69,19 +69,19 @@ namespace Rystem.Cache
                 throw er;
             }
         }
-        public async Task<bool> ExistsAsync(string key)
+        public async Task<MultitonStatus<T>> ExistsAsync(string key)
         {
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
             TableResult result = await Context.ExecuteAsync(operation).NoContext();
             if (result.Result == null)
-                return false;
+                return MultitonStatus<T>.NotOk();
             RystemCache cached = (RystemCache)result.Result;
             if (DateTime.UtcNow.Ticks > cached.E)
             {
                 await this.DeleteAsync(key).NoContext();
-                return false;
+                return MultitonStatus<T>.NotOk();
             }
-            return true;
+            return MultitonStatus<T>.Ok(cached.Data.FromDefaultJson<T>());
         }
         public async Task<IEnumerable<string>> ListAsync()
         {

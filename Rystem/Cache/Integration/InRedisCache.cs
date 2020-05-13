@@ -59,8 +59,8 @@ namespace Rystem.Cache
                 code = await Cache.StringSetAsync(CloudKeyToString(key), value.ToDefaultJson()).NoContext();
             return code;
         }
-        public async Task<bool> ExistsAsync(string key)
-            => await Cache.KeyExistsAsync(CloudKeyToString(key)).NoContext();
+        public async Task<MultitonStatus<T>> ExistsAsync(string key)
+            => await Cache.KeyExistsAsync(CloudKeyToString(key)).NoContext() ? MultitonStatus<T>.Ok() : MultitonStatus<T>.NotOk();
         public async Task<bool> DeleteAsync(string key)
             => await Cache.KeyDeleteAsync(CloudKeyToString(key)).NoContext();
         public Task<IEnumerable<string>> ListAsync()

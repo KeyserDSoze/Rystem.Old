@@ -11,7 +11,7 @@ namespace Rystem.Cache
     {
         Task<T> InstanceAsync(string key);
         Task<bool> UpdateAsync(string key, T value, TimeSpan expiringTime);
-        Task<bool> ExistsAsync(string key);
+        Task<MultitonStatus<T>> ExistsAsync(string key);
         Task<bool> DeleteAsync(string key);
         Task<IEnumerable<string>> ListAsync();
     }

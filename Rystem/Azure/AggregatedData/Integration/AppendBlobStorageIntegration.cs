@@ -22,7 +22,7 @@ namespace Rystem.Azure.AggregatedData
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             this.Context = Client.GetContainerReference(configuration.Name.ToLower());
-            this.Context.CreateIfNotExistsAsync().ToResult();
+             this.Context.CreateIfNotExistsAsync().ToResult();
             this.Writer = configuration.Writer ?? new CsvDataManager<TEntity>();
             this.ListReader = configuration.ListReader ?? new CsvDataManager<TEntity>();
         }

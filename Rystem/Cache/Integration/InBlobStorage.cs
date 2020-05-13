@@ -54,7 +54,7 @@ namespace Rystem.Cache
 
         public async Task<bool> DeleteAsync(string key)
             => await Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().NoContext();
-        public async Task<bool> ExistsAsync(string key)
+        public async Task<MultitonStatus<T>> ExistsAsync(string key)
         {
             ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
             if (await cloudBlob.ExistsAsync().NoContext())
@@ -65,12 +65,12 @@ namespace Rystem.Cache
                     if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
                     {
                         await this.DeleteAsync(key).NoContext();
-                        return false;
+                        return MultitonStatus<T>.NotOk();
                     }
                 }
-                return true;
+                return MultitonStatus<T>.Ok();
             }
-            return false;
+            return MultitonStatus<T>.NotOk();
         }
 
         public async Task<IEnumerable<string>> ListAsync()
