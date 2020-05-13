@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json.Bson;
-using Rystem.Cache;
+﻿using Rystem.Cache;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -16,7 +16,6 @@ namespace Rystem.Cache
         private readonly bool MemoryIsActive = false;
         private readonly IMultitonIntegration<TCache> InCloud;
         private readonly bool CloudIsActive = false;
-        private readonly static object TrafficLight = new object();
         public MultitonManager(MultitonProperties configuration)
         {
             if (MemoryIsActive = configuration.InMemoryProperties != null && configuration.InMemoryProperties.ExpireSeconds != (int)ExpireTime.TurnOff)
@@ -41,100 +40,10 @@ namespace Rystem.Cache
                 }
             }
         }
-        private const int TrafficLightPoolsCount = 10000;
-        static MultitonManager()
-        {
-            for (int i = 0; i < TrafficLightPoolsCount; i++)
-            {
-                PromiseTrafficLights.Add(new object());
-                RemovePromiseTrafficLights.Add(new object());
-                UpdatePromiseTrafficLights.Add(new object());
-            }
-        }
-        private static readonly List<object> PromiseTrafficLights = new List<object>();
-        private static readonly List<object> RemovePromiseTrafficLights = new List<object>();
-        private static readonly List<object> UpdatePromiseTrafficLights = new List<object>();
-        private static readonly Dictionary<string, PromisedCache> Promised = new Dictionary<string, PromisedCache>();
-        private static readonly Dictionary<string, UpdatePromisedCache> UpdatePromised = new Dictionary<string, UpdatePromisedCache>();
 
-        private class Instancer
-        {
-            private readonly IMultitonKey<TCache> Key;
-            private readonly int PoolTrafficLight;
-            private readonly string KeyString;
-            private readonly bool CloudIsActive;
-            private readonly bool CloudChecked;
-            private readonly IMultitonIntegration<TCache> InCloud;
-            private readonly bool MemoryIsActive;
-            private readonly IMultitonIntegration<TCache> InMemory;
-            public TCache Cache { get; private set; }
-            private int Status;
-            public Instancer(IMultitonKey<TCache> key, int poolTrafficLight, string keyString, bool cloudIsActive, bool cloudChecked, IMultitonIntegration<TCache> incloud, bool memoryIsActive, IMultitonIntegration<TCache> inMemory)
-            {
-                this.Key = key;
-                this.PoolTrafficLight = poolTrafficLight;
-                this.KeyString = keyString;
-                this.CloudChecked = cloudChecked;
-                this.CloudIsActive = cloudIsActive;
-                this.InCloud = incloud;
-                this.InMemory = inMemory;
-                this.MemoryIsActive = memoryIsActive;
-            }
-            public bool IsExecuted
-                => this.Status == 1;
-            public bool HasValue
-                => this.Cache != null;
-            public async void Execute(object state)
-            {
-                if (!Promised.ContainsKey(KeyString))
-                {
-                    lock (PromiseTrafficLights[PoolTrafficLight])
-                    {
-                        if (!Promised.ContainsKey(KeyString))
-                        {
-                            Fetcher fetcher = CloudIsActive ?
-                                new Fetcher(KeyString, Key.FetchAsync, CloudIsActive, CloudChecked, InCloud.InstanceAsync, InCloud.ExistsAsync)
-                                : new Fetcher(KeyString, Key.FetchAsync);
-                            Promised.Add(KeyString, new PromisedCache(KeyString,
-                                fetcher.GetValueAsync
-                            ));
-                        }
-                    }
-                }
-                while (Promised.ContainsKey(KeyString) && !Promised[KeyString].IsCompleted)
-                {
-                    await Task.Delay(100).NoContext();
-                }
-                if (Promised.ContainsKey(KeyString) && Promised[KeyString].HasValue)
-                {
-                    lock (RemovePromiseTrafficLights[PoolTrafficLight])
-                    {
-                        if (Promised.ContainsKey(KeyString))
-                        {
-                            Cache = Promised[KeyString].Value.Result.CachedData;
-                            if (MemoryIsActive)
-                                InMemory.UpdateAsync(KeyString, Cache, default).ToResult();
-                            if (CloudIsActive && !Promised[KeyString].Value.Result.FromCloud)
-                                UpdatePromised.Add(KeyString, new UpdatePromisedCache(KeyString, Cache, InCloud.UpdateAsync));
-                            Promised.Remove(KeyString);
-                        }
-                    }
-                    while (UpdatePromised.ContainsKey(KeyString) && !UpdatePromised[KeyString].IsCompleted)
-                    {
-                        await Task.Delay(100).NoContext();
-                    }
-                    if (UpdatePromised.ContainsKey(KeyString))
-                    {
-                        lock (UpdatePromiseTrafficLights[PoolTrafficLight])
-                        {
-                            if (UpdatePromised.ContainsKey(KeyString))
-                                UpdatePromised.Remove(KeyString);
-                        }
-                    }
-                }
-                this.Status = 1;
-            }
-        }
+        private static readonly ConcurrentDictionary<string, Lazy<PromisedCache>> Promised = new ConcurrentDictionary<string, Lazy<PromisedCache>>();
+        private static readonly ConcurrentDictionary<string, Lazy<UpdatePromisedCache>> UpdatePromised = new ConcurrentDictionary<string, Lazy<UpdatePromisedCache>>();
+
         public async Task<TCache> InstanceAsync(IMultitonKey<TCache> key)
         {
             TCache cache = default;
@@ -142,25 +51,25 @@ namespace Rystem.Cache
             bool cloudChecked = false;
             if ((MemoryIsActive && !(await InMemory.ExistsAsync(keyString).NoContext())) || ((cloudChecked = true) && CloudIsActive && !(await InCloud.ExistsAsync(keyString).NoContext())))
             {
-                Instancer instancer = new Instancer(
-                    key,
-                     Math.Abs(keyString.GetHashCode() % TrafficLightPoolsCount),
-                     keyString,
-                     CloudIsActive,
-                     cloudChecked,
-                     InCloud,
-                     MemoryIsActive,
-                     InMemory
-                    );
-                Thread thread = new Thread(instancer.Execute);
-                thread.Priority = ThreadPriority.Highest;
-                thread.Start();
-                while (!instancer.IsExecuted)
+                Instancer instance = new Instancer(key, keyString, cloudChecked, InMemory, InCloud);
+                Promised.TryAdd(keyString,
+                    new Lazy<PromisedCache>(() => new PromisedCache(instance,
+                    instance.GetValueAsync
+                ), LazyThreadSafetyMode.None));
+                while (Promised.ContainsKey(keyString) && !Promised[keyString].Value.IsCompleted)
+                    await Task.Delay(200).NoContext();
+                UpdatePromised.TryAdd(keyString,
+                    new Lazy<UpdatePromisedCache>(() => new UpdatePromisedCache(Promised[keyString].Value),
+                    LazyThreadSafetyMode.None));
+                while (UpdatePromised.ContainsKey(keyString) && !UpdatePromised[keyString].Value.IsCompleted)
                 {
-                    await Task.Delay(100).NoContext();
+                    if (cache == null && Promised.ContainsKey(keyString))
+                        cache = Promised[keyString].Value.Instance.Result.CachedData;
+                    await Task.Delay(200).NoContext();
                 }
-                if (instancer.HasValue)
-                    cache = instancer.Cache;
+                if (UpdatePromised.TryRemove(keyString, out Lazy<UpdatePromisedCache> entity))
+                    cache = entity.Value.PromisedCache.Instance.Result.CachedData;
+                Promised.TryRemove(keyString, out _);
             }
             if (cache != null)
                 return cache;
@@ -206,32 +115,40 @@ namespace Rystem.Cache
                 return await InMemory.ListAsync().NoContext();
             return null;
         }
-        private class Fetcher
+        private class Instancer
         {
-            public string Key { get; }
-            public Func<Task<TCache>> FetcherFunc { get; }
+            public IMultitonKey<TCache> Key { get; }
+            public string KeyString { get; }
             public bool CloudIsActive { get; }
             public bool CloudChecked { get; }
-            public Func<string, Task<TCache>> CloudFetcher { get; }
-            public Func<string, Task<bool>> CloudExists { get; }
-            public Fetcher(string key, Func<Task<TCache>> fetcher, bool cloudIsActive, bool cloudChecked, Func<string, Task<TCache>> cloudFetcher, Func<string, Task<bool>> cloudExists) : this(key, fetcher)
-            {
-                this.CloudIsActive = cloudIsActive;
-                this.CloudChecked = cloudChecked;
-                this.CloudFetcher = cloudFetcher;
-                this.CloudExists = cloudExists;
-            }
-            public Fetcher(string key, Func<Task<TCache>> fetcher)
+            public bool MemoryIsActive { get; }
+            public IMultitonIntegration<TCache> InMemory { get; }
+            public IMultitonIntegration<TCache> InCloud { get; }
+            public FetcherResult Result { get; private set; }
+            public Instancer(IMultitonKey<TCache> key, string keyString, bool cloudChecked, IMultitonIntegration<TCache> inMemory, IMultitonIntegration<TCache> inCloud)
             {
                 this.Key = key;
-                this.FetcherFunc = fetcher;
+                this.KeyString = keyString;
+                this.InMemory = inMemory;
+                this.InCloud = inCloud;
+                this.CloudIsActive = inCloud != null;
+                this.MemoryIsActive = inMemory != null;
+                this.CloudChecked = cloudChecked;
             }
             public async Task<FetcherResult> GetValueAsync()
             {
-                if (CloudIsActive && !CloudChecked && await CloudExists.Invoke(Key))
-                    return new FetcherResult(await CloudFetcher.Invoke(Key), true);
+                if (CloudIsActive && !CloudChecked && await InCloud.ExistsAsync(KeyString))
+                    return this.Result = new FetcherResult(await InCloud.InstanceAsync(KeyString), true);
                 else
-                    return new FetcherResult(await FetcherFunc.Invoke(), false);
+                    return this.Result = new FetcherResult(await Key.FetchAsync(), false);
+            }
+            public async Task<FetcherResult> UpdateValueAsync()
+            {
+                if (MemoryIsActive)
+                    await InMemory.UpdateAsync(KeyString, this.Result.CachedData, default);
+                if (CloudIsActive && !this.Result.FromCloud)
+                    await InCloud.UpdateAsync(KeyString, this.Result.CachedData, default);
+                return this.Result;
             }
         }
         private class FetcherResult
@@ -246,25 +163,25 @@ namespace Rystem.Cache
         }
         private class PromisedCache
         {
-            public string Key { get; }
-            public PromisedCache(string key, Func<Task<FetcherResult>> fetch)
+            public Instancer Instance { get; }
+            public Task<FetcherResult> Value { get; }
+            public PromisedCache(Instancer instance, Func<Task<FetcherResult>> fetch)
             {
-                this.Key = key;
+                this.Instance = instance;
                 this.Value = fetch.Invoke();
             }
-            public Task<FetcherResult> Value { get; set; }
             public bool HasValue => this.Value.Status == TaskStatus.RanToCompletion;
             public bool IsCompleted => this.Value.Status == TaskStatus.RanToCompletion || this.Value.Status == TaskStatus.Faulted || this.Value.Status == TaskStatus.Canceled;
         }
         private class UpdatePromisedCache
         {
-            public string Key { get; }
-            public UpdatePromisedCache(string key, TCache value, Func<string, TCache, TimeSpan, Task> updater)
+            public PromisedCache PromisedCache { get; }
+            public Task Value { get; }
+            public UpdatePromisedCache(PromisedCache promisedCache)
             {
-                this.Key = key;
-                this.Value = updater.Invoke(key, value, default);
+                this.PromisedCache = promisedCache;
+                this.Value = promisedCache.Instance.UpdateValueAsync();
             }
-            public Task Value { get; set; }
             public bool IsCompleted => this.Value.Status == TaskStatus.RanToCompletion || this.Value.Status == TaskStatus.Faulted || this.Value.Status == TaskStatus.Canceled;
         }
     }
