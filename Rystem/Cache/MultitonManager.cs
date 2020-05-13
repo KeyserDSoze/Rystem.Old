@@ -1,8 +1,10 @@
-﻿using Rystem.Cache;
+﻿using Newtonsoft.Json.Bson;
+using Rystem.Cache;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Rystem.Cache
@@ -39,12 +41,100 @@ namespace Rystem.Cache
                 }
             }
         }
-        private static readonly object PromiseTrafficLight = new object();
-        private static readonly object RemovePromiseTrafficLight = new object();
-        private static readonly object UpdatePromiseTrafficLight = new object();
+        private const int TrafficLightPoolsCount = 10000;
+        static MultitonManager()
+        {
+            for (int i = 0; i < TrafficLightPoolsCount; i++)
+            {
+                PromiseTrafficLights.Add(new object());
+                RemovePromiseTrafficLights.Add(new object());
+                UpdatePromiseTrafficLights.Add(new object());
+            }
+        }
+        private static readonly List<object> PromiseTrafficLights = new List<object>();
+        private static readonly List<object> RemovePromiseTrafficLights = new List<object>();
+        private static readonly List<object> UpdatePromiseTrafficLights = new List<object>();
         private static readonly Dictionary<string, PromisedCache> Promised = new Dictionary<string, PromisedCache>();
         private static readonly Dictionary<string, UpdatePromisedCache> UpdatePromised = new Dictionary<string, UpdatePromisedCache>();
 
+        private class Instancer
+        {
+            private readonly IMultitonKey<TCache> Key;
+            private readonly int PoolTrafficLight;
+            private readonly string KeyString;
+            private readonly bool CloudIsActive;
+            private readonly bool CloudChecked;
+            private readonly IMultitonIntegration<TCache> InCloud;
+            private readonly bool MemoryIsActive;
+            private readonly IMultitonIntegration<TCache> InMemory;
+            public TCache Cache { get; private set; }
+            private int Status;
+            public Instancer(IMultitonKey<TCache> key, int poolTrafficLight, string keyString, bool cloudIsActive, bool cloudChecked, IMultitonIntegration<TCache> incloud, bool memoryIsActive, IMultitonIntegration<TCache> inMemory)
+            {
+                this.Key = key;
+                this.PoolTrafficLight = poolTrafficLight;
+                this.KeyString = keyString;
+                this.CloudChecked = cloudChecked;
+                this.CloudIsActive = cloudIsActive;
+                this.InCloud = incloud;
+                this.InMemory = inMemory;
+                this.MemoryIsActive = memoryIsActive;
+            }
+            public bool IsExecuted
+                => this.Status == 1;
+            public bool HasValue
+                => this.Cache != null;
+            public async void Execute(object state)
+            {
+                if (!Promised.ContainsKey(KeyString))
+                {
+                    lock (PromiseTrafficLights[PoolTrafficLight])
+                    {
+                        if (!Promised.ContainsKey(KeyString))
+                        {
+                            Fetcher fetcher = CloudIsActive ?
+                                new Fetcher(KeyString, Key.FetchAsync, CloudIsActive, CloudChecked, InCloud.InstanceAsync, InCloud.ExistsAsync)
+                                : new Fetcher(KeyString, Key.FetchAsync);
+                            Promised.Add(KeyString, new PromisedCache(KeyString,
+                                fetcher.GetValueAsync
+                            ));
+                        }
+                    }
+                }
+                while (Promised.ContainsKey(KeyString) && !Promised[KeyString].IsCompleted)
+                {
+                    await Task.Delay(100).NoContext();
+                }
+                if (Promised.ContainsKey(KeyString) && Promised[KeyString].HasValue)
+                {
+                    lock (RemovePromiseTrafficLights[PoolTrafficLight])
+                    {
+                        if (Promised.ContainsKey(KeyString))
+                        {
+                            Cache = Promised[KeyString].Value.Result.CachedData;
+                            if (MemoryIsActive)
+                                InMemory.UpdateAsync(KeyString, Cache, default).ToResult();
+                            if (CloudIsActive && !Promised[KeyString].Value.Result.FromCloud)
+                                UpdatePromised.Add(KeyString, new UpdatePromisedCache(KeyString, Cache, InCloud.UpdateAsync));
+                            Promised.Remove(KeyString);
+                        }
+                    }
+                    while (UpdatePromised.ContainsKey(KeyString) && !UpdatePromised[KeyString].IsCompleted)
+                    {
+                        await Task.Delay(100).NoContext();
+                    }
+                    if (UpdatePromised.ContainsKey(KeyString))
+                    {
+                        lock (UpdatePromiseTrafficLights[PoolTrafficLight])
+                        {
+                            if (UpdatePromised.ContainsKey(KeyString))
+                                UpdatePromised.Remove(KeyString);
+                        }
+                    }
+                }
+                this.Status = 1;
+            }
+        }
         public async Task<TCache> InstanceAsync(IMultitonKey<TCache> key)
         {
             TCache cache = default;
@@ -52,50 +142,25 @@ namespace Rystem.Cache
             bool cloudChecked = false;
             if ((MemoryIsActive && !(await InMemory.ExistsAsync(keyString).NoContext())) || ((cloudChecked = true) && CloudIsActive && !(await InCloud.ExistsAsync(keyString).NoContext())))
             {
-                if (!Promised.ContainsKey(keyString))
-                    lock (PromiseTrafficLight)
-                    {
-                        if (!Promised.ContainsKey(keyString))
-                        {
-                            Fetcher fetcher = CloudIsActive ?
-                                new Fetcher(keyString, key.FetchAsync, CloudIsActive, cloudChecked, InCloud.InstanceAsync, InCloud.ExistsAsync)
-                                : new Fetcher(keyString, key.FetchAsync);
-                            Promised.Add(keyString, new PromisedCache(keyString,
-                                fetcher.GetValueAsync
-                            ));
-                        }
-                    }
-                while (Promised.ContainsKey(keyString) && !Promised[keyString].IsCompleted)
+                Instancer instancer = new Instancer(
+                    key,
+                     Math.Abs(keyString.GetHashCode() % TrafficLightPoolsCount),
+                     keyString,
+                     CloudIsActive,
+                     cloudChecked,
+                     InCloud,
+                     MemoryIsActive,
+                     InMemory
+                    );
+                Thread thread = new Thread(instancer.Execute);
+                thread.Priority = ThreadPriority.Highest;
+                thread.Start();
+                while (!instancer.IsExecuted)
                 {
                     await Task.Delay(100).NoContext();
                 }
-                if (Promised.ContainsKey(keyString) && Promised[keyString].HasValue)
-                {
-                    lock (RemovePromiseTrafficLight)
-                    {
-                        if (Promised.ContainsKey(keyString))
-                        {
-                            cache = Promised[keyString].Value.Result.CachedData;
-                            if (MemoryIsActive)
-                                InMemory.UpdateAsync(keyString, cache, default).ToResult();
-                            if (CloudIsActive && !Promised[keyString].Value.Result.FromCloud)
-                                UpdatePromised.Add(keyString, new UpdatePromisedCache(keyString, cache, InCloud.UpdateAsync));
-                            Promised.Remove(keyString);
-                        }
-                    }
-                    while (UpdatePromised.ContainsKey(keyString) && !UpdatePromised[keyString].IsCompleted)
-                    {
-                        await Task.Delay(100).NoContext();
-                    }
-                    if (UpdatePromised.ContainsKey(keyString))
-                    {
-                        lock (UpdatePromiseTrafficLight)
-                        {
-                            if (UpdatePromised.ContainsKey(keyString))
-                                UpdatePromised.Remove(keyString);
-                        }
-                    }
-                }
+                if (instancer.HasValue)
+                    cache = instancer.Cache;
             }
             if (cache != null)
                 return cache;
