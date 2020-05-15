@@ -62,7 +62,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         }
         static Service2Key()
         {
-            MultitonInstaller.Configure<Service2Key, Service2>(new MultitonProperties(new ExpiringProperties(ExpireTime.OneSecond)));
+            MultitonInstaller.Configure<Service2Key, Service2>(new MultitonProperties(new ExpiringProperties(ExpireTime.OneSecond), CacheConsistency.Always));
         }
     }
     public class Service2 : IMultiton

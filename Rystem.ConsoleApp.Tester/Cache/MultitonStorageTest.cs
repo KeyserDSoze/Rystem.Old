@@ -55,7 +55,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         static SmallTableKey()
         {
-            MultitonInstaller.Configure<SmallTableKey, SmallTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.FiveSeconds)));
+            MultitonInstaller.Configure<SmallTableKey, SmallTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.FiveSeconds), CacheConsistency.Always));
         }
         public Task<SmallTable> FetchAsync()
         {

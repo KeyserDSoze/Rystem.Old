@@ -9,7 +9,7 @@ using Rystem.Const;
 
 namespace Rystem.Cache
 {
-    internal class InBlobStorage<T> : IMultitonIntegration<T>
+    internal class InBlobStorage<T> : IMultitonIntegrationAsync<T>
         where T : IMultiton, new()
     {
         private static CloudBlobContainer Context;
@@ -36,7 +36,7 @@ namespace Rystem.Cache
             else
             {
                 using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ToResult()))
-                    return (await reader.ReadToEndAsync()).FromDefaultJson<T>();
+                    return (await reader.ReadToEndAsync().NoContext()).FromDefaultJson<T>();
             }
         }
         public async Task<bool> UpdateAsync(string key, T value, TimeSpan expiringTime)
@@ -90,6 +90,8 @@ namespace Rystem.Cache
             } while (token != null);
             return items;
         }
+        public Task WarmUp()
+           => Task.CompletedTask;
         private static string CloudKeyToString(string keyString)
            => $"{FullName}{keyString}";
     }

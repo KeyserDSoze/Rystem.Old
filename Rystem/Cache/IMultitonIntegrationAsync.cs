@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
-    internal interface IMultitonIntegration<T> 
+    internal interface IMultitonIntegrationAsync<T> 
         where T : IMultiton, new()
     {
         Task<T> InstanceAsync(string key);
@@ -14,5 +14,15 @@ namespace Rystem.Cache
         Task<MultitonStatus<T>> ExistsAsync(string key);
         Task<bool> DeleteAsync(string key);
         Task<IEnumerable<string>> ListAsync();
+        Task WarmUp();
+    }
+    internal interface IMultitonIntegration<T>
+        where T : IMultiton, new()
+    {
+        T Instance(string key);
+        bool Update(string key, T value, TimeSpan expiringTime);
+        MultitonStatus<T> Exists(string key);
+        bool Delete(string key);
+        IEnumerable<string> List();
     }
 }

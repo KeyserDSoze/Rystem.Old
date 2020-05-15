@@ -65,7 +65,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
         static ServiceKey()
         {
-            MultitonInstaller.Configure<ServiceKey, Service>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.RedisCache, ExpireTime.FiveSeconds)));
+            MultitonInstaller.Configure<ServiceKey, Service>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.RedisCache, ExpireTime.FiveSeconds), CacheConsistency.Always));
         }
     }
     public class Service : IMultiton

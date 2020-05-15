@@ -57,7 +57,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
         static Service3Key()
-            => MultitonInstaller.Configure<Service3Key, Service3>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.BlobStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds)));
+            => MultitonInstaller.Configure<Service3Key, Service3>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.BlobStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds), CacheConsistency.Always));
     }
     public class Service3 : IMultiton
     {

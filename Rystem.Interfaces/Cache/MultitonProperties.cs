@@ -8,23 +8,23 @@ namespace Rystem.Cache
     {
         public InCloudMultitonProperties InCloudProperties { get; }
         public ExpiringProperties InMemoryProperties { get; }
-        public MultitonProperties(InCloudMultitonProperties inCloudProperties, ExpiringProperties inMemoryPropeperties)
+        public CacheConsistency Consistency { get; }
+        public MultitonProperties(InCloudMultitonProperties inCloudProperties, ExpiringProperties inMemoryPropeperties, CacheConsistency consistency)
         {
             this.InCloudProperties = inCloudProperties;
             this.InMemoryProperties = inMemoryPropeperties;
+            this.Consistency = consistency;
         }
-        public MultitonProperties(InCloudMultitonProperties inCloudProperties)
-            => this.InCloudProperties = inCloudProperties;
-        public MultitonProperties(ExpiringProperties inMemoryPropeperties)
-            => this.InMemoryProperties = inMemoryPropeperties;
+        public MultitonProperties(InCloudMultitonProperties inCloudProperties, CacheConsistency consistency) : this(inCloudProperties, null, consistency) { }
+        public MultitonProperties(ExpiringProperties inMemoryPropeperties, CacheConsistency consistency) : this(null, inMemoryPropeperties, consistency) { }
     }
     public class InCloudMultitonProperties : ExpiringProperties
     {
-        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, ExpireTime expireTime, int numberOfClients = 5) : this(connectionString, cloudType, (int)expireTime, numberOfClients)
+        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, ExpireTime expireTime, int numberOfClients = 5, bool garbageCollection = false) : this(connectionString, cloudType, (int)expireTime, numberOfClients, garbageCollection)
         {
         }
 
-        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, int secondsToExpire, int numberOfClients = 5) : base(secondsToExpire, false)
+        public InCloudMultitonProperties(string connectionString, InCloudType cloudType, int secondsToExpire, int numberOfClients = 5, bool garbageCollection = false) : base(secondsToExpire, false, garbageCollection)
         {
             this.ConnectionString = connectionString;
             this.CloudType = cloudType;
@@ -39,13 +39,15 @@ namespace Rystem.Cache
     {
         public int ExpireSeconds { get; }
         public bool Consistency { get; }
+        public bool GarbageCollection { get; }
         public TimeSpan ExpireTimeSpan
             => TimeSpan.FromSeconds(this.ExpireSeconds);
-        public ExpiringProperties(ExpireTime expireTime, bool consistency = false) : this((int)expireTime, consistency) { }
-        public ExpiringProperties(int secondsToExpire, bool consistency)
+        public ExpiringProperties(ExpireTime expireTime, bool consistency = false, bool garbageCollection = false) : this((int)expireTime, consistency, garbageCollection) { }
+        public ExpiringProperties(int secondsToExpire, bool consistency, bool garbageCollection)
         {
             ExpireSeconds = secondsToExpire;
             Consistency = consistency;
+            this.GarbageCollection = garbageCollection;
         }
     }
 }

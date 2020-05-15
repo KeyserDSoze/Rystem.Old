@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
-    internal class InRedisCache<T> : IMultitonIntegration<T>
+    internal class InRedisCache<T> : IMultitonIntegrationAsync<T>
         where T : IMultiton, new()
     {
         private int RoundRobin = -1;
@@ -25,6 +25,12 @@ namespace Rystem.Cache
                         value = this.RoundRobin = (this.RoundRobin + 1) % this.Configuration.NumberOfClients;
                 return Connections[value].Value.GetDatabase();
             }
+        }
+        public Task WarmUp()
+        {
+            foreach (var connection in Connections)
+                _ = connection.Value.GetDatabase();
+            return Task.CompletedTask;
         }
 
         private readonly List<Lazy<ConnectionMultiplexer>> Connections;

@@ -31,7 +31,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         static HybridTableKey()
         {
-            MultitonInstaller.Configure<HybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true)));
+            MultitonInstaller.Configure<HybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true), CacheConsistency.Always));
         }
         public Task<HybridTable> FetchAsync()
         {
@@ -47,7 +47,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         static SecondHybridTableKey()
         {
-            MultitonInstaller.Configure<SecondHybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true)));
+            MultitonInstaller.Configure<SecondHybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true), CacheConsistency.Always));
         }
         public Task<HybridTable> FetchAsync()
         {

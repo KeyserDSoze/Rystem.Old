@@ -11,7 +11,7 @@ using Rystem.Const;
 
 namespace Rystem.Cache
 {
-    internal class InTableStorage<T> : IMultitonIntegration<T>
+    internal class InTableStorage<T> : IMultitonIntegrationAsync<T>
         where T : IMultiton, new()
     {
         private static CloudTable Context;
@@ -100,6 +100,8 @@ namespace Rystem.Cache
             } while (tableContinuationToken != null);
             return keys;
         }
+        public Task WarmUp() 
+            => Task.CompletedTask;
         private class RystemCache : TableEntity
         {
             public string Data { get; set; }

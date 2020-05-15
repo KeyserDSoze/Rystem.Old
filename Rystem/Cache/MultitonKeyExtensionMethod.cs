@@ -47,6 +47,9 @@ namespace System
         public static async Task<bool> IsPresentAsync<TEntry>(this IMultitonKey<TEntry> entry)
            where TEntry : IMultiton, new()
            => await Manager<TEntry>(entry.GetType()).ExistsAsync(entry).NoContext();
+        public static async Task WarmUpAsync<TEntry>(this IMultitonKey<TEntry> entry)
+           where TEntry : IMultiton, new()
+           => await Manager<TEntry>(entry.GetType()).WarmUp().NoContext();
         public static async Task<IList<IMultitonKey<TEntry>>> KeysAsync<TEntry>(this IMultitonKey<TEntry> entry)
            where TEntry : IMultiton, new()
         {
@@ -86,6 +89,9 @@ namespace System
         public static bool IsPresent<TEntry>(this IMultitonKey<TEntry> entry)
             where TEntry : IMultiton, new()
             => entry.IsPresentAsync().ToResult();
+        public static void WarmUp<TEntry>(this IMultitonKey<TEntry> entry)
+           where TEntry : IMultiton, new()
+           => entry.WarmUpAsync().ToResult();
         public static IList<IMultitonKey<TEntry>> Keys<TEntry>(this IMultitonKey<TEntry> entry)
             where TEntry : IMultiton, new()
             => entry.KeysAsync().ToResult();

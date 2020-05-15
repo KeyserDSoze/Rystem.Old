@@ -12,5 +12,6 @@ namespace Rystem.Cache
         Task<bool> ExistsAsync(IMultiKey key);
         Task<bool> DeleteAsync(IMultiKey key);
         Task<IEnumerable<string>> ListAsync();
+        Task WarmUp();
     }
 }
