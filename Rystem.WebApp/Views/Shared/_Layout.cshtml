@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Rystem.WebApp</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    @*<partial name="~/Areas/Rystem/Views/Shared/_Installer" />*@
+    <rystem bootstrap-cdn="true" jquery-ui-cdn="Light"></rystem>
 </head>
 <body>
     <header>
@@ -34,7 +34,12 @@
             @RenderBody()
         </main>
     </div>
-
+    @{
+        Dictionary<object, object> querystring = new Dictionary<object, object>()
+{
+            { "id", 29 }
+        };
+    }
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2020 - Rystem.WebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>

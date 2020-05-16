@@ -7,7 +7,7 @@ namespace Rystem.Utility
     [Obsolete("Exists in .Net Core in staticfiles nuget")]
     public static class MimeMapping
     {
-        private static MimeMappingDictionaryBase _mappingDictionary = new MimeMappingDictionaryClassic();
+        private readonly static MimeMappingDictionaryBase MappingDictionary = new MimeMappingDictionaryClassic();
 
         public static string GetMimeMapping(string fileName)
         {
@@ -15,23 +15,23 @@ namespace Rystem.Utility
             {
                 throw new ArgumentNullException("fileName");
             }
-            return _mappingDictionary.GetMimeMapping(fileName);
+            return MappingDictionary.GetMimeMapping(fileName);
         }
         private abstract class MimeMappingDictionaryBase
         {
-            private readonly Dictionary<string, string> _mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            private static readonly char[] _pathSeparatorChars = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, Path.VolumeSeparatorChar }; // from Path.GetFileName()
+            private readonly Dictionary<string, string> Mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            private static readonly char[] PathSeparatorChars = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, Path.VolumeSeparatorChar }; // from Path.GetFileName()
 
             private bool _isInitialized = false;
 
             protected void AddMapping(string fileExtension, string mimeType)
             {
-                _mappings.Add(fileExtension, mimeType);
+                Mappings.Add(fileExtension, mimeType);
             }
 
             private void AddWildcardIfNotPresent()
             {
-                if (!_mappings.ContainsKey(".*"))
+                if (!Mappings.ContainsKey(".*"))
                 {
                     AddMapping(".*", "application/octet-stream");
                 }
@@ -60,7 +60,7 @@ namespace Rystem.Utility
             // This method is similar to Path.GetFileName(), but it doesn't fail on invalid path characters
             private static string GetFileName(string path)
             {
-                int pathSeparatorIndex = path.LastIndexOfAny(_pathSeparatorChars);
+                int pathSeparatorIndex = path.LastIndexOfAny(PathSeparatorChars);
                 return (pathSeparatorIndex >= 0) ? path.Substring(pathSeparatorIndex) : path;
             }
 
@@ -75,18 +75,14 @@ namespace Rystem.Utility
                     if (fileName[i] == '.')
                     {
                         // potential extension - consult dictionary
-                        string mimeType;
-                        if (_mappings.TryGetValue(fileName.Substring(i), out mimeType))
-                        {
-                            // found!
+                        if (Mappings.TryGetValue(fileName.Substring(i), out string mimeType))
                             return mimeType;
-                        }
                     }
                 }
 
                 // If we reached this point, either we couldn't find an extension, or the extension we found
                 // wasn't recognized. In either case, the ".*" mapping is guaranteed to exist as a fallback.
-                return _mappings[".*"];
+                return Mappings[".*"];
             }
         }
 

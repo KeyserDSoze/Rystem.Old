@@ -10,11 +10,13 @@ namespace Rystem.Cache
 {
     internal class GarbageCollector
     {
-        private List<ConcurrentDictionary<string, IInMemoryInstance>> InMemoryInstances = new List<ConcurrentDictionary<string, IInMemoryInstance>>();
+        private readonly List<ConcurrentDictionary<string, IInMemoryInstance>> InMemoryInstances = new List<ConcurrentDictionary<string, IInMemoryInstance>>();
         private GarbageCollector()
         {
-            Thread thread = new Thread(this.Collect);
-            thread.Priority = ThreadPriority.Lowest;
+            Thread thread = new Thread(this.Collect)
+            {
+                Priority = ThreadPriority.Lowest
+            };
             thread.Start();
         }
         private async void Collect()
