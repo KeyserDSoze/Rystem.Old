@@ -17,4 +17,10 @@ namespace Rystem.WebApp.Models
         public string Name { get; set; }
         public AggregatedDataProperties Properties { get; set; }
     }
+    public class Alo
+    {
+        public string A { get; set; }
+        public int Val { get; set; }
+        public int Group { get; set; }
+    }
 }

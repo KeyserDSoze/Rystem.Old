@@ -1,11 +1,16 @@
-﻿@{
+﻿@model List<Alo>
+@{
     ViewData["Title"] = "Home Page";
+
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
-<rystem-ajax-modal rystem-request-context='new RequestContext() {Action = "Rexo", Controller="Home"}' rystem-update-context='new RequestContext() { Action="Privacy", Controller="Home", Selector="#newId" }' class="don-rodrigo">
+<rystem-ajax-modal rystem-size="Large" rystem-request-context='new RequestContext() {Action = "Rexo", Controller="Home"}' rystem-update-context='new RequestContext() { Action="Rexo", Controller="Home", Selector="#flirt" }' class="don-rodrigo">
     <div>Show my Rexo</div>
+    <div id="flirt"></div>
 </rystem-ajax-modal>
+<rystem-dropdown rystem-data-multiple="true" rystem-data="Model.Select(x => new DropdownItem() { Group = x.Group.ToString(), Label = x.A, Selected = false, Value = x.Val.ToString()})" rystem-data-disabled='new List<string>() { "1", "2" }' rystem-request-context='new RequestContext() { Action = "Cold", Controller = "Home" }'>
+</rystem-dropdown>

@@ -21,7 +21,7 @@ namespace Rystem.Web
                 FileProvider = embeddedProvider,
                 RequestPath = new PathString("/rystem")
             });
-            
+
             //builder.UseEndpoints(endpoints =>
             //{
             //    endpoints.MapControllerRoute(

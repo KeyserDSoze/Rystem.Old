@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Web
 {
-    [HtmlTargetElement("rystem-ajax-modal", Attributes = "rystem-request-context", TagStructure = TagStructure.NormalOrSelfClosing)]
+    [HtmlTargetElement("rystem-ajax-modal", Attributes = "rystem-request-context,rystem-size", TagStructure = TagStructure.NormalOrSelfClosing)]
     public class AjaxModalHelper : TagHelper
     {
         [ViewContext]
@@ -24,14 +24,17 @@ namespace Rystem.Web
         public RequestContext RequestContext { get; set; }
         [HtmlAttributeName("rystem-update-context")]
         public RequestContext UpdateRequestContext { get; set; }
+        [HtmlAttributeName("rystem-size")]
+        public SizeType Size { get; set; }
 
         private string Id { get; } = $"rystem-ajax-modal-{Guid.NewGuid():N}";
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             ProcessAsync(context, output).ToResult();
         }
-        private const string RystemAsyncModalShow = "new Modal('{0}', {1}).show(event, this, {2});";
-        private const string EmptyFunction = "null";
+        private const string RystemAsyncModalShow = "new ModalRystem('{0}', {1}).show(event, this, {2}, '{3}');";
+        private const string EmptyFunction = "undefined";
+#warning Creare function per popup di errore o di ok, forse basta solo l'errore, comunque creare il popup
 
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
@@ -40,10 +43,24 @@ namespace Rystem.Web
                 string.Format(RystemAsyncModalShow,
                     this.Id,
                     this.UpdateRequestContext?.FinalizeRequestContext(this.ViewContext.HttpContext.Request) ?? EmptyFunction,
-                    this.RequestContext.FinalizeRequestContext(this.ViewContext.HttpContext.Request)
+                    this.RequestContext.FinalizeRequestContext(this.ViewContext.HttpContext.Request),
+                    GetClassNameFromSize()
                     ),
                 HtmlAttributeValueStyle.DoubleQuotes));
             return Task.CompletedTask;
+        }
+        private string GetClassNameFromSize()
+        {
+            switch (this.Size)
+            {
+                default:
+                case SizeType.Medium:
+                    return string.Empty;
+                case SizeType.Small:
+                    return "modal-sm";
+                case SizeType.Large:
+                    return "modal-lg";
+            }
         }
     }
 }

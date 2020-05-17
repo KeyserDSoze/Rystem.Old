@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Rystem.Web;
 using Rystem.WebApp.Models;
 
 namespace Rystem.WebApp.Controllers
@@ -13,7 +14,12 @@ namespace Rystem.WebApp.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            List<Alo> alo = new List<Alo>();
+            for (int i = 0; i < 200; i++)
+            {
+                alo.Add(new Alo() { A = i.ToString(), Group = (i % 40), Val = i });
+            }
+            return View(alo);
         }
 
         public IActionResult Privacy()
@@ -21,9 +27,16 @@ namespace Rystem.WebApp.Controllers
             return View();
         }
 
-        public IActionResult Rexo()
+
+        public async Task<IActionResult> Rexo()
         {
+            await Task.Delay(3000);
             return View();
+        }
+        public async Task<IActionResult> Cold([FromQuery]IEnumerable<string> selectedItems)
+        {
+            await Task.Delay(3000);
+            return View(selectedItems);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

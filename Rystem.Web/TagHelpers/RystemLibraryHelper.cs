@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,6 +24,9 @@ namespace Rystem.Web
         public JQueryUIType UseJQueryUiCdn { get; set; }
         [HtmlAttributeName("bootstrap-cdn")]
         public bool UseBootstrapCdn { get; set; } = true;
+        [HtmlAttributeName("rystem-language")]
+        public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
+
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             ProcessAsync(context, output).ToResult();
@@ -49,7 +53,13 @@ namespace Rystem.Web
             if (this.UseBootstrapCdn)
             {
                 stringBuilder.Append("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css' />");
+                stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/bootstrap-select.css' />");
+                stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js' integrity='sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q' crossorigin='anonymous'></script>");
                 stringBuilder.Append("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js'></script>");
+                stringBuilder.Append("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js'></script>");
+                stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/bootstrap-select.js'></script>");
+                if (Culture != CultureInfo.InvariantCulture)
+                    stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/i18n/defaults-{this.Culture.Name}.js'></script>");
             }
             stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.css' /><script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.js'></script>");
             output.Content.SetHtmlContent(stringBuilder.ToString());
