@@ -51,8 +51,6 @@ namespace Rystem.Web
                     builder.Append($"/{splittingPath[1]}");
                 else if (this.Area != null && splittingPath.Length > 2 && !string.IsNullOrWhiteSpace(splittingPath[2]))
                     builder.Append($"/{splittingPath[2]}");
-                else
-                    throw new ArgumentException("Context was not recognized a valid controller, please use asp-controller attribute in ajax-modal tag.");
             }
 
             if (this.Action != null)

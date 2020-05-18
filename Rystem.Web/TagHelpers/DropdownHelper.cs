@@ -54,19 +54,21 @@ namespace Rystem.Web
             string id = context.AllAttributes["id"]?.ToString();
             if (!string.IsNullOrWhiteSpace(id))
                 this.Id = id;
-            output.TagName = "select";
-            output.Attributes.Add("id", this.Id);
-            output.Attributes.Add("class", $"{context.AllAttributes["class"]} selectpicker");
+            StringBuilder stringBuilder = new StringBuilder();
+            output.TagName = "div";
+            stringBuilder.Append($"<select id='{this.Id}' class='{context.AllAttributes["class"]} selectpicker'");
             if (HasSearch)
-                output.Attributes.Add("data-live-search", "true");
+                stringBuilder.Append(" data-live-search='true'");
             if (IsMultiple)
-                output.Attributes.Add("multiple", "multiple");
+                stringBuilder.Append(" multiple");
             if (!string.IsNullOrEmpty(DataHeader))
-                output.Attributes.Add("data-header", DataHeader);
-            output.Attributes.Add("data-width", GetSize());
+                stringBuilder.Append($" data-header='{DataHeader}'");
+            stringBuilder.Append($" data-width='{GetSize()}'");
             var group = this.Data.GroupBy(x => x.Group);
             if (MaxSelected > 0 && group.Count() <= 1)
-                output.Attributes.Add("data-max-options", MaxSelected.ToString());
+                stringBuilder.Append($" data-max-options={MaxSelected}");
+            stringBuilder.Append(">");
+            output.Content.AppendHtml(stringBuilder.ToString());
             if (Sorting == SortType.Ascending)
                 group = group.OrderBy(x => x.Key);
             else if (Sorting == SortType.Descending)
@@ -91,10 +93,11 @@ namespace Rystem.Web
                 if (!string.IsNullOrWhiteSpace(list.Key))
                     output.Content.AppendHtml("</optgroup>");
             }
+            output.Content.AppendHtml("</select>");
             output.PostContent.AppendHtml(string.Format(StarterScript,
                     this.Id,
                     this.RequestContext?.FinalizeRequestContext(ViewContext.HttpContext.Request) ?? EmptyFunction,
-                    this.UpdateRequestContext?.FinalizeRequestContext(this.ViewContext.HttpContext.Request) ?? EmptyFunction));
+                    this.UpdateRequestContext?.FinalizeRequestContext(ViewContext.HttpContext.Request) ?? EmptyFunction));
 
             return Task.CompletedTask;
         }

@@ -2,6 +2,7 @@
     constructor(id) {
         this.id = id;
     }
+    static stringEmpty = "";
     getName() {
         return "Rystem class";
     }
@@ -16,13 +17,14 @@
     static hideLoader() {
         $(ModalRystem.loaderId).hide();
     }
+
     static httpRequest(request, withLoader, query, event, obj, onSuccess, onFailure) {
         if (withLoader)
             Rystem.showLoader();
         $.ajax({
             type: request.method,
-            url: request.url + (query && query.length > 0 ? (request.url.indexOf("?") > -1 ? "&" : "?") + query : ""),
-            data: request.data == "null" ? "" : request.data,
+            url: request.url + (query && query.length > 0 ? (request.url.indexOf("?") > -1 ? "&" : "?") + query : Rystem.stringEmpty),
+            data: request.data == "null" ? Rystem.stringEmpty : request.data,
             success: function (data) {
                 if (onSuccess)
                     onSuccess(data);
@@ -90,7 +92,7 @@ class ModalRystem extends Rystem {
         let modal = this;
         $("body").append(ModalRystem.standardHtml.replace("{modalid}", this.id).replace("{zindex}", (1050 + ModalRystem.actives.length)).replace("{modalsize}", size));
         ModalRystem.attachEvent("#" + this.id);
-        Rystem.httpRequest(request, true, "", event, obj, function (data) {
+        Rystem.httpRequest(request, true, Rystem.stringEmpty, event, obj, function (data) {
             $("#" + modal.id + " .modal-body").html(data);
             $("#" + modal.id).modal('show');
             if (ModalRystem.hasActive())
@@ -115,16 +117,10 @@ class DropdownRystem extends Rystem {
         let dropdown = this;
         $('#' + dropdown.id).selectpicker();
         $('#' + dropdown.id).parent().attr("id", "dropdown-container-" + dropdown.id);
-        $('#' + dropdown.id).on('hidden.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-            let t = $("#dropdown-container-" + dropdown.id + " .dropdown-toggle").click;
-            console.log(t);
-            $("#dropdown-container-" + dropdown.id + " .dropdown-toggle").click = t[0];
-        });
-
         if (dropdown.request)
             $('#' + dropdown.id).on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
                 const selectedItems = $(e.target).val();
-                let query = "";
+                let query = Rystem.stringEmpty;
                 for (let i = 0; i < selectedItems.length; i++) {
                     query += "selecteditems=" + selectedItems[i];
                     if (i < selectedItems.length - 1)
@@ -132,8 +128,71 @@ class DropdownRystem extends Rystem {
                 }
                 Rystem.httpRequest(dropdown.request, false, query, e, e.target, function () {
                     if (dropdown.update)
-                        Rystem.httpRequest(this.update.request, false, "", e, e.target);
+                        Rystem.httpRequest(dropdown.update, false, Rystem.stringEmpty, e, e.target);
                 });
             });
+    }
+}
+
+class FormRystem extends Rystem {
+    constructor(id, request, ifInModalCloseAfterValidSubmit, toast, update) {
+        super(id);
+        this.request = request;
+        this.ifInModalCloseAfterValidSubmit = ifInModalCloseAfterValidSubmit;
+        this.toast = toast;
+        this.update = update;
+    }
+
+    submit(e, obj) {
+        e.preventDefault();
+        let form = this;
+        form.request.data = $(obj).serialize();
+        Rystem.httpRequest(form.request, true, Rystem.stringEmpty, e, obj, function (data) {
+            if (form.ifInModalCloseAfterValidSubmit)
+                ModalRystem.close();
+            if (form.toast)
+                new ToastRystem("toast-" + form.id, form.toast).show(data);
+            if (form.request.selector)
+                $(form.request.selector).html(data);
+            if (form.update)
+                Rystem.httpRequest(form.update, false, Rystem.stringEmpty, e, obj);
+        }, function (data) {
+            if (form.toast)
+                new ToastRystem("toast-" + form.id, form.toast).show(data);
+        });
+    }
+}
+
+class ToastRystem extends Rystem {
+    constructor(id, options) {
+        super(id);
+        this.options = options;
+    }
+    static defaultHtml = '<div id="{id}" class="toast {cssclass}" role="alert" aria-live="assertive" aria-atomic="true">' +
+        '<div class="toast-header">' +
+        '{header}' +
+        '<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">' +
+        '<span aria-hidden="true">&times;</span>' +
+        '</button>' +
+        '</div>' +
+        '<div class="toast-body">{message}</div>' +
+        '</div>';
+    static defaultContainer = '<div id="toast-container" style="position:absolute;top:20px;right:20px;"></div>';
+    show(message, header = Rystem.stringEmpty) {
+        let toast = this;
+        if ($("#toast-container").length == 0)
+            $("body").append(ToastRystem.defaultContainer);
+        let htmlMessage = ToastRystem.defaultHtml
+            .replace("{id}", toast.id)
+            .replace("{message}", message)
+            .replace("{header}", header)
+            .replace("{cssClass}", toast.options.cssClass);
+        $("#toast-container").append(htmlMessage);
+        let $id = $('#' + toast.id);
+        $id.toast(toast.options);
+        $id.toast('show');
+        $id.on('hidden.bs.toast', function () {
+            $id.remove();
+        })
     }
 }

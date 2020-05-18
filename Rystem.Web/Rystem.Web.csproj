@@ -21,6 +21,13 @@
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\**\*" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Content Remove="wwwroot\bootstrap\bootstrap-select.css.map" />
+    <Content Remove="wwwroot\bootstrap\bootstrap-select.js.map" />
+    <Content Remove="wwwroot\bootstrap\bootstrap-select.min.js" />
+    <Content Remove="wwwroot\bootstrap\bootstrap-select.min.js.map" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Update="Areas\Rystem\Views\Shared\*.cshtml">
