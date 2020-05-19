@@ -196,3 +196,48 @@ class ToastRystem extends Rystem {
         })
     }
 }
+
+
+class CarouselRystem extends Rystem {
+    constructor(id, containerId, elements, options) {
+        super(id);
+        this.container = container;
+        this.$container = $("#" + this.container);
+        if (this.$container.length == 0) {
+            $("body").append("<div id='" + container.substr(1) + "'></div>");
+            this.$container = $("#" + this.container);
+        }
+        this.elements = elements;
+        let elementList = "";
+        for (let i = 0; i < this.elements.length; i++) {
+            const element = this.elements[i];
+            if (element.link && element.link.length > 0)
+                elementList += "<a href='" + element.link + "'>";
+            if (element.content.indexOf("http") == 0)
+                elementList += "<img class='swiper-image' src='" + element.content + "' />";
+            else
+                elementList += element.content;
+            if (element.link && element.link.length > 0)
+                elementList += "</a>";
+        }
+        this.options = options;
+        this.$container.html(CarouselRystem.defaultXml.replace("{id}", this.id).replace("{contents}", elementList));
+        if (!this.options.pagination)
+            $("#" + this.id + " .swiper-pagination").remove();
+        if (!this.options.navigation) {
+            $("#" + this.id + " .wiper-button-next").remove();
+            $("#" + this.id + " .swiper-button-prev").remove();
+        }
+        this.$id = $("#" + id);
+        this.that = new Swiper('.swiper-container', this.options);
+    }
+    static defaultXml = "<div id='{id}' class='swiper-container' style='display:none;'>" +
+        "<div class='swiper-wrapper'>{contents}</div>" +
+        "<div class='swiper-pagination'></div>" +
+        "<div class='swiper-button-next'></div>" +
+        "<div class='swiper-button-prev'></div>" +
+        "</div>";
+    show() {
+        this.$id.css("display", "block");
+    }
+}

@@ -50,17 +50,11 @@ namespace Rystem.Web
             return Task.CompletedTask;
         }
         private string GetClassNameFromSize()
-        {
-            switch (this.Size)
+            => this.Size switch
             {
-                default:
-                case SizeType.Medium:
-                    return string.Empty;
-                case SizeType.Small:
-                    return "modal-sm";
-                case SizeType.Large:
-                    return "modal-lg";
-            }
-        }
+                SizeType.Small => "modal-sm",
+                SizeType.Large => "modal-lg",
+                _ => string.Empty,
+            };
     }
 }

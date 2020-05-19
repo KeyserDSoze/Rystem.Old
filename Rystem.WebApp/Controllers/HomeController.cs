@@ -23,14 +23,19 @@ namespace Rystem.WebApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Index([FromForm]Alo alo)
-        {
-            return Ok("A good update");
-        }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public IActionResult Index([FromForm]Alo alo) => Ok("A good update");
 
         public IActionResult Privacy()
         {
-            return View();
+            List<CarouselItem> items = new List<CarouselItem>();
+            for (int i = 0; i < 10; i++)
+                items.Add(new CarouselItem()
+                {
+                    Content = "https://image.shutterstock.com/z/stock-photo-incredible-nature-landscape-colorful-sky-resia-lake-in-dolomites-mountains-during-sunrise-scenic-1480431083.jpg",
+                    Link = "https://www.google.com"
+                });
+            return View(items);
         }
 
 

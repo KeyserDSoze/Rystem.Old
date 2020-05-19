@@ -1,0 +1,42 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Rystem.Web</id>
+    <version>1.0.0</version>
+    <title>Rystem.Web</title>
+    <authors>Alessandro Rapiti</authors>
+    <owners>Alessandro Rapiti</owners>
+    <licenseUrl>http://icon.com</licenseUrl>
+    <projectUrl>http://icon.com</projectUrl>
+    <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      Html helpers and so on.
+    </description>
+    <releaseNotes>
+      - First Release.
+    </releaseNotes>
+    <copyright>Copyright 2019-2026</copyright>
+    <tags>Rystem Web Utility</tags>
+    <dependencies>
+      <dependency id="Rystem.Interfaces" version="5.2.0" />
+      <dependency id="Rystem" version="5.2.0" />
+      <dependency id="Microsoft.AspNetCore.Mvc" version="2.2.0" />
+      <dependency id="Microsoft.AspNetCore.Mvc.Abstractions" version="2.2.0" />
+      <dependency id="Microsoft.AspNetCore.Mvc.DataAnnotations" version="2.2.0" />
+      <dependency id="Microsoft.AspNetCore.Mvc.TagHelpers" version="2.2.0" />
+      <dependency id="Microsoft.AspNetCore.Routing" version="2.2.2" />
+      <dependency id="Microsoft.AspNetCore.StaticFiles" version="2.2.0" />
+      <dependency id="Microsoft.Extensions.FileProviders.Embedded" version="3.1.4" />
+    </dependencies>
+    <references>
+      <reference file="Rystem.Web.dll" />
+    </references>
+  </metadata>
+  <files>
+    <file src="bin\Release\*.dll" target="lib\Release" />
+    <file src="bin\Release\*.pdb" target="lib\Release" />
+    <file src="bin\Debug\*.dll" target="lib\Debug" />
+    <file src="bin\Debug\*.pdb" target="lib\Debug" />
+  </files>
+</package>

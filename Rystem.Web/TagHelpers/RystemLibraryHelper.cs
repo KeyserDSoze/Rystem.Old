@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
+//spinners: https://freefrontend.com/css-spinners/
 namespace Rystem.Web
 {
     [HtmlTargetElement("rystem", Attributes = "", TagStructure = TagStructure.NormalOrSelfClosing)]
@@ -24,6 +25,10 @@ namespace Rystem.Web
         public JQueryUIType UseJQueryUiCdn { get; set; }
         [HtmlAttributeName("bootstrap-cdn")]
         public bool UseBootstrapCdn { get; set; } = true;
+        [HtmlAttributeName("swiper-cdn")]
+        public bool UseSwiperCdn { get; set; } = true;
+        [HtmlAttributeName("font-awesome-cdn")]
+        public bool UseFontAwesome { get; set; } = true;
         [HtmlAttributeName("rystem-language")]
         public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
 
@@ -58,6 +63,16 @@ namespace Rystem.Web
                 stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/bootstrap-select.js'></script>");
                 if (Culture != CultureInfo.InvariantCulture)
                     stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/i18n/defaults-{this.Culture.Name}.js'></script>");
+            }
+            if (this.UseSwiperCdn)
+            {
+                stringBuilder.Append("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/Swiper/5.4.0/css/swiper.min.css' />");
+                stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/Swiper/5.4.0/js/swiper.min.js'></script>");
+            }
+            if (this.UseFontAwesome)
+            {
+                stringBuilder.Append("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css' />");
+                stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js'></script>");
             }
             stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.css' /><script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.js'></script>");
             output.Content.SetHtmlContent(stringBuilder.ToString());

@@ -103,19 +103,12 @@ namespace Rystem.Web
         }
         private const string StarterScript = "<script>new DropdownRystem('{0}', {1}, {2}).show();</script>";
         private string GetSize()
-        {
-            switch (this.Size)
+            => this.Size switch
             {
-                default:
-                case SizeType.Medium:
-                    return "50%";
-                case SizeType.Small:
-                    return "25%";
-                case SizeType.Large:
-                    return "75%";
-                case SizeType.ExtraLarge:
-                    return "100%";
-            }
-        }
+                SizeType.Small => "25%",
+                SizeType.Large => "75%",
+                SizeType.ExtraLarge => "100%",
+                _ => "50%",
+            };
     }
 }
