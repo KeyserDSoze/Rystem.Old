@@ -50,7 +50,7 @@ namespace Rystem.Web
         [JsonProperty("slidesPerGroup")]
         public int SlidesPerGroup { get; set; } = 1;
         [JsonProperty("resistance")]
-        public bool Resistance { get; set; } = true;
+        public bool Resistance { get; set; } 
         /// <summary>
         /// When enabled it won't allow to change slides by swiping or navigation/pagination buttons during transition
         /// </summary>
@@ -70,7 +70,7 @@ namespace Rystem.Web
         /// Allow 'swiper-no-swiping' class to not swipe items
         /// </summary>
         [JsonProperty("noSwiping")]
-        public bool NoSwiping { get; set; } = true;
+        public bool NoSwiping { get; set; }
         [JsonProperty("loop")]
         public bool Loop { get; set; }
         [JsonProperty("lazy")]
@@ -100,12 +100,12 @@ namespace Rystem.Web
             /// CSS class name added to navigation button when it becomes disabled
             /// </summary>
             [JsonProperty("disabledClass")]
-            public string DisabledClass { get; set; } = ".swiper-button-disabled";
+            public string DisabledClass { get; set; } 
             /// <summary>
             /// CSS class name added to navigation button when it becomes hidden
             /// </summary>
             [JsonProperty("hiddenClass")]
-            public string HiddenClass { get; set; } = ".swiper-button-hidden";
+            public string HiddenClass { get; set; } 
         }
         public class Pagination
         {

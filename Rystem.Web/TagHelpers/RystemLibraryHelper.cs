@@ -28,7 +28,11 @@ namespace Rystem.Web
         [HtmlAttributeName("swiper-cdn")]
         public bool UseSwiperCdn { get; set; } = true;
         [HtmlAttributeName("font-awesome-cdn")]
-        public bool UseFontAwesome { get; set; } = true;
+        public bool UseFontAwesomeCdn { get; set; } = true; 
+        [HtmlAttributeName("charjs-cdn")]
+        public bool UseCharJsCdn { get; set; } = true;
+        [HtmlAttributeName("momentjs-cdn")]
+        public bool UseMomentJsCdn { get; set; } = true;
         [HtmlAttributeName("rystem-language")]
         public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
 
@@ -69,10 +73,19 @@ namespace Rystem.Web
                 stringBuilder.Append("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/Swiper/5.4.0/css/swiper.min.css' />");
                 stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/Swiper/5.4.0/js/swiper.min.js'></script>");
             }
-            if (this.UseFontAwesome)
+            if (this.UseFontAwesomeCdn)
             {
                 stringBuilder.Append("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css' />");
                 stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js'></script>");
+            }
+            if (this.UseMomentJsCdn)
+            {
+                stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.3/moment.min.js'></script>");
+            }
+            if (this.UseCharJsCdn)
+            {
+                stringBuilder.Append("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css' />");
+                stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js'></script>");
             }
             stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.css' /><script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.js'></script>");
             output.Content.SetHtmlContent(stringBuilder.ToString());

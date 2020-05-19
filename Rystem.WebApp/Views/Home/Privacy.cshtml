@@ -1,8 +1,33 @@
 ﻿@model List<CarouselItem>
 @{
     ViewData["Title"] = "Privacy Policy";
+    DataChart datachart = DataChart.Default(
+        new List<string>() { "A", "B", "A", "B", "A", "B", "A", "B", "A", "B" },
+        new List<DataModel>()
+        {
+            new DataModel()
+            {
+                BackgroundColor = "#56caca",
+                Label = "Dado",
+                Data = new List<decimal>(){1,2,3,4,5,6,7,8,9,10}
+            },
+            new DataModel()
+            {
+                BackgroundColor = "#caca56",
+                Label = "Cardi",
+                Data = new List<decimal>(){11,10,8,6,8,4,5,6,4,4}
+            }
+                                },
+        "Bel grafico",
+        "X",
+        "Y",
+        DatasetType.Line
+        );
 }
 <h1>@ViewData["Title"]</h1>
 
 <p>Use this page to detail your site's privacy policy.</p>
 <rystem-carousel rystem-data="Model" rystem-options="CarouselComponent.Default"></rystem-carousel>
+<div style="height:300px">
+    <rystem-chart rystem-data="datachart"></rystem-chart>
+</div>

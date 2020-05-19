@@ -15,31 +15,26 @@ using System.Threading.Tasks;
 
 namespace Rystem.Web
 {
-    [HtmlTargetElement("rystem-carousel", Attributes = "rystem-data, rystem-options", TagStructure = TagStructure.NormalOrSelfClosing)]
-    public class CarouselHelper : TagHelper
+    [HtmlTargetElement("rystem-chart", Attributes = "rystem-data", TagStructure = TagStructure.NormalOrSelfClosing)]
+    public class ChartHelper : TagHelper
     {
         [ViewContext]
         public ViewContext ViewContext { get; set; }
         [HtmlAttributeName("rystem-data")]
-        public IEnumerable<ICarouselItem> Data { get; set; }
-        [HtmlAttributeName("rystem-options")]
-        public CarouselComponent Options { get; set; }
+        public DataChart Data { get; set; }
         private string Id { get; } = $"rystem-carousel-{Guid.NewGuid():N}";
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             ProcessAsync(context, output).ToResult();
         }
-        private const string SwiperScript = "<script>new CarouselRystem('{0}', '{1}', {2}, {3}).show();</script>";
+        private const string SwiperScript = "<script>new ChartRystem('{0}', {1}).show();</script>";
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            string containerId = $"container-{this.Id}";
             output.TagName = "div";
-            output.Content.AppendHtml($"<div id='{containerId}'></div>");
+            output.Content.AppendHtml($"<canvas id='{this.Id}' width='400' height='400'></canvas>");
             output.PostContent.AppendHtml(string.Format(SwiperScript,
                 this.Id,
-                containerId,
-                this.Data.Select(x => new CarouselItem() { Content = x.Content, Label = x.Label, Link = x.Link }).ToDefaultJson(),
-                (this.Options ?? CarouselComponent.Default).ToDefaultJson()));
+                this.Data.ToDefaultJson()));
             return Task.CompletedTask;
         }
     }

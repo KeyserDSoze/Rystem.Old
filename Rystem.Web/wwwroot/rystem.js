@@ -1,6 +1,8 @@
 ﻿class Rystem {
+    static instances = new Array();
     constructor(id) {
         this.id = id;
+        Rystem.instances.push(this);
     }
     static stringEmpty = "";
     getName() {
@@ -199,7 +201,7 @@ class ToastRystem extends Rystem {
 
 
 class CarouselRystem extends Rystem {
-    constructor(id, containerId, elements, options) {
+    constructor(id, container, elements, options) {
         super(id);
         this.container = container;
         this.$container = $("#" + this.container);
@@ -229,7 +231,7 @@ class CarouselRystem extends Rystem {
             $("#" + this.id + " .swiper-button-prev").remove();
         }
         this.$id = $("#" + id);
-        this.that = new Swiper('.swiper-container', this.options);
+        this.that = new Swiper(this.$id, this.options);
     }
     static defaultXml = "<div id='{id}' class='swiper-container' style='display:none;'>" +
         "<div class='swiper-wrapper'>{contents}</div>" +
@@ -239,5 +241,17 @@ class CarouselRystem extends Rystem {
         "</div>";
     show() {
         this.$id.css("display", "block");
+    }
+}
+
+class ChartRystem extends Rystem {
+    constructor(id, data) {
+        super(id);
+        this.data = data;
+        this.$id = $("#" + id);
+    }
+    show() {
+        let ctx = this.$id[0].getContext('2d');
+        this.chart = new Chart(ctx, this.data);
     }
 }
