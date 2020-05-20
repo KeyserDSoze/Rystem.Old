@@ -15,66 +15,66 @@ namespace Rystem.Web
             navigation = new Navigation(),
             pagination = new Pagination()
         };
-        public string direction => this.Direction.ToString().ToLower();
+        public string direction => this.Direction?.ToString().ToLower();
         [JsonIgnore]
-        public CarouselDirectionType Direction { get; set; }
+        public CarouselDirectionType? Direction { get; set; }
         /// <summary>
         /// Duration of transition between slides (in ms).
         /// </summary>
         [JsonProperty("speed")]
-        public int Speed { get; set; } = 300;
-        public string effect => this.Effect.ToString().ToLower();
+        public int? Speed { get; set; }
+        public string effect => this.Effect?.ToString().ToLower();
         [JsonIgnore]
-        public CarouselEffectType Effect { get; set; }
+        public CarouselEffectType? Effect { get; set; }
         /// <summary>
         /// Distance between slides in px.
         /// </summary>
         [JsonProperty("spaceBetween")]
-        public int SpaceBetween { get; set; }
-        public string slidesPerView => this.SlidesPerView > 0 ? this.SlidesPerView.ToString() : "auto";
+        public int? SpaceBetween { get; set; }
+        public string slidesPerView => this.SlidesPerView != null && this.SlidesPerView > 0 ? this.SlidesPerView.ToString() : "auto";
         /// <summary>
         /// Number of slides per view (slides visible at the same time on slider's container).
         /// If you use it with "auto" value and along with loop: true then you need to specify loopedSlides parameter with amount of slides to loop (duplicate)
         /// </summary>
         [JsonIgnore]
-        public int SlidesPerView { get; set; } = 1;
+        public int? SlidesPerView { get; set; }
         /// <summary>
         /// Number of slides per column, for multirow layout.
         /// slidesPerColumn > 1 is currently not compatible with loop mode(loop: true)
         /// </summary>
         [JsonProperty("slidesPerColumn")]
-        public int SlidesPerColumn { get; set; } = 1;
+        public int? SlidesPerColumn { get; set; }
         /// <summary>
         /// Set numbers of slides to define and enable group sliding. Useful to use with slidesPerView > 1
         /// </summary>
         [JsonProperty("slidesPerGroup")]
-        public int SlidesPerGroup { get; set; } = 1;
+        public int? SlidesPerGroup { get; set; } 
         [JsonProperty("resistance")]
-        public bool Resistance { get; set; } 
+        public bool? Resistance { get; set; }
         /// <summary>
         /// When enabled it won't allow to change slides by swiping or navigation/pagination buttons during transition
         /// </summary>
         [JsonProperty("preventInteractionOnTransition")]
-        public bool PreventInteractionOnTransition { get; set; }
+        public bool? PreventInteractionOnTransition { get; set; }
         /// <summary>
         /// Set to false to disable swiping to previous slide direction (to left or top)
         /// </summary>
         [JsonProperty("allowSlidePrev")]
-        public bool AllowSlidePrev { get; set; } = true;
+        public bool? AllowSlidePrev { get; set; }
         /// <summary>
         /// Set to false to disable swiping to next slide direction (to right or bottom)
         /// </summary>
         [JsonProperty("allowSlideNext")]
-        public bool AllowSlideNext { get; set; } = true;
+        public bool? AllowSlideNext { get; set; }
         /// <summary>
         /// Allow 'swiper-no-swiping' class to not swipe items
         /// </summary>
         [JsonProperty("noSwiping")]
-        public bool NoSwiping { get; set; }
+        public bool? NoSwiping { get; set; }
         [JsonProperty("loop")]
-        public bool Loop { get; set; }
+        public bool? Loop { get; set; }
         [JsonProperty("lazy")]
-        public bool Lazy { get; set; }
+        public bool? Lazy { get; set; }
         public Navigation navigation { get; set; }
         public Pagination pagination { get; set; }
         public Autoplay autoplay { get; set; }
@@ -100,12 +100,12 @@ namespace Rystem.Web
             /// CSS class name added to navigation button when it becomes disabled
             /// </summary>
             [JsonProperty("disabledClass")]
-            public string DisabledClass { get; set; } 
+            public string DisabledClass { get; set; }
             /// <summary>
             /// CSS class name added to navigation button when it becomes hidden
             /// </summary>
             [JsonProperty("hiddenClass")]
-            public string HiddenClass { get; set; } 
+            public string HiddenClass { get; set; }
         }
         public class Pagination
         {

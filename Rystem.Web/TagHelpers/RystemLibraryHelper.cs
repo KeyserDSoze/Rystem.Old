@@ -71,7 +71,7 @@ namespace Rystem.Web
             if (this.UseSwiperCdn)
             {
                 stringBuilder.Append("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/Swiper/5.4.0/css/swiper.min.css' />");
-                stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/Swiper/5.4.0/js/swiper.min.js'></script>");
+                stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/Swiper/5.4.0/js/swiper.js'></script>");
             }
             if (this.UseFontAwesomeCdn)
             {

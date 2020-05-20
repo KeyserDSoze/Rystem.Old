@@ -33,7 +33,7 @@ namespace Rystem.WebApp.Controllers
                 items.Add(new CarouselItem()
                 {
                     Content = "https://image.shutterstock.com/z/stock-photo-incredible-nature-landscape-colorful-sky-resia-lake-in-dolomites-mountains-during-sunrise-scenic-1480431083.jpg",
-                    Link = "https://www.google.com"
+                    //Link = "https://www.google.com"
                 });
             return View(items);
         }
@@ -66,7 +66,7 @@ namespace Rystem.WebApp.Controllers
         }
 
         public IActionResult Charting()
-            => View(new MyFirstChart().ToDataChart(ChartType.Bar));
+            => View(new MyFirstChart().ToDataChart(ChartType.Line));
 
         public async Task<IActionResult> Rexo()
         {

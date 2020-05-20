@@ -13,6 +13,10 @@ namespace System
          => JsonConvert.SerializeObject(entity);
         public static T FromJson<T>(this string entry)
             => JsonConvert.DeserializeObject<T>(entry);
+        public static string ToJsonNoNull<T>(this T entity)
+         => JsonConvert.SerializeObject(entity, NewtonsoftConst.NullIgnore_JsonSettings);
+        public static T FromJsonNoNull<T>(this string entry)
+            => JsonConvert.DeserializeObject<T>(entry, NewtonsoftConst.NullIgnore_JsonSettings);
         public static string ToDefaultJson<T>(this T entity)
             => JsonConvert.SerializeObject(entity, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
         public static T FromDefaultJson<T>(this string entry)

@@ -39,7 +39,7 @@ namespace Rystem.Web
                 this.Id,
                 containerId,
                 this.Data.Select(x => new CarouselItem() { Content = x.Content, Label = x.Label, Link = x.Link }).ToDefaultJson(),
-                (this.Options ?? CarouselComponent.Default).ToJson()));
+                (this.Options ?? CarouselComponent.Default).ToJsonNoNull()));
             return Task.CompletedTask;
         }
     }

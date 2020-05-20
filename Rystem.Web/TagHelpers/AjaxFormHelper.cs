@@ -47,7 +47,7 @@ namespace Rystem.Web
                     this.Id,
                     (this.RequestContext ?? new RequestContext() { RequestType = RequestType.Post }).FinalizeRequestContext(this.ViewContext.HttpContext.Request),
                     this.CloseModal.ToString().ToLower(),
-                    this.Toast?.ToJson() ?? EmptyFunction,
+                    this.Toast?.ToJsonNoNull() ?? EmptyFunction,
                     this.UpdateRequestContext?.FinalizeRequestContext(this.ViewContext.HttpContext.Request) ?? EmptyFunction
                     ));
             return Task.CompletedTask;

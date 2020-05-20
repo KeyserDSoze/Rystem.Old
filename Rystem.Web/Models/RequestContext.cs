@@ -70,7 +70,7 @@ namespace Rystem.Web
             if (this.QueryString != null && this.QueryString.Count > 0)
                 builder.Append($"?{string.Join("&", this.QueryString.Select(x => $"{x.Key}={x.Value}"))}");
             this.Url = builder.ToString();
-            return this.ToJson();
+            return this.ToJsonNoNull();
         }
     }
 }
