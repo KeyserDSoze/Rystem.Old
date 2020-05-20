@@ -27,6 +27,10 @@ namespace System
     }
     public static partial class CryptoExtensions
     {
+        public static string DefaultEncrypt(string entry)
+            => new DefaultCrypto() { Message = entry }.Encrypt(Installation.Default).CryptedMessage;
+        public static string DefaultDecrypt(this string entry)
+            => new DefaultCrypto() { CryptedMessage = entry }.Decrypt(Installation.Default).Message;
         public static string DefaultEncrypt<TEntity>(this TEntity entity)
             => new DefaultCrypto() { Message = entity.ToDefaultJson() }.Encrypt(Installation.Default).CryptedMessage;
         public static TEntity DefaultDecrypt<TEntity>(this string entry)

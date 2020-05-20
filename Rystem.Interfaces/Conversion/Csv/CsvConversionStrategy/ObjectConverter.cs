@@ -17,7 +17,7 @@ namespace Rystem.Conversion
             if (value == null)
                 return string.Empty;
             StringBuilder stringBuilder = new StringBuilder();
-            foreach (PropertyInfo property in Properties.Fetch(value.GetType(), CsvIgnoreAttribute))
+            foreach (PropertyInfo property in value.GetType().FetchProperties(CsvIgnoreAttribute))
                 stringBuilder.Append($"{SetHeader(property.GetCustomAttribute(CsvPropertyAttribute) is CsvProperty csvProperty ? csvProperty.Name : property.Name)}{this.Header}{this.HelpToSerialize(property.PropertyType, property.GetValue(value))}{this.IndexAsChar}");
             return stringBuilder.ToString().Trim(this.IndexAsChar);
 
@@ -35,7 +35,7 @@ namespace Rystem.Conversion
                 return default;
             dynamic startValue = Activator.CreateInstance(type);
             string[] values = value.Split(this.IndexAsChar);
-            PropertyInfo[] propertyInfo = Properties.Fetch(type, CsvIgnoreAttribute);
+            PropertyInfo[] propertyInfo = type.FetchProperties(CsvIgnoreAttribute);
             foreach (string v in values)
             {
                 string[] propertyAsString = v.Split(this.Header);

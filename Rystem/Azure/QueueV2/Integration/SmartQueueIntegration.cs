@@ -238,7 +238,7 @@ namespace Rystem.Azure.Queue
         private const string ToReplaceOnQuery = "'";
         private const string ReplaceWithOnQuery = "''";
         private string GetNormalizedJson(TEntity message)
-            => message.ToJson().Replace(ToReplaceOnQuery, ReplaceWithOnQuery);
+            => message.ToDefaultJson().Replace(ToReplaceOnQuery, ReplaceWithOnQuery);
         private class ReadingWrapper
         {
             public IList<TEntity> Messages { get; set; } = new List<TEntity>();

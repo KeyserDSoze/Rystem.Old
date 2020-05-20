@@ -48,12 +48,12 @@ namespace Rystem.Azure.Queue
         public async Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds, Installation installation, int path, int organization)
         {
             await Task.Delay(0).NoContext();
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = ((TEntity)message).ToJson(), SmartMessage = ((TEntity)message).ToJson(), EventDatas = new EventData[1] { new EventData(((TEntity)message).ToSendable()) } };
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = ((TEntity)message).ToDefaultJson(), SmartMessage = ((TEntity)message).ToDefaultJson(), EventDatas = new EventData[1] { new EventData(((TEntity)message).ToSendable()) } };
         }
         public async Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization)
         {
             await Task.Delay(0).NoContext();
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.Select(x => (TEntity)x).ToJson(), SmartMessage = messages.Select(x => (TEntity)x).ToJson(), EventDatas = messages.Select(x => new EventData(((TEntity)x).ToSendable())).ToArray() };
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.Select(x => (TEntity)x).ToDefaultJson(), SmartMessage = messages.Select(x => (TEntity)x).ToDefaultJson(), EventDatas = messages.Select(x => new EventData(((TEntity)x).ToSendable())).ToArray() };
         }
         public string GetName(Installation installation) => QueueConfiguration[installation].Name;
 

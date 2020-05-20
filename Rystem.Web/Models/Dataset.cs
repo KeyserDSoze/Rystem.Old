@@ -11,12 +11,12 @@ namespace Rystem.Web
     {
         public string type => this.Type.ToString().ToLower();
         [JsonIgnore]
-        public DatasetType Type { get; set; }
+        public ChartType Type { get; set; }
         [JsonProperty("data")]
         public Dataset Data { get; set; }
         [JsonProperty("options")]
         public DataOption Options { get; set; }
-        public static DataChart Default(IEnumerable<string> labels, IEnumerable<DataModel> datasets, string title, string xAxes, string yAxes, DatasetType type = DatasetType.Line)
+        public static DataChart Default(IEnumerable<string> labels, IEnumerable<DataModel> datasets, string title, string xAxes, string yAxes, ChartType type = ChartType.Line)
         {
             return new DataChart()
             {
@@ -70,10 +70,11 @@ namespace Rystem.Web
         [JsonProperty("datasets")]
         public IEnumerable<DataModel> Datasets { get; set; }
     }
-    public enum DatasetType
+    public enum ChartType
     {
         Line,
         Bar,
+        Pie
     }
     public class DataModel
     {

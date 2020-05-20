@@ -32,13 +32,13 @@ namespace Rystem.Azure.Queue
              => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Select(x => x.AsString).FromMessage<TEntity>();
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
-            await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToJson())).NoContext();
+            await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToDefaultJson())).NoContext();
             return true;
         }
 
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
         {
-            await this.Client.AddMessageAsync(new CloudQueueMessage(messages.ToJson())).NoContext();
+            await this.Client.AddMessageAsync(new CloudQueueMessage(messages.ToDefaultJson())).NoContext();
             return true;
         }
 

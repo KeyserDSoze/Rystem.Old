@@ -6,11 +6,11 @@ using System.Text;
 
 namespace System.Reflection
 {
-    public static class Properties
+    public static class ReflectionExtensions
     {
         private readonly static Dictionary<string, PropertyInfo[]> AllProperties = new Dictionary<string, PropertyInfo[]>();
         private readonly static object TrafficCard = new object();
-        public static PropertyInfo[] Fetch(Type type, params Type[] attributesToIgnore)
+        public static PropertyInfo[] FetchProperties(this Type type, params Type[] attributesToIgnore)
         {
             if (!AllProperties.ContainsKey(type.FullName))
                 lock (TrafficCard)

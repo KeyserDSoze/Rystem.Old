@@ -34,7 +34,7 @@ namespace Rystem.Web
             output.Content.AppendHtml($"<canvas id='{this.Id}' width='400' height='400'></canvas>");
             output.PostContent.AppendHtml(string.Format(SwiperScript,
                 this.Id,
-                this.Data.ToDefaultJson()));
+                this.Data.ToJson()));
             return Task.CompletedTask;
         }
     }

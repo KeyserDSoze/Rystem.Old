@@ -67,18 +67,8 @@ namespace Rystem.Cache
                 this.Creator = creator;
             }
         }
-        private async Task<TCache> InstanceWithoutConsistencyAsync(IMultitonKey<TCache> key)
+        private async Task<TCache> InstanceWithoutConsistencyAsync(IMultitonKey<TCache> key, string keyString)
         {
-            string keyString = key.ToKeyString();
-            if (MemoryIsActive)
-                if (InMemory.Exists(keyString).IsOk)
-                    return InMemory.Instance(keyString);
-            if (CloudIsActive)
-            {
-                var responseFromCloud = await InCloud.ExistsAsync(keyString).NoContext();
-                if (responseFromCloud.IsOk)
-                    return responseFromCloud.Cache != null ? responseFromCloud.Cache : await InCloud.InstanceAsync(keyString).NoContext();
-            }
             TCache cache = await key.FetchAsync().NoContext();
             if (MemoryIsActive)
                 InMemory.Update(keyString, cache, default);
@@ -86,70 +76,57 @@ namespace Rystem.Cache
                 await InCloud.UpdateAsync(keyString, cache, default).NoContext();
             return cache;
         }
-        public async Task<TCache> InstanceAsync(IMultitonKey<TCache> key)
+        private async Task<TCache> InstanceWithConsistencyAsync(IMultitonKey<TCache> key, string keyString)
         {
-            if (this.Configuration.Consistency == CacheConsistency.Never)
-                return await InstanceWithoutConsistencyAsync(key).NoContext();
-
             TCache cache = default;
-            string keyString = key.ToKeyString();
-            bool cloudChecked = false;
-            if (!ExistsInMemory() || !await ExistsInCloud().NoContext())
+            Promised.TryAdd(keyString,
+                new MyLazy<PromisedCache>(() => new PromisedCache(new Instancer(key, keyString, InCloud))));
+            Promised.TryGetValue(keyString, out MyLazy<PromisedCache> lazy);
+            if (lazy != null)
             {
-                if (await ExistsInCloud().NoContext())
-                    UpdateInMemory();
-                else
-                {
-                    Promised.TryAdd(keyString,
-                        new MyLazy<PromisedCache>(() => new PromisedCache(new Instancer(key, keyString, cloudChecked, InCloud))));
-                    Promised.TryGetValue(keyString, out MyLazy<PromisedCache> lazy);
-                    if (lazy != null)
-                    {
-                        PromisedCache promisedCache = lazy.Value;
-                        PromisedState promisedState = default;
-                        while (!(promisedState = promisedCache.Run()).IsCompleted())
-                            await Task.Delay(100).NoContext();
-                        if (promisedState.HasThrownAnException())
-                            throw promisedState.Exception;
-                        if (promisedState.HasEmptyResponse())
-                            return cache;
-                        cache = promisedCache.Cache;
-                        if (cache == null)
-                            return cache;
-                        UpdateInMemory();
-                        Promised.TryRemove(keyString, out _);
-                    }
-                }
+                PromisedCache promisedCache = lazy.Value;
+                PromisedState promisedState = default;
+                while (!(promisedState = promisedCache.Run()).IsCompleted())
+                    await Task.Delay(100).NoContext();
+                if (promisedState.HasThrownAnException())
+                    throw promisedState.Exception;
+                if (promisedState.HasEmptyResponse())
+                    return cache;
+                cache = promisedCache.Cache;
+                if (cache == null)
+                    return cache;
+                if (MemoryIsActive)
+                    InMemory.Update(keyString, cache, default);
+                Promised.TryRemove(keyString, out _);
             }
             if (cache != null)
                 return cache;
+            else if (MemoryIsActive)
+                return InMemory.Instance(keyString);
             else
-                return MemoryIsActive ? InMemory.Instance(keyString) : await InCloud.InstanceAsync(keyString).NoContext();
-
-            bool ExistsInMemory()
-                => MemoryIsActive && InMemory.Exists(keyString).IsOk;
-            void UpdateInMemory()
+                return await InCloud.InstanceAsync(keyString).NoContext();
+        }
+        public async Task<TCache> InstanceAsync(IMultitonKey<TCache> key)
+        {
+            string keyString = key.ToKeyString();
+            if (MemoryIsActive)
+                if (InMemory.Exists(keyString).IsOk)
+                    return InMemory.Instance(keyString);
+            if (CloudIsActive)
             {
-                if (MemoryIsActive)
-                    InMemory.Update(keyString, cache, default);
-            }
-            async Task<bool> ExistsInCloud()
-            {
-                if (!cloudChecked)
+                MultitonStatus<TCache> responseFromCloud = await InCloud.ExistsAsync(keyString).NoContext();
+                if (responseFromCloud.IsOk)
                 {
-                    cloudChecked = true;
-                    if (CloudIsActive)
-                    {
-                        MultitonStatus<TCache> result = await InCloud.ExistsAsync(keyString).NoContext();
-                        if (result.Cache != null)
-                            cache = result.Cache;
-                        else
-                            cache = await InCloud.InstanceAsync(keyString).NoContext();
-                        return result.IsOk;
-                    }
+                    TCache cache = responseFromCloud.Cache != null ? responseFromCloud.Cache : await InCloud.InstanceAsync(keyString).NoContext();
+                    if (MemoryIsActive)
+                        InMemory.Update(keyString, cache, default);
+                    return cache;
                 }
-                return false;
             }
+            if (this.Configuration.Consistency == CacheConsistency.Never)
+                return await InstanceWithoutConsistencyAsync(key, keyString).NoContext();
+            else
+                return await InstanceWithConsistencyAsync(key, keyString).NoContext();
         }
         public async Task<bool> UpdateAsync(IMultitonKey<TCache> key, TCache value, TimeSpan expiringTime)
         {
@@ -197,18 +174,16 @@ namespace Rystem.Cache
             public IMultitonKey<TCache> Key { get; }
             public string KeyString { get; }
             public bool CloudIsActive { get; }
-            public bool CloudChecked { get; }
             public IMultitonIntegrationAsync<TCache> InCloud { get; }
             private TCache CachedData;
             public TCache GetCachedData()
                 => this.CachedData;
-            public Instancer(IMultitonKey<TCache> key, string keyString, bool cloudChecked, IMultitonIntegrationAsync<TCache> inCloud)
+            public Instancer(IMultitonKey<TCache> key, string keyString, IMultitonIntegrationAsync<TCache> inCloud)
             {
                 this.Key = key;
                 this.KeyString = keyString;
                 this.InCloud = inCloud;
                 this.CloudIsActive = inCloud != null;
-                this.CloudChecked = cloudChecked;
             }
             public async Task Execute(object state)
             {

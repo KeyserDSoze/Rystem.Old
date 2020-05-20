@@ -105,18 +105,12 @@ namespace System
             where TEntity : IQueue
             => message.Manager().GetName(installation);
 
-        public static string ToJson<TEntry>(this TEntry message)
-            where TEntry : IQueue
-           => message.ToDefaultJson();
         public static byte[] ToSendable<TEntry>(this TEntry message)
             where TEntry : IQueue
-            => Encoding.UTF8.GetBytes(message.ToJson());
-        public static string ToJson<TEntry>(this IEnumerable<TEntry> messages)
-            where TEntry : IQueue
-            => messages.ToDefaultJson();
+            => Encoding.UTF8.GetBytes(message.ToDefaultJson());
         public static byte[] ToSendable<TEntry>(this IEnumerable<TEntry> messages)
             where TEntry : IQueue
-            => Encoding.UTF8.GetBytes(messages.ToJson());
+            => Encoding.UTF8.GetBytes(messages.ToDefaultJson());
         internal static TEntity ToMessage<TEntity>(this string message)
             where TEntity : IQueue
             => message.FromDefaultJson<TEntity>();

@@ -9,6 +9,10 @@ namespace System
 {
     public static class JsonConversionExtensions
     {
+        public static string ToJson<T>(this T entity)
+         => JsonConvert.SerializeObject(entity);
+        public static T FromJson<T>(this string entry)
+            => JsonConvert.DeserializeObject<T>(entry);
         public static string ToDefaultJson<T>(this T entity)
             => JsonConvert.SerializeObject(entity, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings);
         public static T FromDefaultJson<T>(this string entry)

@@ -37,7 +37,38 @@ namespace Rystem.WebApp.Controllers
                 });
             return View(items);
         }
+        public class MyFirstChart : IChart
+        {
+            public string X => "data";
 
+            public string Y => "numero congiure";
+
+            public string Title => "Bella zi";
+            public MyFirstChart()
+            {
+                this.Datasets = new Dictionary<string, DataModel>();
+                for (int i = 0; i < 5; i++)
+                {
+                    this.Datasets.Add(i.ToString(), new DataModel()
+                    {
+                        BackgroundColor = "#ff0000" ,
+                        BorderColor =  "#ff0000" ,
+                        Data = GetNumbers(i),
+                        Fill = true,
+                        Label = "Circo" + i
+                    });
+                }
+                IEnumerable<decimal> GetNumbers(int start)
+                {
+                    for (int i = start + 10; i < start + 20; i++)
+                        yield return i;
+                }
+            }
+            public Dictionary<string, DataModel> Datasets { get; }
+        }
+
+        public IActionResult Charting() 
+            => View(new MyFirstChart().ToDataChart());
 
         public async Task<IActionResult> Rexo()
         {
