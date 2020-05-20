@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Rystem.Web;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace Rystem.Web
@@ -16,8 +17,31 @@ namespace Rystem.Web
         public Dataset Data { get; set; }
         [JsonProperty("options")]
         public DataOption Options { get; set; }
+        private const int NumberOfColor = 10;
+        private static readonly Color[] Colors = new Color[10]
+        {
+            Color.Red,
+            Color.Green,
+            Color.Blue,
+            Color.Cyan,
+            Color.Magenta,
+            Color.Gold,
+            Color.DeepPink,
+            Color.Beige,
+            Color.Azure,
+            Color.DarkViolet,
+        };
         public static DataChart Default(IEnumerable<string> labels, IEnumerable<DataModel> datasets, string title, string xAxes, string yAxes, ChartType type = ChartType.Line)
         {
+            int count = 0;
+            foreach (DataModel dataModel in datasets)
+            {
+                if (dataModel.BackgroundColor == default)
+                    dataModel.BackgroundColor = Colors[count % NumberOfColor];
+                if (dataModel.BorderColor == default)
+                    dataModel.BorderColor = Colors[count % NumberOfColor];
+                count++;
+            }
             return new DataChart()
             {
                 Type = type,
@@ -80,10 +104,12 @@ namespace Rystem.Web
     {
         [JsonProperty("label")]
         public string Label { get; set; }
-        [JsonProperty("backgroundColor")]
-        public string BackgroundColor { get; set; }
-        [JsonProperty("borderColor")]
-        public string BorderColor { get; set; }
+        public string backgroundColor => $"#{this.BackgroundColor.R:X2}{this.BackgroundColor.G:X2}{this.BackgroundColor.B:X2}";
+        [JsonIgnore]
+        public Color BackgroundColor { get; set; }
+        public string borderColor => $"#{this.BorderColor.R:X2}{this.BorderColor.G:X2}{this.BorderColor.B:X2}";
+        [JsonIgnore]
+        public Color BorderColor { get; set; }
         [JsonProperty("data")]
         public IEnumerable<decimal> Data { get; set; }
         [JsonProperty("fill")]

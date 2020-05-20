@@ -227,7 +227,7 @@ class CarouselRystem extends Rystem {
         if (!this.options.pagination)
             $("#" + this.id + " .swiper-pagination").remove();
         if (!this.options.navigation) {
-            $("#" + this.id + " .wiper-button-next").remove();
+            $("#" + this.id + " .swiper-button-next").remove();
             $("#" + this.id + " .swiper-button-prev").remove();
         }
         this.$id = $("#" + id);

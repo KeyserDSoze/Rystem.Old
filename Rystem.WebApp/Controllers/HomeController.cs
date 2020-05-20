@@ -51,10 +51,8 @@ namespace Rystem.WebApp.Controllers
                 {
                     this.Datasets.Add(i.ToString(), new DataModel()
                     {
-                        BackgroundColor = "#ff0000" ,
-                        BorderColor =  "#ff0000" ,
                         Data = GetNumbers(i),
-                        Fill = true,
+                        Fill = false,
                         Label = "Circo" + i
                     });
                 }
@@ -67,8 +65,8 @@ namespace Rystem.WebApp.Controllers
             public Dictionary<string, DataModel> Datasets { get; }
         }
 
-        public IActionResult Charting() 
-            => View(new MyFirstChart().ToDataChart());
+        public IActionResult Charting()
+            => View(new MyFirstChart().ToDataChart(ChartType.Bar));
 
         public async Task<IActionResult> Rexo()
         {
