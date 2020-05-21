@@ -38,7 +38,7 @@ namespace Rystem.Web
             output.PostContent.AppendHtml(string.Format(SwiperScript,
                 this.Id,
                 containerId,
-                this.Data.Select(x => new CarouselItem() { Content = x.Content, Label = x.Label, Link = x.Link }).ToDefaultJson(),
+                this.Data.Select(x => new CarouselItem() { Content = x.Content, Label = x.Label, Link = x.Link }).ToJsonNoNull(),
                 (this.Options ?? CarouselComponent.Default).ToJsonNoNull()));
             return Task.CompletedTask;
         }

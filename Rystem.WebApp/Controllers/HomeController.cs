@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Rystem.Utility;
 using Rystem.Web;
 using Rystem.WebApp.Models;
 
@@ -26,6 +28,30 @@ namespace Rystem.WebApp.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public IActionResult Index([FromForm]Alo alo) => Ok("A good update");
 
+        static HomeController()
+        {
+            Threading.StartThreadOrchestrator(3, 3);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Api()
+        {
+            await Task.Delay(4000);
+            return Ok();
+        }
+        private static string Instance = Guid.NewGuid().ToString("N");
+        [HttpGet]
+        public IActionResult Check()
+        {
+            ThreadPool.GetAvailableThreads(out int workerThreads, out int completionPortThreads);
+            ThreadPool.GetMinThreads(out int minThreads, out int minCompletionPortThreads);
+            ThreadPool.GetMaxThreads(out int maxThreads, out int maxCompletionPortThreads);
+            string value = $"Instance {Instance}";
+            value += $"{'\n'}available workerThreads: {workerThreads} - completionPortThreads: {completionPortThreads}";
+            value += $"{'\n'}minThreads: {minThreads} - minCompletionPortThreads: {minCompletionPortThreads}";
+            value += $"{'\n'}maxThreads: {maxThreads} - maxCompletionPortThreads: {maxCompletionPortThreads}";
+            return Ok(value);
+        }
         public IActionResult Privacy()
         {
             List<CarouselItem> items = new List<CarouselItem>();
