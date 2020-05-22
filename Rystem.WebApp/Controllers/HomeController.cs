@@ -30,7 +30,7 @@ namespace Rystem.WebApp.Controllers
 
         static HomeController()
         {
-            Threading.StartThreadOrchestrator(3, 3);
+            Threading.StartOrchestrator(3, 3);
         }
 
         [HttpPost]
