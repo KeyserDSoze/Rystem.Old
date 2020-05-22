@@ -6,27 +6,27 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.AggregatedData.Integration
+namespace Rystem.Azure.Data.Integration
 {
-    public class JsonDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
-        where TEntity : IAggregatedData
+    public class JsonDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
+        where TEntity : IData
     {
-        public async Task<TEntity> ReadAsync(AggregatedDataDummy dummy)
+        public async Task<WrapperEntity<TEntity>> ReadAsync(DataWrapper dummy)
         {
             using (StreamReader sr = new StreamReader(dummy.Stream))
             {
                 TEntity dataLake = (await sr.ReadToEndAsync().NoContext()).FromDefaultJson<TEntity>();
                 dataLake.Properties = dummy.Properties;
                 dataLake.Name = dummy.Name;
-                return dataLake;
+                return new WrapperEntity<TEntity>() { Entities = new List<TEntity>() { dataLake } };
             }
         }
-        public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
+        public async Task<DataWrapper> WriteAsync(TEntity entity)
         {
             await Task.Delay(0).NoContext();
-            return new AggregatedDataDummy()
+            return new DataWrapper()
             {
-                Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/json" },
+                Properties = entity.Properties ?? new BlobDataProperties() { ContentType = "text/json" },
                 Name = entity.Name,
                 Stream = new MemoryStream(Encoding.UTF8.GetBytes(entity.ToDefaultJson()))
             };

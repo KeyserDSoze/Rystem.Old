@@ -1,4 +1,4 @@
-﻿using Rystem.Cache;
+﻿using Rystem.Fast;
 using Rystem.ConsoleApp.Tester;
 using Rystem.UnitTest;
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Rystem.Cache;
 
 namespace Rystem.ZConsoleApp.Tester.Cache
 {
@@ -32,7 +33,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 
             return true;
         }
-        private class SaveTheLastDance : IMultiton
+        private class SaveTheLastDance
         {
             public int Id { get; set; }
             public string Hola { get; set; }

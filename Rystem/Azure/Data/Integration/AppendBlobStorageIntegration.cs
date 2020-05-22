@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Azure.AggregatedData.Integration;
+using Rystem.Azure.Data.Integration;
 using Rystem.Utility;
 using System;
 using System.Collections.Generic;
@@ -8,43 +8,43 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.AggregatedData
+namespace Rystem.Azure.Data
 {
-    internal class AppendBlobStorageIntegration<TEntity> : IAggregatedDataIntegration<TEntity>
-        where TEntity : IAggregatedData
+    internal class AppendBlobStorageIntegration<TEntity> : IDataIntegration<TEntity>
+        where TEntity : IData
     {
         private readonly CloudBlobContainer Context;
-        private readonly IAggregatedDataWriter<TEntity> Writer;
-        private readonly IAggregatedDataListReader<TEntity> ListReader;
+        private readonly IDataWriter<TEntity> Writer;
+        private readonly IDataReader<TEntity> ListReader;
         private const int MaximumAttempt = 3;
-        internal AppendBlobStorageIntegration(AggregatedDataConfiguration<TEntity> configuration)
+        internal AppendBlobStorageIntegration(DataConfiguration<TEntity> configuration)
         {
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             this.Context = Client.GetContainerReference(configuration.Name.ToLower());
-             this.Context.CreateIfNotExistsAsync().ToResult();
+            this.Context.CreateIfNotExistsAsync().ToResult();
             this.Writer = configuration.Writer ?? new CsvDataManager<TEntity>();
-            this.ListReader = configuration.ListReader ?? new CsvDataManager<TEntity>();
+            this.ListReader = configuration.Reader ?? new CsvDataManager<TEntity>();
         }
-        public async Task<bool> DeleteAsync(IAggregatedData entity)
+        public async Task<bool> DeleteAsync(IData entity)
             => await BlobStorageBaseIntegration.DeleteAsync(this.Context.GetAppendBlobReference(entity.Name)).NoContext();
 
-        public async Task<bool> ExistsAsync(IAggregatedData entity)
+        public async Task<bool> ExistsAsync(IData entity)
             => await BlobStorageBaseIntegration.ExistsAsync(this.Context.GetAppendBlobReference(entity.Name)).NoContext();
 
-        public Task<TEntity> FetchAsync(IAggregatedData entity)
+        public Task<TEntity> FetchAsync(IData entity)
             => throw new NotImplementedException($"With appendblob you can retrieve only a list of your items. Please use {nameof(ListAsync)}");
         private async Task<IList<TEntity>> ReadAsync(ICloudBlob cloudBlob)
         {
-            return await this.ListReader.ReadAsync(new AggregatedDataDummy()
+            return (await this.ListReader.ReadAsync(new DataWrapper()
             {
                 Name = cloudBlob.Name,
                 Stream = await BlobStorageBaseIntegration.ReadAsync(cloudBlob).NoContext(),
                 Properties = cloudBlob.Properties.ToAggregatedDataProperties()
-            }).NoContext();
+            }).NoContext()).Entities;
         }
 
-        public async Task<IList<TEntity>> ListAsync(IAggregatedData entity, string prefix, int? takeCount)
+        public async Task<IList<TEntity>> ListAsync(IData entity, string prefix, int? takeCount)
         {
             List<TEntity> items = new List<TEntity>();
             BlobContinuationToken token = null;
@@ -63,17 +63,17 @@ namespace Rystem.Azure.AggregatedData
             return items;
         }
 
-        public async Task<IList<string>> SearchAsync(IAggregatedData entity, string prefix, int? takeCount)
+        public async Task<IList<string>> SearchAsync(IData entity, string prefix, int? takeCount)
             => await BlobStorageBaseIntegration.SearchAsync(this.Context, prefix, takeCount).NoContext();
-        public async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(IAggregatedData entity, string prefix, int? takeCount)
+        public async Task<IList<DataWrapper>> FetchPropertiesAsync(IData entity, string prefix, int? takeCount)
             => await BlobStorageBaseIntegration.FetchPropertiesAsync(this.Context, prefix, takeCount).NoContext();
         private const string BlobDoesntExist = "The specified blob does not exist.";
         private const string BlobNotFound = "(404) Not Found";
-        public async Task<bool> WriteAsync(IAggregatedData entity, long offset)
+        public async Task<bool> WriteAsync(IData entity, long offset)
         {
             int attempt = 0;
             CloudAppendBlob appendBlob = this.Context.GetAppendBlobReference(entity.Name);
-            AggregatedDataDummy dummy = await this.Writer.WriteAsync((TEntity)entity).NoContext();
+            DataWrapper dummy = await this.Writer.WriteAsync((TEntity)entity).NoContext();
             do
             {
                 try

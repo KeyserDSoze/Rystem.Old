@@ -1,5 +1,5 @@
 ﻿using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Azure.AggregatedData;
+using Rystem.Azure.Data;
 using Rystem.ConsoleApp.Tester;
 using Rystem.UnitTest;
 using System;
@@ -17,7 +17,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             Meatball meatball = new Meatball()
             {
                 Name = "Hello2.csv",
-                Properties = new AggregatedDataProperties()
+                Properties = new BlobDataProperties()
                 {
                     ContentType = "text/csv"
                 }
@@ -33,7 +33,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             IList<Meatball> meatball2 = (await meatball.ListAsync()).ToList();
             if (meatball2.Count != 3)
                 return false;
-            IList<AggregatedDataDummy> properties = await meatball.FetchPropertiesAsync();
+            IList<DataWrapper> properties = await meatball.FetchPropertiesAsync();
             if (properties.Count != 1)
                 return false;
             if (!await meatball.DeleteAsync())
@@ -79,8 +79,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
     {
         static Meatball()
         {
-            AggregatedDataInstaller.Configure(
-                new AggregatedDataConfiguration<Meatball>()
+            DataInstaller.Configure(
+                new DataConfiguration<Meatball>()
                 {
 
                     ConnectionString = StorageConnectionString,
@@ -88,8 +88,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                 },
                 MeatballType.MyDefault.ToInstallation()
                 );
-            AggregatedDataInstaller.Configure(
-                new AggregatedDataConfiguration<Meatball>()
+            DataInstaller.Configure(
+                new DataConfiguration<Meatball>()
                 {
 
                     ConnectionString = StorageConnectionString,
@@ -103,6 +103,6 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         public int A { get; set; }
         public string B { get; set; }
         public string Name { get; set; }
-        public AggregatedDataProperties Properties { get; set; }
+        public IDataProperties Properties { get; set; }
     }
 }

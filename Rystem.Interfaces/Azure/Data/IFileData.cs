@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Rystem.Azure.AggregatedData
+namespace Rystem.Azure.Data
 {
     public interface IFileData : IAggregatedData
     {

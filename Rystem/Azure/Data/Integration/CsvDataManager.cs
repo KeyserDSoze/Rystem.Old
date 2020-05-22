@@ -9,10 +9,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.AggregatedData.Integration
+namespace Rystem.Azure.Data.Integration
 {
-    internal class CsvDataManager<TEntity> : IAggregatedDataListReader<TEntity>, IAggregatedDataWriter<TEntity>
-          where TEntity : IAggregatedData
+    internal class CsvDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
+          where TEntity : IData
     {
         private readonly char SplittingChar;
         private const string InCaseOfSplittedChar = "\"{0}\"";
@@ -49,7 +49,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             }
             return dataLake;
         }
-        private string Serialize(IAggregatedData dataLake)
+        private string Serialize(IData dataLake)
         {
             StringBuilder stringBuilder = new StringBuilder();
             List<PropertyInfo> propertyInfos = Property(dataLake.GetType());
@@ -68,9 +68,9 @@ namespace Rystem.Azure.AggregatedData.Integration
             }
             return stringBuilder.ToString() + BreakLine;
         }
-        public async Task<IList<TEntity>> ReadAsync(AggregatedDataDummy dummy)
+        public async Task<WrapperEntity<TEntity>> ReadAsync(DataWrapper dummy)
         {
-            IList<TEntity> aggregatedDatas = new List<TEntity>();
+            List<TEntity> aggregatedDatas = new List<TEntity>();
             using (StreamReader sr = new StreamReader(dummy.Stream))
             {
                 while (!sr.EndOfStream)
@@ -81,15 +81,15 @@ namespace Rystem.Azure.AggregatedData.Integration
                     aggregatedDatas.Add(aggregatedData);
                 }
             }
-            return aggregatedDatas;
+            return new WrapperEntity<TEntity>() { Entities = aggregatedDatas };
         }
 
-        public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
+        public async Task<DataWrapper> WriteAsync(TEntity entity)
         {
             await Task.Delay(0).NoContext();
-            return new AggregatedDataDummy()
+            return new DataWrapper()
             {
-                Properties = entity.Properties ?? new AggregatedDataProperties() { ContentType = "text/csv" },
+                Properties = entity.Properties as BlobDataProperties ?? new BlobDataProperties() { ContentType = "text/csv" },
                 Name = entity.Name,
                 Stream = new MemoryStream(Encoding.UTF8.GetBytes(Serialize(entity)))
             };

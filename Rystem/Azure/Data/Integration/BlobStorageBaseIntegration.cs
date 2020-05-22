@@ -7,7 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.AggregatedData.Integration
+namespace Rystem.Azure.Data.Integration
 {
     internal static class BlobStorageBaseIntegration
     {
@@ -33,9 +33,9 @@ namespace Rystem.Azure.AggregatedData.Integration
             } while (token != null);
             return items;
         }
-        public static async Task<IList<AggregatedDataDummy>> FetchPropertiesAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
+        public static async Task<IList<DataWrapper>> FetchPropertiesAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
         {
-            IList<AggregatedDataDummy> items = new List<AggregatedDataDummy>();
+            IList<DataWrapper> items = new List<DataWrapper>();
             BlobContinuationToken token = null;
             do
             {
@@ -44,7 +44,7 @@ namespace Rystem.Azure.AggregatedData.Integration
                 foreach (IListBlobItem blobItem in segment.Results)
                 {
                     await (blobItem as ICloudBlob).FetchAttributesAsync().NoContext();
-                    items.Add(new AggregatedDataDummy() { Name = blobItem.Uri.AbsolutePath, Properties = (blobItem as ICloudBlob).Properties.ToAggregatedDataProperties() });
+                    items.Add(new DataWrapper() { Name = blobItem.Uri.AbsolutePath, Properties = (blobItem as ICloudBlob).Properties.ToAggregatedDataProperties() });
                 }
                 if (takeCount != null && items.Count >= takeCount)
                     break;
@@ -52,39 +52,40 @@ namespace Rystem.Azure.AggregatedData.Integration
             return items;
         }
 
-        public static async Task<bool> SetBlobPropertyIfNecessaryAsync(IAggregatedData entity, ICloudBlob cloudBlob, AggregatedDataDummy dummy)
+        public static async Task<bool> SetBlobPropertyIfNecessaryAsync(IData entity, ICloudBlob cloudBlob, DataWrapper wrapper)
         {
+            BlobDataProperties blobDataProperties = wrapper.Properties as BlobDataProperties;
             bool changeSomethingInProperty = false;
-            if (dummy.Properties != null)
+            if (blobDataProperties != null)
             {
-                if (dummy.Properties.ContentType != cloudBlob.Properties.ContentType)
+                if (blobDataProperties.ContentType != cloudBlob.Properties.ContentType)
                 {
-                    cloudBlob.Properties.ContentType = dummy.Properties.ContentType ?? MimeMapping.GetMimeMapping(entity.Name);
+                    cloudBlob.Properties.ContentType = blobDataProperties.ContentType ?? MimeMapping.GetMimeMapping(entity.Name);
                     changeSomethingInProperty = true;
                 }
-                if (dummy.Properties.CacheControl != null && dummy.Properties.CacheControl != cloudBlob.Properties.CacheControl)
+                if (blobDataProperties.CacheControl != null && blobDataProperties.CacheControl != cloudBlob.Properties.CacheControl)
                 {
-                    cloudBlob.Properties.CacheControl = dummy.Properties.CacheControl;
+                    cloudBlob.Properties.CacheControl = blobDataProperties.CacheControl;
                     changeSomethingInProperty = true;
                 }
-                if (dummy.Properties.ContentDisposition != null && dummy.Properties.ContentDisposition != cloudBlob.Properties.ContentDisposition)
+                if (blobDataProperties.ContentDisposition != null && blobDataProperties.ContentDisposition != cloudBlob.Properties.ContentDisposition)
                 {
-                    cloudBlob.Properties.ContentDisposition = dummy.Properties.ContentDisposition;
+                    cloudBlob.Properties.ContentDisposition = blobDataProperties.ContentDisposition;
                     changeSomethingInProperty = true;
                 }
-                if (dummy.Properties.ContentEncoding != null && dummy.Properties.ContentEncoding != cloudBlob.Properties.ContentEncoding)
+                if (blobDataProperties.ContentEncoding != null && blobDataProperties.ContentEncoding != cloudBlob.Properties.ContentEncoding)
                 {
-                    cloudBlob.Properties.ContentEncoding = dummy.Properties.ContentEncoding;
+                    cloudBlob.Properties.ContentEncoding = blobDataProperties.ContentEncoding;
                     changeSomethingInProperty = true;
                 }
-                if (dummy.Properties.ContentLanguage != null && dummy.Properties.ContentLanguage != cloudBlob.Properties.ContentLanguage)
+                if (blobDataProperties.ContentLanguage != null && blobDataProperties.ContentLanguage != cloudBlob.Properties.ContentLanguage)
                 {
-                    cloudBlob.Properties.ContentLanguage = dummy.Properties.ContentLanguage;
+                    cloudBlob.Properties.ContentLanguage = blobDataProperties.ContentLanguage;
                     changeSomethingInProperty = true;
                 }
-                if (dummy.Properties.ContentMD5 != null && dummy.Properties.ContentMD5 != cloudBlob.Properties.ContentMD5)
+                if (blobDataProperties.ContentMD5 != null && blobDataProperties.ContentMD5 != cloudBlob.Properties.ContentMD5)
                 {
-                    cloudBlob.Properties.ContentMD5 = dummy.Properties.ContentMD5;
+                    cloudBlob.Properties.ContentMD5 = blobDataProperties.ContentMD5;
                     changeSomethingInProperty = true;
                 }
             }
@@ -96,9 +97,9 @@ namespace Rystem.Azure.AggregatedData.Integration
         {
             return await cloudBlob.OpenReadAsync(null, BlobRequestOptions, null).NoContext();
         }
-        internal static AggregatedDataProperties ToAggregatedDataProperties(this BlobProperties blobProperties)
+        internal static BlobDataProperties ToAggregatedDataProperties(this BlobProperties blobProperties)
         {
-            return new AggregatedDataProperties(blobProperties.BlobTierLastModifiedTime,
+            return new BlobDataProperties(blobProperties.BlobTierLastModifiedTime,
                 blobProperties.BlobTierInferred,
                 blobProperties.IsIncrementalCopy,
                 blobProperties.IsServerEncrypted,

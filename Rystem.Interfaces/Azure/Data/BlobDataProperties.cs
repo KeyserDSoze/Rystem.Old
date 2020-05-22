@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.AggregatedData
+namespace Rystem.Azure.Data
 {
-    public sealed class AggregatedDataProperties
+    public sealed class BlobDataProperties : IDataProperties
     {
-        public AggregatedDataProperties() { }
-        public AggregatedDataProperties(DateTimeOffset? blobTierLastModifiedTime,
+        public BlobDataProperties() { }
+        public BlobDataProperties(DateTimeOffset? blobTierLastModifiedTime,
              bool? blobTierInferred,
              bool isIncrementalCopy,
              bool isServerEncrypted,

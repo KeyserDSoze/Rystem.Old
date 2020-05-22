@@ -1,5 +1,5 @@
 ﻿using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Azure.AggregatedData;
+using Rystem.Azure.Data;
 using Rystem.ConsoleApp.Tester;
 using Rystem.UnitTest;
 using System;
@@ -17,7 +17,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             Meatball2 meatball = new Meatball2()
             {
                 Name = "Hello2.json",
-                Properties = new AggregatedDataProperties()
+                Properties = new BlobDataProperties()
                 {
                     ContentType = "text/json"
                 }
@@ -35,7 +35,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             IList<Meatball2> meatball2 = await meatball.ToListAsync(installation:Installation.Inst01);
             if (meatball2.Count != 1)
                 return false;
-            IList<AggregatedDataDummy> properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst01);
+            IList<DataWrapper> properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst01);
             if (properties.Count != 1)
                 return false;
             if (meatball2.FirstOrDefault().B != "dsadsadsa")
@@ -77,12 +77,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         }
     }
 
-    public class Meatball2 : IAggregatedData
+    public class Meatball2 : IData
     {
         static Meatball2()
         {
-            AggregatedDataInstaller.Configure(
-                new AggregatedDataConfiguration<Meatball2>()
+            DataInstaller.Configure(
+                new DataConfiguration<Meatball2>()
                 {
 
                     ConnectionString = StorageConnectionString,
@@ -90,8 +90,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                 },
                Installation.Inst01
                 );
-            AggregatedDataInstaller.Configure(
-                new AggregatedDataConfiguration<Meatball2>()
+            DataInstaller.Configure(
+                new DataConfiguration<Meatball2>()
                 {
 
                     ConnectionString = StorageConnectionString,
@@ -105,6 +105,6 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         public int A { get; set; }
         public string B { get; set; }
         public string Name { get; set; }
-        public AggregatedDataProperties Properties { get; set; }
+        public IDataProperties Properties { get; set; }
     }
 }

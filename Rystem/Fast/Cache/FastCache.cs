@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Rystem.Cache;
 
-namespace Rystem.Cache
+namespace Rystem.Fast
 {
     internal class FastCacheKey : IMultitonKey<FastCache>
     {

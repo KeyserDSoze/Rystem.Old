@@ -9,14 +9,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.AggregatedData.Integration
+namespace Rystem.Azure.Data.Integration
 {
-    public class FileDataManager<TEntity> : IAggregatedDataReader<TEntity>, IAggregatedDataWriter<TEntity>
+    public class FileDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
           where TEntity : IFileData, new()
     {
-        public async Task<AggregatedDataDummy> WriteAsync(TEntity entity)
+        public async Task<DataWrapper> WriteAsync(TEntity entity)
         {
-            var aggregatedDataDummy = new AggregatedDataDummy()
+            var aggregatedDataDummy = new DataWrapper()
             {
                 Properties = entity.Properties,
                 Name = entity.Name,
@@ -25,7 +25,7 @@ namespace Rystem.Azure.AggregatedData.Integration
             return aggregatedDataDummy;
         }
 
-        public async Task<TEntity> ReadAsync(AggregatedDataDummy dummy)
+        public async Task<WrapperEntity<TEntity>> ReadAsync(DataWrapper dummy)
         {
             TEntity dataLake = new TEntity
             {
@@ -33,7 +33,7 @@ namespace Rystem.Azure.AggregatedData.Integration
                 Name = dummy.Name
             };
             await dummy.Stream.CopyToAsync((dataLake as IFileData).Stream).NoContext();
-            return dataLake;
+            return new WrapperEntity<TEntity>() { Entities = new List<TEntity>() { dataLake } };
         }
     }
 }
