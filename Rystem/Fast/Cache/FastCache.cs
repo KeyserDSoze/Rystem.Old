@@ -6,15 +6,16 @@ using Rystem.Cache;
 
 namespace Rystem.Fast
 {
-    internal class FastCacheKey : IMultitonKey<FastCache>
+    internal class FastCacheKey : ICacheKey<FastCache>
     {
-        static FastCacheKey()
-            => MultitonInstaller.Configure<FastCacheKey, FastCache>(FastCacheInstaller.Properties);
         public string Key { get; set; }
+        public CacheBuilder CacheBuilder() 
+            => FastCacheInstaller.Properties;
+
         public Task<FastCache> FetchAsync()
             => Task.FromResult(default(FastCache));
     }
-    internal class FastCache : IMultiton
+    internal class FastCache
     {
         public string Value { get; set; }
     }

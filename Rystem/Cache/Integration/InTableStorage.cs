@@ -12,15 +12,16 @@ using Rystem.Const;
 namespace Rystem.Cache
 {
     internal class InTableStorage<T> : IMultitonIntegrationAsync<T>
-        where T : IMultiton, new()
     {
         private static CloudTable Context;
         private static long ExpireCache = 0;
         private const string TableName = "RystemCache";
         private readonly static string FullName = typeof(T).FullName;
-        internal InTableStorage(InCloudMultitonProperties configuration)
+        private readonly CacheProperties Properties;
+        internal InTableStorage(RystemCacheProperty configuration)
         {
-            ExpireCache = configuration.ExpireTimeSpan.Ticks;
+            Properties = configuration.CloudProperties;
+            ExpireCache = Properties.ExpireTimeSpan.Ticks;
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             Context = tableClient.GetTableReference(TableName);

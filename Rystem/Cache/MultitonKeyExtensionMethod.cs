@@ -9,9 +9,9 @@ namespace System
 {
     public static partial class MultitonKeyExtensionMethod
     {
-        public static string ToKeyString(this IMultiKey multitonKey)
+        internal static string ToKeyString<TCache>(this ICacheKey<TCache> multitonKey)
             => multitonKey.Value().Trim(MultitonConst.Separator);
-        private static string Value(this IMultiKey multitonKey)
+        private static string Value<TCache>(this ICacheKey<TCache> multitonKey)
         {
             Type keyType = multitonKey.GetType();
             StringBuilder valueBuilder = new StringBuilder();
@@ -19,45 +19,36 @@ namespace System
                 valueBuilder.Append($"{MultitonConst.Separator}{propertyInfo.GetValue(multitonKey)}");
             return valueBuilder.ToString();
         }
-        private class ManagerContainer<TEntry>
-             where TEntry : IMultiton, new()
+        private static readonly object TrafficLight = new object();
+        private static readonly Dictionary<string, ICacheManager> CacheManagers = new Dictionary<string, ICacheManager>();
+        private static ICacheManager<TCacheKey, TCache> Manager<TCacheKey, TCache>(this TCacheKey key)
+            where TCacheKey : ICacheKey<TCache>
         {
-            public readonly static Dictionary<string, IMultitonManager<TEntry>> Managers = new Dictionary<string, IMultitonManager<TEntry>>();
-            public readonly static object TrafficLight = new object();
-        }
-        private static IMultitonManager<TEntry> Manager<TEntry>(Type keyType)
-            where TEntry : IMultiton, new()
-        {
-            if (!ManagerContainer<TEntry>.Managers.ContainsKey(keyType.FullName))
-                lock (ManagerContainer<TEntry>.TrafficLight)
-                    if (!ManagerContainer<TEntry>.Managers.ContainsKey(keyType.FullName))
-                        ManagerContainer<TEntry>.Managers.Add(keyType.FullName, new MultitonManager<TEntry>(MultitonInstaller.GetConfiguration(keyType)));
-            return ManagerContainer<TEntry>.Managers[keyType.FullName];
+            string installingKeyValue = $"{key.GetType().FullName}{typeof(TCache).FullName}";
+            if (!CacheManagers.ContainsKey(installingKeyValue))
+                lock (TrafficLight)
+                    if (!CacheManagers.ContainsKey(installingKeyValue))
+                        CacheManagers.Add(installingKeyValue, new CacheManager<TCacheKey, TCache>(key.CacheBuilder()));
+            return CacheManagers[installingKeyValue] as CacheManager<TCacheKey, TCache>;
         }
 
-        public static async Task<TEntry> InstanceAsync<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
-            => await Manager<TEntry>(entry.GetType()).InstanceAsync(entry).NoContext();
-        public static async Task<bool> RemoveAsync<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
-            => await Manager<TEntry>(entry.GetType()).DeleteAsync(entry).NoContext();
-        public static async Task<bool> RestoreAsync<TEntry>(this IMultitonKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
-           where TEntry : IMultiton, new()
-           => await Manager<TEntry>(entry.GetType()).UpdateAsync(entry, value, expiringTime).NoContext();
-        public static async Task<bool> IsPresentAsync<TEntry>(this IMultitonKey<TEntry> entry)
-           where TEntry : IMultiton, new()
-           => await Manager<TEntry>(entry.GetType()).ExistsAsync(entry).NoContext();
-        public static async Task WarmUpAsync<TEntry>(this IMultitonKey<TEntry> entry)
-           where TEntry : IMultiton, new()
-           => await Manager<TEntry>(entry.GetType()).WarmUp().NoContext();
-        public static async Task<IList<IMultitonKey<TEntry>>> KeysAsync<TEntry>(this IMultitonKey<TEntry> entry)
-           where TEntry : IMultiton, new()
+        public static async Task<TEntry> InstanceAsync<TEntry>(this ICacheKey<TEntry> entry)
+            => await entry.Manager<ICacheKey<TEntry>, TEntry>().InstanceAsync(entry).NoContext();
+        public static async Task<bool> RemoveAsync<TEntry>(this ICacheKey<TEntry> entry)
+            => await entry.Manager<ICacheKey<TEntry>, TEntry>().DeleteAsync(entry).NoContext();
+        public static async Task<bool> RestoreAsync<TEntry>(this ICacheKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
+           => await entry.Manager<ICacheKey<TEntry>, TEntry>().UpdateAsync(entry, value, expiringTime).NoContext();
+        public static async Task<bool> IsPresentAsync<TEntry>(this ICacheKey<TEntry> entry)
+           => await entry.Manager<ICacheKey<TEntry>, TEntry>().ExistsAsync(entry).NoContext();
+        public static async Task WarmUpAsync<TEntry>(this ICacheKey<TEntry> entry)
+           => await entry.Manager<ICacheKey<TEntry>, TEntry>().WarmUp().NoContext();
+        public static async Task<IList<ICacheKey<TEntry>>> KeysAsync<TEntry>(this ICacheKey<TEntry> entry)
         {
             Type keyType = entry.GetType();
-            IList<IMultitonKey<TEntry>> keys = new List<IMultitonKey<TEntry>>();
-            foreach (string key in await Manager<TEntry>(keyType).ListAsync())
+            IList<ICacheKey<TEntry>> keys = new List<ICacheKey<TEntry>>();
+            foreach (string key in await entry.Manager<ICacheKey<TEntry>, TEntry>().ListAsync())
             {
-                IMultitonKey<TEntry> multitonKey = (IMultitonKey<TEntry>)Activator.CreateInstance(keyType);
+                ICacheKey<TEntry> multitonKey = (ICacheKey<TEntry>)Activator.CreateInstance(keyType);
                 IEnumerator<string> keyValues = PropertyValue(key);
                 if (!keyValues.MoveNext())
                     continue;
@@ -77,23 +68,17 @@ namespace System
             }
         }
 
-        public static TEntry Instance<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
+        public static TEntry Instance<TEntry>(this ICacheKey<TEntry> entry)
             => entry.InstanceAsync().ToResult();
-        public static bool Remove<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
+        public static bool Remove<TEntry>(this ICacheKey<TEntry> entry)
             => entry.RemoveAsync().ToResult();
-        public static bool Restore<TEntry>(this IMultitonKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
-           where TEntry : IMultiton, new()
+        public static bool Restore<TEntry>(this ICacheKey<TEntry> entry, TEntry value = default, TimeSpan expiringTime = default)
            => entry.RestoreAsync(value, expiringTime).ToResult();
-        public static bool IsPresent<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
+        public static bool IsPresent<TEntry>(this ICacheKey<TEntry> entry)
             => entry.IsPresentAsync().ToResult();
-        public static void WarmUp<TEntry>(this IMultitonKey<TEntry> entry)
-           where TEntry : IMultiton, new()
+        public static void WarmUp<TEntry>(this ICacheKey<TEntry> entry)
            => entry.WarmUpAsync().ToResult();
-        public static IList<IMultitonKey<TEntry>> Keys<TEntry>(this IMultitonKey<TEntry> entry)
-            where TEntry : IMultiton, new()
+        public static IList<ICacheKey<TEntry>> Keys<TEntry>(this ICacheKey<TEntry> entry)
             => entry.KeysAsync().ToResult();
     }
 }

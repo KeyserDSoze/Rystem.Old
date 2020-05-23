@@ -7,8 +7,8 @@ namespace Rystem.Fast
 {
     public class FastCacheInstaller
     {
-        public static MultitonProperties Properties;
-        public static void Configure(MultitonProperties properties) 
-            => Properties = properties;
+        public static CacheBuilder Properties = new CacheBuilder().WithMemory(new MemoryCacheProperties(ExpireTime.OneDay));
+        public static void Configure(CacheBuilder builder)
+            => Properties = builder;
     }
 }

@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 namespace Rystem.Cache
 {
     internal class InRedisCache<T> : IMultitonIntegrationAsync<T>
-        where T : IMultiton, new()
     {
         private int RoundRobin = -1;
         private static readonly object TrafficLight = new object();
@@ -20,9 +19,9 @@ namespace Rystem.Cache
             get
             {
                 int value = 0;
-                if (this.Configuration.NumberOfClients > 1)
+                if (this.Properties.NumberOfClients > 1)
                     lock (TrafficLight)
-                        value = this.RoundRobin = (this.RoundRobin + 1) % this.Configuration.NumberOfClients;
+                        value = this.RoundRobin = (this.RoundRobin + 1) % this.Properties.NumberOfClients;
                 return Connections[value].Value.GetDatabase();
             }
         }
@@ -36,13 +35,13 @@ namespace Rystem.Cache
         private readonly List<Lazy<ConnectionMultiplexer>> Connections;
         private readonly TimeSpan ExpireCache;
         private readonly string FullName = typeof(T).FullName;
-        private readonly InCloudMultitonProperties Configuration;
-        internal InRedisCache(InCloudMultitonProperties configuration)
+        private readonly CacheProperties Properties;
+        internal InRedisCache(RystemCacheProperty configuration)
         {
-            Configuration = configuration;
-            ExpireCache = configuration.ExpireTimeSpan;
+            Properties = configuration.CloudProperties;
+            ExpireCache = Properties.ExpireTimeSpan;
             Connections = new List<Lazy<ConnectionMultiplexer>>();
-            for (int i = 0; i < configuration.NumberOfClients; i++)
+            for (int i = 0; i < Properties.NumberOfClients; i++)
                 Connections.Add(new Lazy<ConnectionMultiplexer>(() =>
                 {
                     ConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect(configuration.ConnectionString);

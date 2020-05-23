@@ -44,7 +44,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class Service3Key : IMultitonKey<Service3>
+    public class Service3Key : ICacheKey<Service3>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
@@ -56,10 +56,16 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 C = Alea.GetNumber(100)
             });
         }
-        static Service3Key()
-            => MultitonInstaller.Configure<Service3Key, Service3>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.BlobStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds), CacheConsistency.Always));
+
+        public CacheBuilder CacheBuilder()
+        {
+            return new CacheBuilder(CacheConsistency.Always)
+                .WithMemory(new MemoryCacheProperties(ExpireTime.FiveSeconds))
+                 .WithCloud(ConnectionString)
+                    .WithBlobstorage(new BlobStorageCacheProperties(ExpireTime.Infinite));
+        }
     }
-    public class Service3 : IMultiton
+    public class Service3
     {
         public string A { get; set; }
         public int C { get; set; }

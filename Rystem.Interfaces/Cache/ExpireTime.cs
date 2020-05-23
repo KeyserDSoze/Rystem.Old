@@ -10,10 +10,6 @@ namespace Rystem.Cache
     public enum ExpireTime
     {
         /// <summary>
-        /// Data isn't stored in cache
-        /// </summary>
-        TurnOff = -1,
-        /// <summary>
         /// Data stored in  cache always persists
         /// </summary>
         Infinite = 0,

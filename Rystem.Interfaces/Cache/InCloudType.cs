@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    public enum InCloudType
+    public enum CloudCacheType
     {
         Nothimg,
         RedisCache,

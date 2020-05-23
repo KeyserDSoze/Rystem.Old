@@ -14,7 +14,6 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
-            FastCacheInstaller.Configure(new MultitonProperties(new ExpiringProperties(ExpireTime.OneDay, false, false), CacheConsistency.Never));
             var sv = new SaveTheLastDance() { Hola = "DD", Id = 4 };
             string key = "MyKey";
             await sv.SetCacheAsync(key).NoContext();

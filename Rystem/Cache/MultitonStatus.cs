@@ -5,7 +5,6 @@ using System.Text;
 namespace Rystem.Cache
 {
     internal sealed class MultitonStatus<TCache>
-        where TCache : IMultiton, new()
     {
         public bool IsOk { get; }
         public TCache Cache { get; }

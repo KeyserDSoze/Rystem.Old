@@ -10,15 +10,16 @@ using Rystem.Const;
 namespace Rystem.Cache
 {
     internal class InBlobStorage<T> : IMultitonIntegrationAsync<T>
-        where T : IMultiton, new()
     {
+        private readonly CacheProperties Properties;
         private static CloudBlobContainer Context;
         private static long ExpireCache = 0;
         private const string ContainerName = "rystemcache";
         private readonly static string FullName = typeof(T).FullName + "/";
-        internal InBlobStorage(InCloudMultitonProperties configuration)
+        internal InBlobStorage(RystemCacheProperty configuration)
         {
-            ExpireCache = configuration.ExpireTimeSpan.Ticks;
+            Properties = configuration.CloudProperties;
+            ExpireCache = Properties.ExpireTimeSpan.Ticks;
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
             CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
             Context = Client.GetContainerReference(ContainerName);

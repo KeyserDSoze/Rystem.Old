@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace Rystem.Cache
 {
     internal interface IMultitonIntegrationAsync<T> 
-        where T : IMultiton, new()
     {
         Task<T> InstanceAsync(string key);
         Task<bool> UpdateAsync(string key, T value, TimeSpan expiringTime);
@@ -17,7 +16,6 @@ namespace Rystem.Cache
         Task WarmUp();
     }
     internal interface IMultitonIntegration<T>
-        where T : IMultiton, new()
     {
         T Instance(string key);
         bool Update(string key, T value, TimeSpan expiringTime);

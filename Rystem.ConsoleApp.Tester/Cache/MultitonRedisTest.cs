@@ -51,7 +51,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class ServiceKey : IMultitonKey<Service>
+    public class ServiceKey : ICacheKey<Service>
     {
         public int Id { get; set; }
         public Task<Service> FetchAsync()
@@ -62,13 +62,17 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 C = Alea.GetNumber(100)
             });
         }
-        internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
-        static ServiceKey()
+
+        public CacheBuilder CacheBuilder()
         {
-            MultitonInstaller.Configure<ServiceKey, Service>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.RedisCache, ExpireTime.FiveSeconds), CacheConsistency.Always));
+            return new CacheBuilder(CacheConsistency.Always)
+                .WithCloud(ConnectionString)
+                    .WithRedis(new RedisCacheProperties(ExpireTime.FiveSeconds));
         }
+
+        internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
     }
-    public class Service : IMultiton
+    public class Service
     {
         public string A { get; set; }
         public int C { get; set; }

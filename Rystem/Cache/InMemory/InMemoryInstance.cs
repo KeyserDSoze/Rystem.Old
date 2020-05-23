@@ -9,7 +9,6 @@ namespace Rystem.Cache
         long ExpiringTime { get; set; }
     }
     internal class InMemoryInstance<T> : IInMemoryInstance
-        where T : IMultiton, new()
     {
         public T Instance { get; set; }
         public long ExpiringTime { get; set; }

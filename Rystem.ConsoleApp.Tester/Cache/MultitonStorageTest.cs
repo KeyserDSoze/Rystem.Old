@@ -49,14 +49,11 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class SmallTableKey : IMultitonKey<SmallTable>
+    public class SmallTableKey : ICacheKey<SmallTable>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-        static SmallTableKey()
-        {
-            MultitonInstaller.Configure<SmallTableKey, SmallTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.FiveSeconds), CacheConsistency.Always));
-        }
+
         public Task<SmallTable> FetchAsync()
         {
             return Task.FromResult(new SmallTable()
@@ -64,8 +61,14 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 Id = this.Id
             });
         }
+
+        public CacheBuilder CacheBuilder()
+        {
+            return new CacheBuilder().WithCloud(ConnectionString)
+                .WithTablestorage(new TableStorageCacheProperties(ExpireTime.FiveSeconds));
+        }
     }
-    public class SmallTable : IMultiton
+    public class SmallTable
     {
         public int Id { get; set; }
     }

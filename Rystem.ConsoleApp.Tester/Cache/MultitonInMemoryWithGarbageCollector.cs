@@ -28,7 +28,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 return false;
             return true;
         }
-        private class Service2Key : IMultitonKey<Service2>
+        private class Service2Key : ICacheKey<Service2>
         {
             public int Id { get; set; }
             public Task<Service2> FetchAsync()
@@ -39,12 +39,11 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                     C = Alea.GetNumber(100)
                 });
             }
-            static Service2Key()
-            {
-                MultitonInstaller.Configure<Service2Key, Service2>(new MultitonProperties(new ExpiringProperties(ExpireTime.TenSeconds, true, true), CacheConsistency.Always));
-            }
+
+            public CacheBuilder CacheBuilder() 
+                => new CacheBuilder().WithMemory(new MemoryCacheProperties(ExpireTime.TenSeconds, true, true));
         }
-        private class Service2 : IMultiton
+        private class Service2 
         {
             public string A { get; set; }
             public int C { get; set; }

@@ -9,16 +9,15 @@ using System.Threading.Tasks;
 namespace Rystem.Cache
 {
     internal class InMemory<T> : IMultitonIntegration<T>
-        where T : IMultiton, new()
     {
-        private readonly ExpiringProperties ExpiringProperties;
+        private readonly CacheProperties Properties;
         private readonly static ConcurrentDictionary<string, IInMemoryInstance> Instances = new ConcurrentDictionary<string, IInMemoryInstance>();
         private InMemoryInstance<T> MemoryInstance(string key)
             => Instances[key] as InMemoryInstance<T>;
-        internal InMemory(ExpiringProperties configuration)
+        internal InMemory(RystemCacheProperty configuration)
         {
-            ExpiringProperties = configuration;
-            if (configuration.GarbageCollection)
+            Properties = configuration.MemoryProperties;
+            if (Properties.GarbageCollection)
                 GarbageCollector.Instance.AddDictionary(Instances);
         }
 
@@ -28,12 +27,12 @@ namespace Rystem.Cache
         {
             if (value == null)
                 return false;
-            long multitonExpireTime = ExpiringProperties.ExpireSeconds;
+            long multitonExpireTime = Properties.ExpireSeconds;
             if (expireTime != default)
                 multitonExpireTime = (long)expireTime.TotalSeconds;
             if (!Instances.ContainsKey(key))
                 Instances.TryAdd(key, new InMemoryInstance<T>());
-            if (MemoryInstance(key).Instance == null || !ExpiringProperties.Consistency || MemoryInstance(key).Instance.ToDefaultJson() != value.ToDefaultJson())
+            if (MemoryInstance(key).Instance == null || !Properties.Consistency || MemoryInstance(key).Instance.ToDefaultJson() != value.ToDefaultJson())
                 MemoryInstance(key).Instance = value;
             if (multitonExpireTime > (int)ExpireTime.Infinite)
                 Instances[key].ExpiringTime = DateTime.UtcNow.AddSeconds(multitonExpireTime).Ticks;
@@ -45,7 +44,7 @@ namespace Rystem.Cache
         {
             if (Instances.ContainsKey(key))
             {
-                if (ExpiringProperties.ExpireSeconds == (int)ExpireTime.Infinite || (Instances[key]?.ExpiringTime ?? 0) >= DateTime.UtcNow.Ticks)
+                if (Properties.ExpireSeconds == (int)ExpireTime.Infinite || (Instances[key]?.ExpiringTime ?? 0) >= DateTime.UtcNow.Ticks)
                     return MultitonStatus<T>.Ok();
                 else
                     Instances.TryRemove(key, out _);

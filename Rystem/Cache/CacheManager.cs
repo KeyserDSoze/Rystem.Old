@@ -10,36 +10,38 @@ using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
-    internal class MultitonManager<TCache> : IMultitonManager<TCache>
-        where TCache : IMultiton, new()
+    internal class CacheManager<TCacheKey, TCache> : ICacheManager<TCacheKey, TCache>
+        where TCacheKey : ICacheKey<TCache>
     {
         private readonly IMultitonIntegration<TCache> InMemory;
-        private readonly bool MemoryIsActive = false;
+        private bool MemoryIsActive 
+            => this.Configuration.HasMemory;
         private readonly IMultitonIntegrationAsync<TCache> InCloud;
-        private readonly bool CloudIsActive = false;
-        private readonly MultitonProperties Configuration;
-        public MultitonManager(MultitonProperties configuration)
+        private bool CloudIsActive 
+            => this.Configuration.HasCloud;
+        private readonly RystemCacheProperty Configuration;
+        public CacheManager(CacheBuilder builder)
         {
-            this.Configuration = configuration;
-            if (MemoryIsActive = configuration.InMemoryProperties != null && configuration.InMemoryProperties.ExpireSeconds != (int)ExpireTime.TurnOff)
-                InMemory = new InMemory<TCache>(configuration.InMemoryProperties);
-            if (CloudIsActive = configuration.InCloudProperties != null && configuration.InCloudProperties.ExpireSeconds != (int)ExpireTime.TurnOff)
+            this.Configuration = builder.Property;
+            if (this.MemoryIsActive)
+                InMemory = new InMemory<TCache>(this.Configuration);
+            if (this.CloudIsActive)
             {
-                if (string.IsNullOrWhiteSpace(configuration.InCloudProperties.ConnectionString))
+                if (string.IsNullOrWhiteSpace(Configuration.ConnectionString))
                     throw new ArgumentException($"Value {typeof(TCache).FullName} installed for cloud without a connection string.");
-                switch (configuration.InCloudProperties.CloudType)
+                switch (Configuration.CloudProperties.Type)
                 {
-                    case InCloudType.RedisCache:
-                        InCloud = new InRedisCache<TCache>(configuration.InCloudProperties);
+                    case CloudCacheType.RedisCache:
+                        InCloud = new InRedisCache<TCache>(Configuration);
                         break;
-                    case InCloudType.TableStorage:
-                        InCloud = new InTableStorage<TCache>(configuration.InCloudProperties);
+                    case CloudCacheType.TableStorage:
+                        InCloud = new InTableStorage<TCache>(Configuration);
                         break;
-                    case InCloudType.BlobStorage:
-                        InCloud = new InBlobStorage<TCache>(configuration.InCloudProperties);
+                    case CloudCacheType.BlobStorage:
+                        InCloud = new InBlobStorage<TCache>(Configuration);
                         break;
                     default:
-                        throw new NotImplementedException($"CloudType not found {configuration.InCloudProperties.CloudType}");
+                        throw new NotImplementedException($"CloudType not found {Configuration.CloudProperties.Type}");
                 }
             }
         }
@@ -67,7 +69,7 @@ namespace Rystem.Cache
                 this.Creator = creator;
             }
         }
-        private async Task<TCache> InstanceWithoutConsistencyAsync(IMultitonKey<TCache> key, string keyString)
+        private async Task<TCache> InstanceWithoutConsistencyAsync(TCacheKey key, string keyString)
         {
             TCache cache = await key.FetchAsync().NoContext();
             if (MemoryIsActive)
@@ -76,7 +78,7 @@ namespace Rystem.Cache
                 await InCloud.UpdateAsync(keyString, cache, default).NoContext();
             return cache;
         }
-        private async Task<TCache> InstanceWithConsistencyAsync(IMultitonKey<TCache> key, string keyString)
+        private async Task<TCache> InstanceWithConsistencyAsync(TCacheKey key, string keyString)
         {
             TCache cache = default;
             Promised.TryAdd(keyString,
@@ -106,7 +108,7 @@ namespace Rystem.Cache
             else
                 return await InCloud.InstanceAsync(keyString).NoContext();
         }
-        public async Task<TCache> InstanceAsync(IMultitonKey<TCache> key)
+        public async Task<TCache> InstanceAsync(TCacheKey key)
         {
             string keyString = key.ToKeyString();
             if (MemoryIsActive)
@@ -128,7 +130,7 @@ namespace Rystem.Cache
             else
                 return await InstanceWithConsistencyAsync(key, keyString).NoContext();
         }
-        public async Task<bool> UpdateAsync(IMultitonKey<TCache> key, TCache value, TimeSpan expiringTime)
+        public async Task<bool> UpdateAsync(TCacheKey key, TCache value, TimeSpan expiringTime)
         {
             string keyString = key.ToKeyString();
             if (value == null)
@@ -140,7 +142,7 @@ namespace Rystem.Cache
                 result |= await InCloud.UpdateAsync(keyString, value, expiringTime).NoContext();
             return result;
         }
-        public async Task<bool> ExistsAsync(IMultiKey key)
+        public async Task<bool> ExistsAsync(TCacheKey key)
         {
             string keyString = key.ToKeyString();
             if (MemoryIsActive)
@@ -149,7 +151,7 @@ namespace Rystem.Cache
                 return (await InCloud.ExistsAsync(keyString).NoContext()).IsOk;
             return false;
         }
-        public async Task<bool> DeleteAsync(IMultiKey key)
+        public async Task<bool> DeleteAsync(TCacheKey key)
         {
             string keyString = key.ToKeyString();
             bool result = false;
@@ -171,14 +173,14 @@ namespace Rystem.Cache
             => await InCloud.WarmUp().NoContext();
         private class Instancer
         {
-            public IMultitonKey<TCache> Key { get; }
+            public ICacheKey<TCache> Key { get; }
             public string KeyString { get; }
             public bool CloudIsActive { get; }
             public IMultitonIntegrationAsync<TCache> InCloud { get; }
             private TCache CachedData;
             public TCache GetCachedData()
                 => this.CachedData;
-            public Instancer(IMultitonKey<TCache> key, string keyString, IMultitonIntegrationAsync<TCache> inCloud)
+            public Instancer(ICacheKey<TCache> key, string keyString, IMultitonIntegrationAsync<TCache> inCloud)
             {
                 this.Key = key;
                 this.KeyString = keyString;

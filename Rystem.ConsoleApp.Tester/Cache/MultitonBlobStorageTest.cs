@@ -50,15 +50,10 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class SmallBlobKey : IMultitonKey<SmallBlob>
+    public class SmallBlobKey : ICacheKey<SmallBlob>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-        static SmallBlobKey()
-        {
-            MultitonInstaller.Configure<SmallBlobKey, SmallBlob>(
-                new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.BlobStorage, ExpireTime.FiveSeconds), CacheConsistency.Always));
-        }
         public Task<SmallBlob> FetchAsync()
         {
             return Task.FromResult(new SmallBlob()
@@ -66,8 +61,13 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 Id = this.Id
             });
         }
+
+        public CacheBuilder CacheBuilder() 
+            => new CacheBuilder()
+                .WithCloud(ConnectionString)
+                    .WithBlobstorage(new BlobStorageCacheProperties(ExpireTime.FiveSeconds));
     }
-    public class SmallBlob : IMultiton
+    public class SmallBlob
     {
         public int Id { get; set; }
     }

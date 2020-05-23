@@ -25,14 +25,10 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return true;
         }
     }
-    public class HybridTableKey : IMultitonKey<HybridTable>
+    public class HybridTableKey : ICacheKey<HybridTable>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-        static HybridTableKey()
-        {
-            MultitonInstaller.Configure<HybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true), CacheConsistency.Always));
-        }
         public Task<HybridTable> FetchAsync()
         {
             return Task.FromResult(new HybridTable()
@@ -40,15 +36,19 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 Id = 5
             });
         }
+
+        public CacheBuilder CacheBuilder()
+        {
+            return new CacheBuilder()
+                .WithMemory(new MemoryCacheProperties(ExpireTime.FiveMinutes, true))
+                    .WithCloud(ConnectionString)
+                        .WithTablestorage(new TableStorageCacheProperties(ExpireTime.Infinite));
+        }
     }
-    public class SecondHybridTableKey : IMultitonKey<HybridTable>
+    public class SecondHybridTableKey : ICacheKey<HybridTable>
     {
         public int Id { get; set; }
         private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-        static SecondHybridTableKey()
-        {
-            MultitonInstaller.Configure<SecondHybridTableKey, HybridTable>(new MultitonProperties(new InCloudMultitonProperties(ConnectionString, InCloudType.TableStorage, ExpireTime.Infinite), new ExpiringProperties(ExpireTime.FiveSeconds, true), CacheConsistency.Always));
-        }
         public Task<HybridTable> FetchAsync()
         {
             return Task.FromResult(new HybridTable()
@@ -56,8 +56,11 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 Id = this.Id
             });
         }
+
+        public CacheBuilder CacheBuilder() => new CacheBuilder().WithMemory(new MemoryCacheProperties(ExpireTime.FiveSeconds, true))
+                .WithCloud(ConnectionString).WithTablestorage(new TableStorageCacheProperties(ExpireTime.Infinite));
     }
-    public class HybridTable : IMultiton
+    public class HybridTable
     {
         public int Id { get; set; }
     }

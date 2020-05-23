@@ -39,7 +39,7 @@ namespace Rystem.WebApp.Controllers
             await Task.Delay(4000);
             return Ok();
         }
-        private static string Instance = Guid.NewGuid().ToString("N");
+        private static readonly string Instance = Guid.NewGuid().ToString("N");
         [HttpGet]
         public IActionResult Check()
         {
@@ -82,7 +82,7 @@ namespace Rystem.WebApp.Controllers
                         Label = "Circo" + i
                     });
                 }
-                IEnumerable<decimal> GetNumbers(int start)
+                static IEnumerable<decimal> GetNumbers(int start)
                 {
                     for (int i = start + 10; i < start + 20; i++)
                         yield return i;
@@ -108,6 +108,7 @@ namespace Rystem.WebApp.Controllers
         }
         public async Task<IActionResult> More()
         {
+            await Task.Delay(0);
             List<Alo> alo = new List<Alo>();
             for (int i = 0; i < 200; i++)
             {

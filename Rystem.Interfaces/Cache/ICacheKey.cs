@@ -11,9 +11,9 @@ namespace Rystem.Cache
     /// Interface to implement Multiton logic. Please don't use in your string key this value '╬'
     /// </summary>
     /// <typeparam name="TCache"></typeparam>
-    public interface IMultitonKey<TCache> : IMulti, IMultiKey
-        where TCache : IMultiton
+    public interface ICacheKey<TCache>
     {
+        CacheBuilder CacheBuilder();
         /// <summary>
         /// Fetch data of the istance by your database, or webrequest, or your business logic.
         /// </summary>
