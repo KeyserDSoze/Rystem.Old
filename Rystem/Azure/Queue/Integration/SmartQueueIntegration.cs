@@ -47,7 +47,7 @@ namespace Rystem.Azure.Queue
             this.ReadQuery = $"Select top {property.NumberOfMessages} Id, Message from SmartQueue_{property.Name} where Ticks <= ";
             this.DeleteQuery = $"Delete from SmartQueue_{property.Name} where Id = ";
             this.DeleteOnReadingQuery = $"Delete from SmartQueue_{property.Name} where Id in (";
-            this.CleanRetentionQuery = $"Delete from SmartQueueDeleted_{property.Name} where DATEDIFF(day, ManagedTime,GETUTCDATE()) > {property.Retention}";
+            this.CleanRetentionQuery = $"Delete from SmartQueueDeleted_{property.Name} where DATEDIFF(day, ManagedTime, GETUTCDATE()) > {property.Retention}";
             using (SqlConnection connection = NewConnection())
             {
                 connection.Open();

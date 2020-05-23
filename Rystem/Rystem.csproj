@@ -9,12 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Azure\Queue\**" />
-    <EmbeddedResource Remove="Azure\Queue\**" />
-    <None Remove="Azure\Queue\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="Azure\Storage\TableStorage\TableStorage.cs" />
   </ItemGroup>
 

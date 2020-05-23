@@ -142,7 +142,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 Name = "Billing",
                 CheckDuplication = QueueDuplication.PathAndMessage,
                 Retry = 3,
-                Retention = -1
+                Retention = -1,
             }, Installation.Inst01);
         }
         public string Al { get; set; }
