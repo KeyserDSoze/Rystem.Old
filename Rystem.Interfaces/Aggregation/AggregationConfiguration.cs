@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Rystem.StreamAnalytics
+namespace Rystem.Aggregation
 {
-    public class AggregationProperty
+    public class AggregationConfiguration : IConfiguration
     {
         public string Name { get; set; }
         public int MaximumBuffer { get; set; } = 10000;

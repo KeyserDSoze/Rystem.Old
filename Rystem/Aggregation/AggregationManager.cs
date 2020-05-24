@@ -5,17 +5,19 @@ using System.Linq;
 
 using System.Threading.Tasks;
 
-namespace Rystem.StreamAnalytics
+namespace Rystem.Aggregation
 {
-    public class AggregationManager<T>
+    public class AggregationManager<T> : IAggregationManager
     {
         private readonly static Dictionary<Installation, object> TrafficLight = new Dictionary<Installation, object>();
         private readonly static Dictionary<Installation, BufferBearer> Buffer = new Dictionary<Installation, BufferBearer>();
         private static readonly object AcquireToken = new object();
-        private IDictionary<Installation, AggregationProperty> aggregationProperties;
-        private IDictionary<Installation, AggregationProperty> AggregationProperties => aggregationProperties ?? (aggregationProperties = AggregationInstaller<T>.GetProperties());
-        private string QueueName(Installation installation) => this.AggregationProperties[installation].Name;
+        private readonly IDictionary<Installation, AggregationConfiguration> AggregationProperties;
+        private string AggregationName(Installation installation) 
+            => this.AggregationProperties[installation].Name;
 
+        public AggregationManager(ConfigurationBuilder configurationBuilder) 
+            => this.AggregationProperties = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as AggregationConfiguration);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]
         public async Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default)
@@ -50,7 +52,7 @@ namespace Rystem.StreamAnalytics
         public async Task<IList<T>> FlushAsync(ILogger log, Installation installation)
         {
             IList<T> events = new List<T>();
-            log.LogWarning($"{this.QueueName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
+            log.LogWarning($"{this.AggregationName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
             DateTime startTime = DateTime.UtcNow;
             if (Buffer[installation].Events.Count > this.AggregationProperties[installation].MaximumBuffer || (Buffer[installation].Events.Count > 0 && startTime.Ticks - Buffer[installation].LastBufferCreation > this.AggregationProperties[installation].MaximumTime))
             {
@@ -71,7 +73,7 @@ namespace Rystem.StreamAnalytics
                 {
                     try
                     {
-                        await parser.ParseAsync(this.QueueName(installation), events, log, installation).NoContext();
+                        await parser.ParseAsync(this.AggregationName(installation), events, log, installation).NoContext();
                         log.LogWarning($"Parsed {parser.GetType().Name}.");
                     }
                     catch (Exception er)
@@ -82,24 +84,7 @@ namespace Rystem.StreamAnalytics
             }
             return events;
         }
-        public IList<T> Run(IEnumerable<T> events, ILogger log, Action<T> action = null, Action<Exception, T> errorCatcher = null, Installation installation = Installation.Default)
-        {
-            return this.RunAsync(events, log, wrappedAction, wrappedError, installation).ToResult();
-
-            Task wrappedAction(T t)
-            {
-                action?.Invoke(t);
-                return Task.CompletedTask;
-            }
-            Task wrappedError(Exception e, T t)
-            {
-                errorCatcher.Invoke(e, t);
-                return Task.CompletedTask;
-            }
-        }
-
-        public IList<T> Flush(ILogger log, Installation installation)
-            => this.FlushAsync(log, installation).ToResult();
+       
         private class BufferBearer
         {
             public IList<T> Events { get; set; } = new List<T>();

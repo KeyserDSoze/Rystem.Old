@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 
-namespace Rystem.StreamAnalytics
+namespace Rystem.Aggregation
 {
     public interface IAggregationParser
     {

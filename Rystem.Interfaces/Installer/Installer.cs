@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.Data;
+﻿using Rystem.Aggregation;
+using Rystem.Azure.Data;
 using Rystem.Azure.NoSql;
 using Rystem.Azure.Queue;
 using Rystem.Crypting;
@@ -28,5 +29,7 @@ namespace Rystem
             => new DataSelector(connectionString, this);
         public CryptoSelector WithCrypting()
             => new CryptoSelector(this);
+        public AggregationSelector WithAggregation()
+            => new AggregationSelector(this);
     }
 }

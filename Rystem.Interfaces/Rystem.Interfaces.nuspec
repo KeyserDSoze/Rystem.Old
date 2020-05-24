@@ -19,6 +19,9 @@
     </releaseNotes>
     <copyright>Copyright 2019-2026</copyright>
     <tags>Rystem Interfaces</tags>
+    <dependencies>
+      <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.2.0" />
+    </dependencies>
     <references>
       <reference file="Rystem.Interfaces.dll" />
     </references>
