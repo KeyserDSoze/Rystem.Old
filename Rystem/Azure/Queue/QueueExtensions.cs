@@ -23,7 +23,7 @@ namespace System
                     if (!Managers.ContainsKey(entityType.FullName))
                     {
                         Type genericType = typeof(QueueManager<>).MakeGenericType(entityType);
-                        Managers.Add(entityType.FullName, (IQueueManager)Activator.CreateInstance(genericType));
+                        Managers.Add(entityType.FullName, (IQueueManager)Activator.CreateInstance(genericType, entity.GetConfigurationBuilder()));
                     }
             return Managers[entityType.FullName];
         }
@@ -34,7 +34,6 @@ namespace System
             where TEntity : IQueue
            => await message.Manager().SendScheduledAsync(message, delayInSeconds, installation, path, organization).NoContext();
 
-        [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<bool> DeleteScheduledAsync<TEntity>(this TEntity message, long messageId, Installation installation = Installation.Default)
             where TEntity : IQueue
             => await message.Manager().DeleteScheduledAsync(messageId, installation).NoContext();

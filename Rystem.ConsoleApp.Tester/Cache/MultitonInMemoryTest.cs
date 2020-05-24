@@ -61,7 +61,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder CacheBuilder()
+        public CacheBuilder GetCacheBuilder()
         {
             return new CacheBuilder(CacheConsistency.Always).WithMemory(new MemoryCacheProperties(ExpireTime.OneSecond));
         }

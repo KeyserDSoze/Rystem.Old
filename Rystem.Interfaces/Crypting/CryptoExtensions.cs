@@ -7,23 +7,25 @@ namespace System
     {
         private readonly static Dictionary<string, ICryptoManager> Managers = new Dictionary<string, ICryptoManager>();
         private readonly static object TrafficLight = new object();
-        private static ICryptoManager Manager(Type messageType)
+        private static ICryptoManager Manager<TEntity>(this TEntity message)
+            where TEntity : ICrypto
         {
+            Type messageType = message.GetType();
             if (!Managers.ContainsKey(messageType.FullName))
                 lock (TrafficLight)
                     if (!Managers.ContainsKey(messageType.FullName))
                     {
                         Type genericType = typeof(CryptoManager<>).MakeGenericType(messageType);
-                        Managers.Add(messageType.FullName, (ICryptoManager)Activator.CreateInstance(genericType));
+                        Managers.Add(messageType.FullName, (ICryptoManager)Activator.CreateInstance(genericType, message.GetConfigurationBuilder()));
                     }
             return Managers[messageType.FullName];
         }
         public static TEntity Encrypt<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : ICrypto
-           => Manager(entity.GetType()).Encrypt(entity, installation);
+           => entity.Manager().Encrypt(entity, installation);
         public static TEntity Decrypt<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : ICrypto
-           => Manager(entity.GetType()).Decrypt(entity, installation);
+           => entity.Manager().Decrypt(entity, installation);
     }
     public static partial class CryptoExtensions
     {

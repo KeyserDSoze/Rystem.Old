@@ -3,7 +3,7 @@
     /// <summary>
     /// Configuration of your queue
     /// </summary>
-    public class QueueConfiguration : IRystemConfiguration
+    public class QueueConfiguration : IConfiguration
     {
         /// <summary>
         /// ServiceBus, QueueStorage and EventHub use their own connection string. For SmartQueue use a sql connection.

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Azure.Data
 {
-    public interface IFileData : IAggregatedData
+    public interface IFileData : IData
     {
         Stream Stream { get; set; }
     }

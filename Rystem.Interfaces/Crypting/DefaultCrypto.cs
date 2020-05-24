@@ -6,10 +6,10 @@ namespace Rystem.Crypting
     {
         public string Message { get; set; }
         public string CryptedMessage { get; set; }
-        static DefaultCrypto()
+        public ConfigurationBuilder GetConfigurationBuilder()
         {
-            CryptoInstaller.Configure<DefaultCrypto>(new RjindaelConfiguration(), Installation.Default);
-            CryptoInstaller.Configure<DefaultCrypto>(new Sha256Configuration(), Installation.Inst00);
+            return new ConfigurationBuilder().WithInstallation().WithCrypting().WithAes(new RijndaelBuilder()).Build()
+                .WithInstallation(Installation.Inst00).WithCrypting().WithSha256(new Sha256Builder()).Build();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace System
             if (!CacheManagers.ContainsKey(installingKeyValue))
                 lock (TrafficLight)
                     if (!CacheManagers.ContainsKey(installingKeyValue))
-                        CacheManagers.Add(installingKeyValue, new CacheManager<TCacheKey, TCache>(key.CacheBuilder()));
+                        CacheManagers.Add(installingKeyValue, new CacheManager<TCacheKey, TCache>(key.GetCacheBuilder()));
             return CacheManagers[installingKeyValue] as CacheManager<TCacheKey, TCache>;
         }
 

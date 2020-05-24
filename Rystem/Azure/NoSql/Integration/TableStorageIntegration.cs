@@ -30,7 +30,7 @@ namespace Rystem.Azure.NoSql
             try { this.Context.CreateIfNotExistsAsync().ToResult(); } catch { }
             foreach (PropertyInfo pi in typeof(TEntity).GetProperties())
             {
-                if (pi.GetCustomAttribute(typeof(NoTableStorageProperty)) != null)
+                if (pi.GetCustomAttribute(typeof(NoSqlProperty)) != null)
                     continue;
                 if (pi.Name == PartitionKey || pi.Name == RowKey || pi.Name == Timestamp || pi.Name == ETag)
                     continue;

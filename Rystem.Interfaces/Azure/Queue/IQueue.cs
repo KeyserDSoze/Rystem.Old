@@ -4,8 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure.Queue
 {
-    public interface IQueue
+    public interface IQueue : IConfigurator
     {
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.Queue;
+﻿using Rystem.Azure;
+using Rystem.Azure.Queue;
 using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
@@ -39,20 +40,18 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
         {
             public string A { get; set; }
             public MyObject B { get; set; }
-            static MyEventHub()
+            private const string ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=";
+            public ConfigurationBuilder GetConfigurationBuilder()
             {
-                QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
-                {
-                    ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
-                    Name = "queue",
-                    Type = QueueType.EventHub
-                });
-                QueueInstaller.Configure<MyEventHub>(new QueueConfiguration()
-                {
-                    ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=",
-                    Name = "aloa",
-                    Type = QueueType.EventHub
-                }, Installation.Inst00);
+                return new ConfigurationBuilder()
+                    .WithInstallation(Installation.Default)
+                    .WithQueue(ConnectionString)
+                    .WithEventHub(new RijndaelBuilder("queue"))
+                        .Build()
+                            .WithInstallation(Installation.Inst00)
+                            .WithQueue(ConnectionString)
+                            .WithEventHub(new RijndaelBuilder("aloa"))
+                                .Build();
             }
         }
         private class MyObject

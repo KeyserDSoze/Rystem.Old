@@ -13,7 +13,7 @@ namespace Rystem.Cache
     /// <typeparam name="TCache"></typeparam>
     public interface ICacheKey<TCache>
     {
-        CacheBuilder CacheBuilder();
+        CacheBuilder GetCacheBuilder();
         /// <summary>
         /// Fetch data of the istance by your database, or webrequest, or your business logic.
         /// </summary>

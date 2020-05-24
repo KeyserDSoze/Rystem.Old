@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.Data;
+﻿using Rystem.Azure;
+using Rystem.Azure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +9,13 @@ namespace Rystem.WebApp.Models
 {
     public class Video : IData
     {
-        static Video()
-            => DataInstaller.Configure<Video>(new DataConfiguration<Video>()
-            {
-                ConnectionString = "DefaultEndpointsProtocol=https;AccountName=rystem;AccountKey=OeOn4ae4HmlWjJCE1wGZRCsrPsjGwtMr0tjte3F+TAQ4sSA+uNiBQtKrgwI+RxlkF60IBOwI9J7qe3wPFSvm8A==;EndpointSuffix=core.windows.net",
-                Type = AggregatedDataType.BlockBlob
-            });
         public string Name { get; set; }
         public IDataProperties Properties { get; set; }
+        public ConfigurationBuilder GetConfigurationBuilder()
+        {
+            return new ConfigurationBuilder().WithInstallation().WithData("DefaultEndpointsProtocol=https;AccountName=rystem;AccountKey=OeOn4ae4HmlWjJCE1wGZRCsrPsjGwtMr0tjte3F+TAQ4sSA+uNiBQtKrgwI+RxlkF60IBOwI9J7qe3wPFSvm8A==;EndpointSuffix=core.windows.net")
+                .WithBlockBlobStorage<Video>(new BlockBlobBuilder<Video>("video", default, default)).Build();
+        }
     }
     public class Alo
     {

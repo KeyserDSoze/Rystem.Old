@@ -21,7 +21,7 @@ namespace System
                     if (!Managers.ContainsKey(entityType.FullName))
                     {
                         Type genericType = typeof(NoSqlManager<>).MakeGenericType(entityType);
-                        Managers.Add(entityType.FullName, (INoSqlManager)Activator.CreateInstance(genericType));
+                        Managers.Add(entityType.FullName, (INoSqlManager)Activator.CreateInstance(genericType, entity.GetConfigurationBuilder()));
                     }
             return Managers[entityType.FullName];
         }

@@ -11,23 +11,23 @@ namespace Rystem.Azure.Data
     {
         private readonly IDictionary<Installation, IDataIntegration<TEntity>> Integrations;
         private readonly IDictionary<Installation, DataConfiguration<TEntity>> AggregatedDataConfiguration;
-        public DataManager()
+        public DataManager(ConfigurationBuilder configurationBuilder)
         {
             Integrations = new Dictionary<Installation, IDataIntegration<TEntity>>();
-            AggregatedDataConfiguration = DataInstaller.GetConfiguration<TEntity>();
+            AggregatedDataConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as DataConfiguration<TEntity>);
             foreach (KeyValuePair<Installation, DataConfiguration<TEntity>> configuration in AggregatedDataConfiguration)
                 switch (configuration.Value.Type)
                 {
-                    case AggregatedDataType.BlockBlob:
+                    case DataType.BlockBlob:
                         Integrations.Add(configuration.Key, new BlockBlobStorageIntegration<TEntity>(configuration.Value));
                         break;
-                    case AggregatedDataType.AppendBlob:
+                    case DataType.AppendBlob:
                         Integrations.Add(configuration.Key, new AppendBlobStorageIntegration<TEntity>(configuration.Value));
                         break;
-                    case AggregatedDataType.PageBlob:
+                    case DataType.PageBlob:
                         Integrations.Add(configuration.Key, new PageBlobStorageIntegration<TEntity>(configuration.Value));
                         break;
-                    case AggregatedDataType.DataLakeV2:
+                    case DataType.DataLakeV2:
                         throw new NotImplementedException("DataLake V2 not implemented.");
                     default:
                         throw new InvalidOperationException($"Wrong type installed {configuration.Value.Type}");

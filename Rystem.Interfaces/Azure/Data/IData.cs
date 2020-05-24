@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure.Data
 {
-    public interface IData
+    public interface IData : IConfigurator
     {
         string Name { get; set; }
         IDataProperties Properties { get; set; }

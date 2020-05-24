@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,10 +12,10 @@ namespace Rystem.Azure.NoSql
     {
         private readonly IDictionary<Installation, INoSqlIntegration<TEntity>> Integrations;
         private readonly IDictionary<Installation, NoSqlConfiguration> NoSqlConfiguration;
-        public NoSqlManager()
+        public NoSqlManager(ConfigurationBuilder configurationBuilder)
         {
             Integrations = new Dictionary<Installation, INoSqlIntegration<TEntity>>();
-            NoSqlConfiguration = NoSqlInstaller.GetConfiguration<TEntity>();
+            NoSqlConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as NoSqlConfiguration);
             foreach (KeyValuePair<Installation, NoSqlConfiguration> configuration in NoSqlConfiguration)
                 switch (configuration.Value.Type)
                 {

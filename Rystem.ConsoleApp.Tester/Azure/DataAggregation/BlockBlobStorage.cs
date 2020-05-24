@@ -79,27 +79,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 
     public class Meatball2 : IData
     {
-        static Meatball2()
+        public ConfigurationBuilder GetConfigurationBuilder()
         {
-            DataInstaller.Configure(
-                new DataConfiguration<Meatball2>()
-                {
-
-                    ConnectionString = StorageConnectionString,
-                    Type = AggregatedDataType.BlockBlob
-                },
-               Installation.Inst01
-                );
-            DataInstaller.Configure(
-                new DataConfiguration<Meatball2>()
-                {
-
-                    ConnectionString = StorageConnectionString,
-                    Type = AggregatedDataType.BlockBlob,
-                    Name = "akrundm"
-                },
-               Installation.Inst00
-                );
+            return new ConfigurationBuilder().WithInstallation(Installation.Inst01).WithData(StorageConnectionString)
+                .WithBlockBlobStorage(new BlockBlobBuilder<Meatball2>("meatball2")).Build()
+                .WithInstallation(Installation.Inst00).WithData(StorageConnectionString)
+                .WithBlockBlobStorage(new BlockBlobBuilder<Meatball2>("akrundm")).Build();
         }
         public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         public int A { get; set; }

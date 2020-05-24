@@ -22,7 +22,7 @@ namespace System
                     if (!Managers.ContainsKey(entityType.FullName))
                     {
                         Type genericType = typeof(DataManager<>).MakeGenericType(entityType);
-                        Managers.Add(entityType.FullName, (IDataManager)Activator.CreateInstance(genericType));
+                        Managers.Add(entityType.FullName, (IDataManager)Activator.CreateInstance(genericType, entity.GetConfigurationBuilder()));
                     }
             return Managers[entityType.FullName];
         }

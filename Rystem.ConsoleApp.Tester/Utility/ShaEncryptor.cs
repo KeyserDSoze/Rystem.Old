@@ -35,11 +35,12 @@ namespace Rystem.ZConsoleApp.Tester.Utility
     }
     public class ShaHelper : ICrypto
     {
-        static ShaHelper()
-        {
-            CryptoInstaller.Configure<ShaHelper>(new Sha256Configuration(), Installation.Inst00);
-        }
         public string Message { get; set; }
         public string CryptedMessage { get; set; }
+
+        public ConfigurationBuilder GetConfigurationBuilder()
+        {
+            return new ConfigurationBuilder().WithInstallation(Installation.Inst00).WithCrypting().WithSha256(new Sha256Builder()).Build();
+        }
     }
 }

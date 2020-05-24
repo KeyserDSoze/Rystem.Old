@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.Data
+namespace Rystem.Azure.NoSql
 {
-    public interface IAggregatedData : IData
+    public enum NoSqlType
     {
+        TableStorage
     }
 }

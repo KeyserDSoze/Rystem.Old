@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Crypting
 {
-    public class RjindaelConfiguration : CryptoConfiguration, IRystemConfiguration
+    public class RjindaelConfiguration : CryptoConfiguration
     {
         private const string DefaultPasswordHash = "A9@#d56_";
         private const string DefaultSaltKey = "7§hg!8@ò";

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rystem.Crypting
 {
@@ -8,10 +9,10 @@ namespace Rystem.Crypting
     {
         private readonly IDictionary<Installation, ICryptoIntegration> Integrations;
         private readonly IDictionary<Installation, CryptoConfiguration> CryptoConfiguration;
-        public CryptoManager()
+        public CryptoManager(ConfigurationBuilder configurationBuilder)
         {
             Integrations = new Dictionary<Installation, ICryptoIntegration>();
-            CryptoConfiguration = CryptoInstaller.GetConfiguration<TEntity>();
+            CryptoConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as CryptoConfiguration);
             foreach (KeyValuePair<Installation, CryptoConfiguration> configuration in CryptoConfiguration)
                 switch (configuration.Value.Type)
                 {

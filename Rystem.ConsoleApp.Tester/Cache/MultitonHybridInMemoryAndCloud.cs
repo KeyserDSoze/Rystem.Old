@@ -37,7 +37,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder CacheBuilder()
+        public CacheBuilder GetCacheBuilder()
         {
             return new CacheBuilder()
                 .WithMemory(new MemoryCacheProperties(ExpireTime.FiveMinutes, true))
@@ -57,7 +57,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder CacheBuilder() => new CacheBuilder().WithMemory(new MemoryCacheProperties(ExpireTime.FiveSeconds, true))
+        public CacheBuilder GetCacheBuilder() => new CacheBuilder().WithMemory(new MemoryCacheProperties(ExpireTime.FiveSeconds, true))
                 .WithCloud(ConnectionString).WithTablestorage(new TableStorageCacheProperties(ExpireTime.Infinite));
     }
     public class HybridTable

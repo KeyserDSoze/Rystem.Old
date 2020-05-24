@@ -62,7 +62,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder CacheBuilder()
+        public CacheBuilder GetCacheBuilder()
         {
             return new CacheBuilder().WithCloud(ConnectionString)
                 .WithTablestorage(new TableStorageCacheProperties(ExpireTime.FiveSeconds));

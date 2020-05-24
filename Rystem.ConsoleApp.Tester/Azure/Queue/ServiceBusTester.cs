@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.Queue;
+﻿using Rystem.Azure;
+using Rystem.Azure.Queue;
 using Rystem.Debug;
 using Rystem.UnitTest;
 using System;
@@ -83,20 +84,13 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
         {
             public string A { get; set; }
             public MyObject B { get; set; }
-            static MyServiceBus()
+            private const string ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=";
+            public ConfigurationBuilder GetConfigurationBuilder()
             {
-                QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
-                {
-                    ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
-                    Type = QueueType.ServiceBus,
-                    Name = "dario"
-                });
-                QueueInstaller.Configure<MyServiceBus>(new QueueConfiguration()
-                {
-                    ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=",
-                    Type = QueueType.ServiceBus,
-                    Name = "aloa"
-                }, Installation.Inst00);
+                return new ConfigurationBuilder().WithInstallation(Installation.Default).WithQueue(ConnectionString)
+                    .WithServiceBus(new ServiceBusBuilder("dario")).Build()
+                    .WithInstallation(Installation.Inst00).WithQueue(ConnectionString).WithServiceBus(new ServiceBusBuilder("aloa"))
+                    .Build();
             }
         }
         private class MyObject

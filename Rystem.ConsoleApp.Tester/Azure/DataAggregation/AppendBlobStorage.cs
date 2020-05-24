@@ -75,29 +75,15 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         OtherRepository
     }
 
-    public class Meatball : IAggregatedData
+    public class Meatball : IData
     {
-        static Meatball()
+        public ConfigurationBuilder GetConfigurationBuilder()
         {
-            DataInstaller.Configure(
-                new DataConfiguration<Meatball>()
-                {
-
-                    ConnectionString = StorageConnectionString,
-                    Type = AggregatedDataType.AppendBlob
-                },
-                MeatballType.MyDefault.ToInstallation()
-                );
-            DataInstaller.Configure(
-                new DataConfiguration<Meatball>()
-                {
-
-                    ConnectionString = StorageConnectionString,
-                    Type = AggregatedDataType.AppendBlob,
-                    Name = "kollipop"
-                },
-               Installation.Inst00
-                );
+            return new ConfigurationBuilder().WithInstallation(MeatballType.MyDefault.ToInstallation()).WithData(StorageConnectionString)
+                .WithAppendBlobStorage(new AppendBlobBuilder<Meatball>("meatball")).Build()
+                .WithInstallation(Installation.Inst00).WithData(StorageConnectionString)
+                .WithAppendBlobStorage(new AppendBlobBuilder<Meatball>("kollipop"))
+                .Build();
         }
         public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         public int A { get; set; }

@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.NoSql;
+﻿using Rystem.Azure;
+using Rystem.Azure.NoSql;
 using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,14 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
                 Alo = "ddd",
                 Lazlo = new Lazlo() { A = 2 }
             };
+            foreach(var t in await new Example().ToListAsync())
+            {
+                await t.DeleteAsync();
+            }
+            foreach (var t in await new Caruni().ToListAsync())
+            {
+                await t.DeleteAsync();
+            }
             try
             {
                 await example.DeleteAsync();
@@ -72,7 +81,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
                 examplesForBatch.Add(new Example() { PartitionKey = "B", RowKey = i.ToString() });
             if (!examplesForBatch.UpdateBatch())
                 return false;
-            if ((await new Example().ToListAsync()).Count != 300)
+            var tt = await new Example().ToListAsync();
+            if (tt.Count != 300)
                 return false;
             if ((await new Caruni().ToListAsync()).Count != 105)
                 return false;
@@ -85,31 +95,38 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
 
             return true;
         }
-        private class Solute : ITableStorage
+        private abstract class Solute : ITableStorage
         {
             public string PartitionKey { get; set; }
             public string RowKey { get; set; }
             public DateTime Timestamp { get; set; }
             public string ETag { get; set; }
             public string Alo { get; set; }
+
+            public abstract ConfigurationBuilder GetConfigurationBuilder();
         }
         private class Example : Solute
         {
-            static Example()
-            {
-                NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
-                NoSqlInstaller.Configure<Example>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger" }, Installation.Inst00);
-            }
             public Lazlo Lazlo { get; set; }
+
+            public override ConfigurationBuilder GetConfigurationBuilder()
+            {
+                return new ConfigurationBuilder().WithInstallation(Installation.Default)
+                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Example")).Build()
+                    .WithInstallation(Installation.Inst00).WithNoSql(TableStorageTester.ConnectionString)
+                    .WithTableStorage(new TableStorageBuilder("Doppelganger")).Build();
+            }
         }
         private class Caruni : Solute
         {
-            static Caruni()
-            {
-                NoSqlInstaller.Configure<Caruni>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString });
-                NoSqlInstaller.Configure<Caruni>(new NoSqlConfiguration() { ConnectionString = TableStorageTester.ConnectionString, Name = "Doppelganger2" }, Installation.Inst00);
-            }
             public Lazlo Lazlo { get; set; }
+            public override ConfigurationBuilder GetConfigurationBuilder()
+            {
+                return new ConfigurationBuilder().WithInstallation(Installation.Default)
+                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Caruni")).Build()
+                    .WithInstallation(Installation.Inst00).WithNoSql(TableStorageTester.ConnectionString)
+                    .WithTableStorage(new TableStorageBuilder("Doppelganger2")).Build();
+            }
         }
         public class Lazlo
         {

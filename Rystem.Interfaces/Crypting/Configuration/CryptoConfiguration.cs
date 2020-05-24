@@ -1,8 +1,7 @@
 ﻿namespace Rystem.Crypting
 {
-    public abstract class CryptoConfiguration : IRystemConfiguration
+    public abstract class CryptoConfiguration : IConfiguration
     {
-        public string Name { get; set; }
         public abstract CryptoType Type { get; }
     }
 }

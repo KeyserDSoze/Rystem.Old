@@ -4,8 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure.NoSql
 {
-    public interface INoSql
+    public interface INoSql : IConfigurator
     {
-       
     }
 }

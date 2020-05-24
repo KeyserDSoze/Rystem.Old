@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.Queue;
+﻿using Rystem.Azure;
+using Rystem.Azure.Queue;
 using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;
@@ -110,43 +111,21 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
     }
     public class MySmartQueue : IQueue
     {
-        static MySmartQueue()
-        {
-            QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
-            {
-                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-                Type = QueueType.SmartQueue,
-                Name = "Business",
-                Retry = 3,
-            }, Installation.Inst05);
-            QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
-            {
-                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-                Type = QueueType.SmartQueue,
-                Name = "Notification",
-                CheckDuplication = QueueDuplication.Path,
-                Retry = 3
-            });
-            QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
-            {
-                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-                Type = QueueType.SmartQueue,
-                Name = "Unsubscription",
-                CheckDuplication = QueueDuplication.Message,
-                Retry = 3
-            }, Installation.Inst00);
-            QueueInstaller.Configure<MySmartQueue>(new QueueConfiguration()
-            {
-                ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-                Type = QueueType.SmartQueue,
-                Name = "Billing",
-                CheckDuplication = QueueDuplication.PathAndMessage,
-                Retry = 3,
-                Retention = -1,
-            }, Installation.Inst01);
-        }
+        private const string ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         public string Al { get; set; }
         public MyManagerImporter MyManagerImporter { get; set; }
+
+        public ConfigurationBuilder GetConfigurationBuilder()
+        {
+            return new ConfigurationBuilder().WithInstallation(Installation.Inst01).WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Billing", QueueDuplication.PathAndMessage, 100, 3, -1)).Build()
+                .WithInstallation(Installation.Inst00).WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Unsubscription", QueueDuplication.Message, 100, 3)).Build()
+                .WithInstallation(Installation.Default).WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Notification", QueueDuplication.Path, 100, 3, 30)).Build()
+                .WithInstallation(Installation.Inst05).WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Business", QueueDuplication.Allow, 100, 3, 30)).Build();
+        }
     }
     public class MyManagerImporter
     {
