@@ -9,12 +9,12 @@ namespace Rystem.Azure.Data
     internal interface IDataIntegration<TEntity>
         where TEntity : IData
     {
-        Task<bool> ExistsAsync(IData entity);
-        Task<bool> WriteAsync(IData entity, long offset);
-        Task<TEntity> FetchAsync(IData entity);
-        Task<bool> DeleteAsync(IData entity);
-        Task<IList<TEntity>> ListAsync(IData entity, string prefix, int? takeCount);
-        Task<IList<string>> SearchAsync(IData entity, string prefix, int? takeCount);
-        Task<IList<DataWrapper>> FetchPropertiesAsync(IData entity, string prefix, int? takeCount);
+        Task<bool> ExistsAsync(TEntity entity);
+        Task<bool> WriteAsync(TEntity entity, long offset);
+        Task<TEntity> FetchAsync(TEntity entity);
+        Task<bool> DeleteAsync(TEntity entity);
+        Task<IList<TEntity>> ListAsync(TEntity entity, string prefix, int? takeCount);
+        Task<IList<string>> SearchAsync(TEntity entity, string prefix, int? takeCount);
+        Task<IList<DataWrapper>> FetchPropertiesAsync(TEntity entity, string prefix, int? takeCount);
     }
 }

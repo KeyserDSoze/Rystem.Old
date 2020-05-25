@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.NoSql
 {
-    internal class NoSqlManager<TEntity> : INoSqlManager
-        where TEntity : INoSql
+    internal class NoSqlManager<TEntity> : INoSqlManager<TEntity>, IManager<TEntity>
     {
         private readonly IDictionary<Installation, INoSqlIntegration<TEntity>> Integrations;
         private readonly IDictionary<Installation, NoSqlConfiguration> NoSqlConfiguration;
-        public NoSqlManager(ConfigurationBuilder configurationBuilder)
+        public NoSqlManager(ConfigurationBuilder configurationBuilder, TEntity entity)
         {
             Integrations = new Dictionary<Installation, INoSqlIntegration<TEntity>>();
             NoSqlConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as NoSqlConfiguration);
@@ -20,25 +19,24 @@ namespace Rystem.Azure.NoSql
                 switch (configuration.Value.Type)
                 {
                     case NoSqlType.TableStorage:
-                        Integrations.Add(configuration.Key, new TableStorageIntegration<TEntity>(configuration.Value));
+                        Integrations.Add(configuration.Key, new TableStorageIntegration<TEntity>(configuration.Value, entity));
                         break;
                     default:
                         throw new InvalidOperationException($"Wrong type installed {configuration.Value.Type}");
                 }
         }
-        public async Task<bool> DeleteAsync(INoSql entity, Installation installation)
-            => await Integrations[installation].DeleteAsync((TEntity)entity).NoContext();
-        public async Task<bool> DeleteBatchAsync(IEnumerable<INoSql> entity, Installation installation)
-             => await Integrations[installation].DeleteBatchAsync(entity.Select(x => (TEntity)x)).NoContext();
-        public async Task<bool> ExistsAsync(INoSql entity, Installation installation)
-            => await Integrations[installation].ExistsAsync((TEntity)entity).NoContext();
-        public async Task<IList<TNoSqlEntity>> GetAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
-            where TNoSqlEntity : INoSql
-            => await Integrations[installation].GetAsync((TEntity)entity, expression, takeCount).NoContext();
-        public async Task<bool> UpdateAsync(INoSql entity, Installation installation)
-            => await Integrations[installation].UpdateAsync((TEntity)entity).NoContext();
-        public async Task<bool> UpdateBatchAsync(IEnumerable<INoSql> entity, Installation installation)
-            => await Integrations[installation].UpdateBatchAsync(entity.Select(x => (TEntity)x)).NoContext();
+        public async Task<bool> DeleteAsync(TEntity entity, Installation installation)
+            => await Integrations[installation].DeleteAsync(entity).NoContext();
+        public async Task<bool> DeleteBatchAsync(IEnumerable<TEntity> entity, Installation installation)
+             => await Integrations[installation].DeleteBatchAsync(entity).NoContext();
+        public async Task<bool> ExistsAsync(TEntity entity, Installation installation)
+            => await Integrations[installation].ExistsAsync(entity).NoContext();
+        public async Task<IList<TEntity>> GetAsync(TEntity entity, Installation installation, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null)
+            => await Integrations[installation].GetAsync(entity, expression, takeCount).NoContext();
+        public async Task<bool> UpdateAsync(TEntity entity, Installation installation)
+            => await Integrations[installation].UpdateAsync(entity).NoContext();
+        public async Task<bool> UpdateBatchAsync(IEnumerable<TEntity> entity, Installation installation)
+            => await Integrations[installation].UpdateBatchAsync(entity).NoContext();
         public string GetName(Installation installation = Installation.Default)
             => NoSqlConfiguration[installation].Name;
     }

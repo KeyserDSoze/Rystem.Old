@@ -33,5 +33,6 @@
         /// Only available for SmartQueue. Number of days in memory. Default value is 1.
         /// </summary>
         public int Retention { get; set; } = 30;
+        internal QueueConfiguration() { }
     }
 }

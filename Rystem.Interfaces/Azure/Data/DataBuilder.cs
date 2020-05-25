@@ -9,7 +9,7 @@ namespace Rystem.Azure.Data
     {
         private readonly IConfiguration DataConfiguration;
         private readonly DataSelector DataSelector;
-        public DataBuilder(IConfiguration dataConfiguration, DataSelector dataSelector)
+        internal DataBuilder(IConfiguration dataConfiguration, DataSelector dataSelector)
         {
             this.DataConfiguration = dataConfiguration;
             this.DataSelector = dataSelector;

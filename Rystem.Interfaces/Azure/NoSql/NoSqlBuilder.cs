@@ -8,7 +8,7 @@ namespace Rystem.Azure.NoSql
     {
         private readonly IConfiguration NoSqlConfiguration;
         private readonly NoSqlSelector NoSqlSelector;
-        public NoSqlBuilder(IConfiguration noSqlConfiguration, NoSqlSelector noSqlSelector)
+        internal NoSqlBuilder(IConfiguration noSqlConfiguration, NoSqlSelector noSqlSelector)
         {
             this.NoSqlConfiguration = noSqlConfiguration;
             this.NoSqlSelector = noSqlSelector;

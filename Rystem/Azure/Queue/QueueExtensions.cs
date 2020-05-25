@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Rystem.Azure;
 using Rystem.Azure.Queue;
 using Rystem.Const;
 using Rystem.Debug;
@@ -12,21 +13,12 @@ namespace System
 {
     public static partial class QueueExtensions
     {
-        private readonly static Dictionary<string, IQueueManager> Managers = new Dictionary<string, IQueueManager>();
-        private readonly static object TrafficLight = new object();
-        private static IQueueManager Manager<TEntity>(this TEntity entity)
+        private static IManager<TEntity> GetQueueManager<TEntity>(TEntity entity)
             where TEntity : IQueue
-        {
-            Type entityType = entity.GetType();
-            if (!Managers.ContainsKey(entityType.FullName))
-                lock (TrafficLight)
-                    if (!Managers.ContainsKey(entityType.FullName))
-                    {
-                        Type genericType = typeof(QueueManager<>).MakeGenericType(entityType);
-                        Managers.Add(entityType.FullName, (IQueueManager)Activator.CreateInstance(genericType, entity.GetConfigurationBuilder()));
-                    }
-            return Managers[entityType.FullName];
-        }
+            => new QueueManager<TEntity>(entity.GetConfigurationBuilder(), entity);
+        private static IQueueManager<TEntity> Manager<TEntity>(this TEntity entity)
+            where TEntity : IQueue
+            => entity.DefaultManager<TEntity>(GetQueueManager) as IQueueManager<TEntity>;
         public static async Task<bool> SendAsync<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue
             => await message.Manager().SendAsync(message, installation, path, organization).NoContext();
@@ -42,7 +34,7 @@ namespace System
         {
             bool result = true;
             foreach (var msgs in messages.GroupBy(x => x.GetType().FullName))
-                result &= await msgs.FirstOrDefault().Manager().SendBatchAsync(msgs.Select(x => x as IQueue), installation, path, organization).NoContext();
+                result &= await msgs.FirstOrDefault().Manager().SendBatchAsync(msgs, installation, path, organization).NoContext();
             return result;
         }
 
@@ -51,14 +43,14 @@ namespace System
         {
             List<long> aggregatedResponse = new List<long>();
             foreach (var msgs in messages.GroupBy(x => x.GetType().FullName))
-                aggregatedResponse.AddRange(await msgs.FirstOrDefault().Manager().SendScheduledBatchAsync(msgs.Select(x => x as IQueue), delayInSeconds, installation, path, organization).NoContext());
+                aggregatedResponse.AddRange(await msgs.FirstOrDefault().Manager().SendScheduledBatchAsync(msgs, delayInSeconds, installation, path, organization).NoContext());
             return aggregatedResponse;
         }
 
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<IEnumerable<TEntity>> ReadAsync<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue
-            => await message.Manager().ReadAsync<TEntity>(installation, path, organization).NoContext();
+            => await message.Manager().ReadAsync(installation, path, organization).NoContext();
 
         [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public static async Task<bool> CleanAsync<TEntity>(this TEntity message, Installation installation = Installation.Default)
@@ -69,7 +61,7 @@ namespace System
             => await message.Manager().DebugSendAsync(message, delayInSeconds, installation, path, organization).NoContext();
         public static async Task<DebugMessage> DebugSendBatchAsync<TEntity>(this IEnumerable<TEntity> messages, int delayInSeconds = 0, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue
-            => await messages.FirstOrDefault().Manager().DebugSendBatchAsync(messages.Select(x => x as IQueue), delayInSeconds, installation, path, organization).NoContext();
+            => await messages.FirstOrDefault().Manager().DebugSendBatchAsync(messages, delayInSeconds, installation, path, organization).NoContext();
 
         public static bool Send<TEntity>(this TEntity message, int path = 0, int organization = 0, Installation installation = Installation.Default)
             where TEntity : IQueue
@@ -105,21 +97,8 @@ namespace System
             => message.Manager().GetName(installation);
 
         public static byte[] ToSendable<TEntry>(this TEntry message)
-            where TEntry : IQueue
             => Encoding.UTF8.GetBytes(message.ToDefaultJson());
-        public static byte[] ToSendable<TEntry>(this IEnumerable<TEntry> messages)
-            where TEntry : IQueue
-            => Encoding.UTF8.GetBytes(messages.ToDefaultJson());
         internal static TEntity ToMessage<TEntity>(this string message)
-            where TEntity : IQueue
             => message.FromDefaultJson<TEntity>();
-        internal static IEnumerable<TEntity> FromMessage<TEntity>(this IEnumerable<string> messages)
-            where TEntity : IQueue
-        {
-            IList<TEntity> entities = new List<TEntity>();
-            foreach (string message in messages)
-                entities.Add(message.ToMessage<TEntity>());
-            return entities;
-        }
     }
 }

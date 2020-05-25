@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Aggregation
+namespace Rystem.Azure
 {
-    public interface IAggregation<T> : IConfigurator
+    internal interface IManager<TEntity>
     {
     }
 }

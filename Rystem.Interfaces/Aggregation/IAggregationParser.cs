@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Rystem.Aggregation
 {
-    public interface IAggregationParser
+    public interface IAggregationParser<T>
     {
-        Task ParseAsync<T>(string queueName, IList<T> events, ILogger log, Installation installation);
+        Task ParseAsync(string queueName, IList<T> events, ILogger log, Installation installation);
     }
 }

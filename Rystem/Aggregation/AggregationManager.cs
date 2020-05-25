@@ -4,20 +4,23 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 
 using System.Threading.Tasks;
+using Rystem.Azure;
+using Rystem.Fast;
 
 namespace Rystem.Aggregation
 {
-    public class AggregationManager<T> : IAggregationManager
+    public class AggregationManager<T> : IAggregationManager<T>
     {
         private readonly static Dictionary<Installation, object> TrafficLight = new Dictionary<Installation, object>();
         private readonly static Dictionary<Installation, BufferBearer> Buffer = new Dictionary<Installation, BufferBearer>();
         private static readonly object AcquireToken = new object();
-        private readonly IDictionary<Installation, AggregationConfiguration> AggregationProperties;
-        private string AggregationName(Installation installation) 
+        private readonly IDictionary<Installation, AggregationConfiguration<T>> AggregationProperties;
+        private string AggregationName(Installation installation)
             => this.AggregationProperties[installation].Name;
-
-        public AggregationManager(ConfigurationBuilder configurationBuilder) 
-            => this.AggregationProperties = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as AggregationConfiguration);
+        public AggregationManager(ConfigurationBuilder configurationBuilder)
+        {
+            this.AggregationProperties = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as AggregationConfiguration<T>);
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]
         public async Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default)
@@ -69,7 +72,7 @@ namespace Rystem.Aggregation
             }
             if (events.Count > 0)
             {
-                foreach (IAggregationParser parser in this.AggregationProperties[installation].Parsers)
+                foreach (IAggregationParser<T> parser in this.AggregationProperties[installation].Parsers.Select(x => x))
                 {
                     try
                     {
@@ -84,7 +87,7 @@ namespace Rystem.Aggregation
             }
             return events;
         }
-       
+
         private class BufferBearer
         {
             public IList<T> Events { get; set; } = new List<T>();

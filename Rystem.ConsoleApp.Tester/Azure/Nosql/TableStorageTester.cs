@@ -95,15 +95,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
 
             return true;
         }
-        private abstract class Solute : ITableStorage
+        private abstract class Solute : TableStorage
         {
-            public string PartitionKey { get; set; }
-            public string RowKey { get; set; }
-            public DateTime Timestamp { get; set; }
-            public string ETag { get; set; }
             public string Alo { get; set; }
-
-            public abstract ConfigurationBuilder GetConfigurationBuilder();
         }
         private class Example : Solute
         {

@@ -7,6 +7,13 @@ namespace Rystem.Azure.NoSql
     public class TableStorageBuilder
     {
         public NoSqlConfiguration NoSqlConfiguration { get; }
+        public TableStorageBuilder()
+        {
+            this.NoSqlConfiguration = new NoSqlConfiguration()
+            {
+                Type = NoSqlType.TableStorage
+            };
+        }
         public TableStorageBuilder(string name)
         {
             this.NoSqlConfiguration = new NoSqlConfiguration()

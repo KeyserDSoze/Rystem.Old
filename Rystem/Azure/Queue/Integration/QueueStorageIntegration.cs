@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal class QueueStorageIntegration<TEntity> : IQueueIntegration<TEntity>
-        where TEntity : IQueue
     {
         private readonly CloudQueue Client;
         private readonly QueueConfiguration QueueConfiguration;
@@ -29,7 +28,7 @@ namespace Rystem.Azure.Queue
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
 
         public async Task<IEnumerable<TEntity>> ReadAsync(int path, int organization)
-             => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Select(x => x.AsString).FromMessage<TEntity>();
+             => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Select(x => x.AsString.ToMessage<TEntity>());
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
             await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToDefaultJson())).NoContext();

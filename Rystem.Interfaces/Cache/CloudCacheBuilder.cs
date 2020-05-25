@@ -7,7 +7,7 @@ namespace Rystem.Cache
     public class CloudCacheBuilder
     {
         private readonly CacheBuilder CacheBuilder;
-        public CloudCacheBuilder(CacheBuilder cacheBuilder)
+        internal CloudCacheBuilder(CacheBuilder cacheBuilder)
             => this.CacheBuilder = cacheBuilder;
         public CacheBuilder WithRedis(RedisCacheProperties configuration)
         {

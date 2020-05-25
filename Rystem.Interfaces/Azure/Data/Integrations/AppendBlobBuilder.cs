@@ -8,7 +8,7 @@ namespace Rystem.Azure.Data
         where TData : IData
     {
         public DataConfiguration<TData> DataConfiguration { get; }
-        public AppendBlobBuilder(string name, IDataReader<TData> reader= default, IDataWriter<TData> writer = default)
+        public AppendBlobBuilder(string name, IDataReader<TData> reader = default, IDataWriter<TData> writer = default)
         {
             this.DataConfiguration = new DataConfiguration<TData>()
             {

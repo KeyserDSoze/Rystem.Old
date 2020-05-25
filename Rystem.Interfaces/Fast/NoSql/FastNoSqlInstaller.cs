@@ -8,8 +8,8 @@ namespace Rystem.Fast
 {
     public class FastNoSqlInstaller
     {
-        public static NoSqlConfiguration Properties;
-        public static void Configure(NoSqlConfiguration properties) 
-            => Properties = properties;
+        public static ConfigurationBuilder Builder { get; private set; }
+        public static void Configure(ConfigurationBuilder configurationBuilder)
+            => Builder = configurationBuilder;
     }
 }

@@ -9,27 +9,53 @@ using System.Text;
 
 namespace Rystem
 {
+    /// <summary>
+    /// Allows to select the right integration with "With" methods
+    /// </summary>
     public class Installer
     {
         internal readonly ConfigurationBuilder Builder;
         private readonly Installation Installation;
-        public Installer(ConfigurationBuilder azureBuilder, Installation installation = Installation.Default)
+        public Installer(ConfigurationBuilder builder, Installation installation = Installation.Default)
         {
             this.Installation = installation;
-            this.Builder = azureBuilder;
+            this.Builder = builder;
         }
 
         internal void AddConfiguration(IConfiguration configuration)
             => this.Builder.Configurations.Add(this.Installation, configuration);
+        /// <summary>
+        /// Add a Queue integration
+        /// </summary>
+        /// <param name="connectionString">ConnectionString for your queue</param>
+        /// <returns>specific integration selector</returns>
         public QueueSelector WithQueue(string connectionString)
             => new QueueSelector(connectionString, this);
+        /// <summary>
+        /// Add a NoSql integration
+        /// </summary>
+        /// <param name="connectionString">ConnectionString for your sql</param>
+        /// <returns>specific integration selector</returns>
         public NoSqlSelector WithNoSql(string connectionString)
             => new NoSqlSelector(connectionString, this);
+        /// <summary>
+        /// Add a Data integration
+        /// </summary>
+        /// <param name="connectionString">ConnectionString for your Data</param>
+        /// <returns>specific integration selector</returns>
         public DataSelector WithData(string connectionString)
             => new DataSelector(connectionString, this);
+        /// <summary>
+        /// Add a Crypting integration
+        /// </summary>
+        /// <returns>specific integration selector</returns>
         public CryptoSelector WithCrypting()
             => new CryptoSelector(this);
-        public AggregationSelector WithAggregation()
-            => new AggregationSelector(this);
+        /// <summary>
+        /// Add an Aggregation integration
+        /// </summary>
+        /// <returns>specific integration selector</returns>
+        public AggregationSelector<T> WithAggregation<T>()
+            => new AggregationSelector<T>(this);
     }
 }

@@ -13,28 +13,45 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.NoSql
 {
     internal class TableStorageIntegration<TEntity> : INoSqlIntegration<TEntity>
-        where TEntity : INoSql
     {
-        private readonly CloudTable Context;
+        private static readonly object TrafficLight = new object();
+        private CloudTable context;
+        private CloudTable Context
+        {
+            get
+            {
+                if (context != null)
+                    return context;
+                lock (TrafficLight)
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(NoSqlConfiguration.ConnectionString);
+                    CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+                    context = tableClient.GetTableReference(NoSqlConfiguration.Name ?? EntityType.Name);
+                }
+                try { context.CreateIfNotExistsAsync().ToResult(); } catch { }
+                return context;
+            }
+        }
+        private readonly IDictionary<string, PropertyInfo> BaseProperties = new Dictionary<string, PropertyInfo>();
         private readonly IList<PropertyInfo> Properties = new List<PropertyInfo>();
         private readonly IList<PropertyInfo> SpecialProperties = new List<PropertyInfo>();
         private const string PartitionKey = "PartitionKey";
         private const string RowKey = "RowKey";
         private const string Timestamp = "Timestamp";
         private const string ETag = "ETag";
-        internal TableStorageIntegration(NoSqlConfiguration noSqlConfiguration)
+        private readonly NoSqlConfiguration NoSqlConfiguration;
+        private readonly Type EntityType;
+        internal TableStorageIntegration(NoSqlConfiguration noSqlConfiguration, TEntity entity)
         {
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(noSqlConfiguration.ConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-            this.Context = tableClient.GetTableReference(noSqlConfiguration.Name);
-            try { this.Context.CreateIfNotExistsAsync().ToResult(); } catch { }
-            foreach (PropertyInfo pi in typeof(TEntity).GetProperties())
+            this.EntityType = entity.GetType();
+            this.NoSqlConfiguration = noSqlConfiguration;
+            foreach (PropertyInfo pi in this.EntityType.GetProperties())
             {
                 if (pi.GetCustomAttribute(typeof(NoSqlProperty)) != null)
                     continue;
                 if (pi.Name == PartitionKey || pi.Name == RowKey || pi.Name == Timestamp || pi.Name == ETag)
-                    continue;
-                if (pi.PropertyType == typeof(int) || pi.PropertyType == typeof(long) ||
+                    BaseProperties.Add(pi.Name, pi);
+                else if (pi.PropertyType == typeof(int) || pi.PropertyType == typeof(long) ||
                     pi.PropertyType == typeof(double) || pi.PropertyType == typeof(string) ||
                     pi.PropertyType == typeof(Guid) || pi.PropertyType == typeof(bool) ||
                     pi.PropertyType == typeof(DateTime) || pi.PropertyType == typeof(byte[]))
@@ -43,38 +60,42 @@ namespace Rystem.Azure.NoSql
                     SpecialProperties.Add(pi);
             }
         }
-        private class DummyTableStorage : TableEntity { }
+        private DynamicTableEntity GetBase(TEntity entity)
+        {
+            object partitionKey = this.BaseProperties[PartitionKey].GetValue(entity);
+            object rowKey = this.BaseProperties[RowKey].GetValue(entity);
+            object eTag = this.BaseProperties[ETag].GetValue(entity);
+            return new DynamicTableEntity()
+            {
+                PartitionKey = (partitionKey ?? DateTime.UtcNow.ToString("yyyyMMdd")).ToString(),
+                RowKey = (rowKey ?? Utility.Alea.GetTimedKey()).ToString(),
+                ETag = eTag == null ? "*" : eTag.ToString(),
+            };
+        }
         public async Task<bool> DeleteAsync(TEntity entity)
         {
-            ITableStorage entityStorage = entity as ITableStorage;
-            TableOperation operation = TableOperation.Delete(new DummyTableStorage()
-            {
-                PartitionKey = entityStorage.PartitionKey,
-                RowKey = entityStorage.RowKey,
-                ETag = "*"
-            });
+            TableOperation operation = TableOperation.Delete(this.GetBase(entity));
             return (await this.Context.ExecuteAsync(operation).NoContext()).HttpStatusCode == 204;
         }
 
         public async Task<bool> ExistsAsync(TEntity entity)
         {
-            ITableStorage entityStorage = entity as ITableStorage;
-            TableOperation operation = TableOperation.Retrieve<DummyTableStorage>(entityStorage.PartitionKey, entityStorage.RowKey);
+            DynamicTableEntity tableStorage = this.GetBase(entity);
+            TableOperation operation = TableOperation.Retrieve<DynamicTableEntity>(tableStorage.PartitionKey, tableStorage.RowKey);
             TableResult result = await this.Context.ExecuteAsync(operation).NoContext();
             return result.Result != null;
         }
 
-        public async Task<IList<TSpecialEntity>> GetAsync<TSpecialEntity>(TEntity entity, Expression<Func<TSpecialEntity, bool>> expression = null, int? takeCount = null)
-            where TSpecialEntity : INoSql
+        public async Task<IList<TEntity>> GetAsync(TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null)
         {
-            List<TSpecialEntity> items = new List<TSpecialEntity>();
+            List<TEntity> items = new List<TEntity>();
             TableContinuationToken token = null;
             string query = ToQuery(expression?.Body);
             do
             {
                 TableQuerySegment<DynamicTableEntity> seg = await this.Context.ExecuteQuerySegmentedAsync(new TableQuery<DynamicTableEntity>() { FilterString = query, TakeCount = takeCount }, token).NoContext();
                 token = seg.ContinuationToken;
-                items.AddRange(seg.Select(x => ReadEntity<TSpecialEntity>(x)));
+                items.AddRange(seg.Select(x => ReadEntity(x)));
                 if (takeCount != null && items.Count >= takeCount) break;
             } while (token != null);
             return items;
@@ -99,12 +120,12 @@ namespace Rystem.Azure.NoSql
         public async Task<bool> UpdateBatchAsync(IEnumerable<TEntity> entities)
         {
             bool result = true;
-            foreach (var groupedEntity in entities.Select(x => x as ITableStorage).GroupBy(x => x.PartitionKey))
+            foreach (var groupedEntity in entities.Select(x => this.WriteEntity(x)).GroupBy(x => x.PartitionKey))
             {
                 TableBatchOperation batch = new TableBatchOperation();
-                foreach (ITableStorage entity in groupedEntity)
+                foreach (DynamicTableEntity entity in groupedEntity)
                 {
-                    batch.InsertOrReplace(WriteEntity((TEntity)entity));
+                    batch.InsertOrReplace(entity);
                     if (batch.Count == 100)
                     {
                         IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch).NoContext();
@@ -120,17 +141,12 @@ namespace Rystem.Azure.NoSql
         public async Task<bool> DeleteBatchAsync(IEnumerable<TEntity> entities)
         {
             bool result = true;
-            foreach (var groupedEntity in entities.Select(x => x as ITableStorage).GroupBy(x => x.PartitionKey))
+            foreach (var groupedEntity in entities.Select(x => this.GetBase(x)).GroupBy(x => x.PartitionKey))
             {
                 TableBatchOperation batch = new TableBatchOperation();
-                foreach (ITableStorage entity in groupedEntity)
+                foreach (DynamicTableEntity entity in groupedEntity)
                 {
-                    batch.Delete(new DummyTableStorage()
-                    {
-                        PartitionKey = entity.PartitionKey,
-                        RowKey = entity.RowKey,
-                        ETag = "*"
-                    });
+                    batch.Delete(entity);
                     if (batch.Count == 100)
                     {
                         IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch).NoContext();
@@ -143,36 +159,27 @@ namespace Rystem.Azure.NoSql
             }
             return result;
         }
-        private static readonly DateTime DateTimeDefault = default;
         private DynamicTableEntity WriteEntity(TEntity entity)
         {
-            ITableStorage entityStorage = entity as ITableStorage;
-            DynamicTableEntity dummy = new DynamicTableEntity
-            {
-                PartitionKey = entityStorage.PartitionKey,
-                RowKey = entityStorage.RowKey = entityStorage.RowKey ?? string.Format("{0:d19}{1}", DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks, Guid.NewGuid().ToString("N")),
-                Timestamp = entityStorage.Timestamp > DateTimeDefault ? entityStorage.Timestamp : (entityStorage.Timestamp = DateTime.UtcNow),
-                ETag = entityStorage.ETag = entityStorage.ETag ?? "*"
-            };
+            DynamicTableEntity dynamicTableEntity = this.GetBase(entity);
             foreach (PropertyInfo pi in this.Properties)
             {
                 dynamic value = pi.GetValue(entity);
                 if (value != null)
-                    dummy.Properties.Add(pi.Name, new EntityProperty(value));
+                    dynamicTableEntity.Properties.Add(pi.Name, new EntityProperty(value));
             }
             foreach (PropertyInfo pi in this.SpecialProperties)
-                dummy.Properties.Add(pi.Name, new EntityProperty(
+                dynamicTableEntity.Properties.Add(pi.Name, new EntityProperty(
                     pi.GetValue(entity).ToDefaultJson()));
-            return dummy;
+            return dynamicTableEntity;
         }
         private static readonly MethodInfo JsonConvertDeserializeMethod = typeof(JsonConvert).GetMethods(BindingFlags.Public | BindingFlags.Static).First(x => x.IsGenericMethod && x.Name.Equals("DeserializeObject") && x.GetParameters().ToList().FindAll(y => y.Name == "settings").Count > 0);
-        private TSpecialEntity ReadEntity<TSpecialEntity>(DynamicTableEntity dynamicTableEntity)
-            where TSpecialEntity : INoSql
+        private TEntity ReadEntity(DynamicTableEntity dynamicTableEntity)
         {
-            ITableStorage entity = Activator.CreateInstance(typeof(TEntity)) as ITableStorage;
-            entity.PartitionKey = dynamicTableEntity.PartitionKey;
-            entity.RowKey = dynamicTableEntity.RowKey;
-            entity.Timestamp = dynamicTableEntity.Timestamp.DateTime.ToUniversalTime();
+            TEntity entity = (TEntity)Activator.CreateInstance(this.EntityType);
+            this.BaseProperties[PartitionKey].SetValue(entity, dynamicTableEntity.PartitionKey);
+            this.BaseProperties[RowKey].SetValue(entity, dynamicTableEntity.RowKey);
+            this.BaseProperties[Timestamp].SetValue(entity, dynamicTableEntity.Timestamp.DateTime.ToUniversalTime());
             foreach (PropertyInfo pi in this.Properties)
                 if (dynamicTableEntity.Properties.ContainsKey(pi.Name))
                     SetValue(dynamicTableEntity.Properties[pi.Name], pi);
@@ -182,7 +189,7 @@ namespace Rystem.Azure.NoSql
                     dynamic value = JsonConvertDeserializeMethod.MakeGenericMethod(pi.PropertyType).Invoke(null, new object[2] { dynamicTableEntity.Properties[pi.Name].StringValue, NewtonsoftConst.AutoNameHandling_NullIgnore_JsonSettings });
                     pi.SetValue(entity, value);
                 }
-            return (TSpecialEntity)entity;
+            return entity;
             void SetValue(EntityProperty entityProperty, PropertyInfo pi)
             {
                 switch (entityProperty.PropertyType)

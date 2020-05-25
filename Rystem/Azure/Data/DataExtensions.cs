@@ -1,4 +1,5 @@
-﻿using Rystem.Azure.Data;
+﻿using Rystem.Azure;
+using Rystem.Azure.Data;
 
 using System;
 using System.Collections.Generic;
@@ -11,21 +12,13 @@ namespace System
 {
     public static class DataExtensions
     {
-        private readonly static Dictionary<string, IDataManager> Managers = new Dictionary<string, IDataManager>();
-        private readonly static object TrafficLight = new object();
-        private static IDataManager Manager<TEntity>(this TEntity entity)
+        private static IManager<TEntity> GetDataManager<TEntity>(TEntity entity)
             where TEntity : IData
-        {
-            Type entityType = entity.GetType();
-            if (!Managers.ContainsKey(entityType.FullName))
-                lock (TrafficLight)
-                    if (!Managers.ContainsKey(entityType.FullName))
-                    {
-                        Type genericType = typeof(DataManager<>).MakeGenericType(entityType);
-                        Managers.Add(entityType.FullName, (IDataManager)Activator.CreateInstance(genericType, entity.GetConfigurationBuilder()));
-                    }
-            return Managers[entityType.FullName];
-        }
+            => new DataManager<TEntity>(entity.GetConfigurationBuilder(), entity);
+        private static IDataManager<TEntity> Manager<TEntity>(this TEntity entity)
+            where TEntity : IData
+            => entity.DefaultManager<TEntity>(GetDataManager) as IDataManager<TEntity>;
+
         public static async Task<bool> WriteAsync<TEntity>(this TEntity entity, long offset = 0, Installation installation = Installation.Default)
             where TEntity : IData
             => await entity.Manager().WriteAsync(entity, installation, offset).NoContext();
@@ -37,10 +30,10 @@ namespace System
            => await entity.Manager().ExistsAsync(entity, installation).NoContext();
         public static async Task<TEntity> FetchAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
             where TEntity : IData
-           => await entity.Manager().FetchAsync<TEntity>(entity, installation).NoContext();
+           => await entity.Manager().FetchAsync(entity, installation).NoContext();
         public static async Task<IEnumerable<TEntity>> ListAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IData
-           => await entity.Manager().ListAsync<TEntity>(entity, installation, prefix, takeCount).NoContext();
+           => await entity.Manager().ListAsync(entity, installation, prefix, takeCount).NoContext();
         public static async Task<IList<string>> SearchAsync<TEntity>(this TEntity entity, string prefix = null, int? takeCount = null, Installation installation = Installation.Default)
             where TEntity : IData
            => await entity.Manager().SearchAsync(entity, installation, prefix, takeCount).NoContext();

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace Rystem.Azure.Queue
 {
     internal class EventHubIntegration<TEntity> : IQueueIntegration<TEntity>
-        where TEntity : IQueue
     {
         private readonly EventHubClient Client;
         internal EventHubIntegration(QueueConfiguration property) 

@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
 {
-    internal class QueueManager<TEntity> : IQueueManager
-        where TEntity : IQueue
+    internal class QueueManager<TEntity> : IQueueManager<TEntity>
     {
         private readonly IDictionary<Installation, IQueueIntegration<TEntity>> Integrations = new Dictionary<Installation, IQueueIntegration<TEntity>>();
         private readonly IDictionary<Installation, QueueConfiguration> QueueConfiguration;
-        public QueueManager(ConfigurationBuilder configurationBuilder)
+        private readonly Type EntityType;
+        public QueueManager(ConfigurationBuilder configurationBuilder, TEntity entity)
         {
+            this.EntityType = entity.GetType();
             QueueConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as QueueConfiguration);
             foreach (KeyValuePair<Installation, QueueConfiguration> configuration in QueueConfiguration)
                 switch (configuration.Value.Type)
@@ -35,31 +36,30 @@ namespace Rystem.Azure.Queue
                         throw new InvalidOperationException($"Wrong type installed {configuration.Value.Type}");
                 }
         }
-        public async Task<bool> SendAsync(IQueue message, Installation installation, int path, int organization)
-            => await Integrations[installation].SendAsync((TEntity)message, path, organization).NoContext();
-        public async Task<long> SendScheduledAsync(IQueue message, int delayInSeconds, Installation installation, int path, int organization)
-            => await Integrations[installation].SendScheduledAsync((TEntity)message, delayInSeconds, path, organization).NoContext();
+        public async Task<bool> SendAsync(TEntity message, Installation installation, int path, int organization)
+            => await Integrations[installation].SendAsync(message, path, organization).NoContext();
+        public async Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, Installation installation, int path, int organization)
+            => await Integrations[installation].SendScheduledAsync(message, delayInSeconds, path, organization).NoContext();
         public async Task<bool> DeleteScheduledAsync(long messageId, Installation installation)
             => await Integrations[installation].DeleteScheduledAsync(messageId).NoContext();
-        public async Task<bool> SendBatchAsync(IEnumerable<IQueue> messages, Installation installation, int path, int organization)
-            => await Integrations[installation].SendBatchAsync(messages.Select(x => (TEntity)x), path, organization).NoContext();
-        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization)
-            => await Integrations[installation].SendScheduledBatchAsync(messages.Select(x => (TEntity)x), delayInSeconds, path, organization).NoContext();
-        public async Task<DebugMessage> DebugSendAsync(IQueue message, int delayInSeconds, Installation installation, int path, int organization)
+        public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, Installation installation, int path, int organization)
+            => await Integrations[installation].SendBatchAsync(messages.Select(x => x), path, organization).NoContext();
+        public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, Installation installation, int path, int organization)
+            => await Integrations[installation].SendScheduledBatchAsync(messages.Select(x => x), delayInSeconds, path, organization).NoContext();
+        public async Task<DebugMessage> DebugSendAsync(TEntity message, int delayInSeconds, Installation installation, int path, int organization)
         {
             await Task.Delay(0).NoContext();
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = ((TEntity)message).ToDefaultJson(), SmartMessage = ((TEntity)message).ToDefaultJson(), EventDatas = new EventData[1] { new EventData(((TEntity)message).ToSendable()) } };
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = message.ToDefaultJson(), SmartMessage = message.ToDefaultJson(), EventDatas = new EventData[1] { new EventData(message.ToSendable()) } };
         }
-        public async Task<DebugMessage> DebugSendBatchAsync(IEnumerable<IQueue> messages, int delayInSeconds, Installation installation, int path, int organization)
+        public async Task<DebugMessage> DebugSendBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, Installation installation, int path, int organization)
         {
             await Task.Delay(0).NoContext();
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.Select(x => (TEntity)x).ToDefaultJson(), SmartMessage = messages.Select(x => (TEntity)x).ToDefaultJson(), EventDatas = messages.Select(x => new EventData(((TEntity)x).ToSendable())).ToArray() };
+            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.Select(x => x).ToDefaultJson(), SmartMessage = messages.Select(x => x).ToDefaultJson(), EventDatas = messages.Select(x => new EventData(x.ToSendable())).ToArray() };
         }
         public string GetName(Installation installation) => QueueConfiguration[installation].Name;
 
-        public async Task<IEnumerable<TQueue>> ReadAsync<TQueue>(Installation installation, int path, int organization)
-            where TQueue : IQueue
-            => (await Integrations[installation].ReadAsync(path, organization).NoContext()).Select(x => (TQueue)(x as IQueue));
+        public async Task<IEnumerable<TEntity>> ReadAsync(Installation installation, int path, int organization)
+            => await Integrations[installation].ReadAsync(path, organization).NoContext();
 
         public async Task<bool> CleanAsync(Installation installation)
             => await Integrations[installation].CleanAsync().NoContext();

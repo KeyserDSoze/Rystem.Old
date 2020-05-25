@@ -42,6 +42,7 @@ namespace Rystem.WebApp
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseRystem();
 
             app.UseRouting();
 
@@ -55,7 +56,7 @@ namespace Rystem.WebApp
 
             });
 
-            app.UseRystem();
+           
         }
     }
 }

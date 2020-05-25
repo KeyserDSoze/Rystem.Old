@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.NoSql
 {
-    internal interface INoSqlManager
+    internal interface INoSqlManager<TEntity> : IManager<TEntity>
     {
-        Task<bool> ExistsAsync(INoSql entity, Installation installation);
-        Task<IList<TNoSqlEntity>> GetAsync<TNoSqlEntity>(INoSql entity, Installation installation, Expression<Func<TNoSqlEntity, bool>> expression = null, int? takeCount = null)
-            where TNoSqlEntity : INoSql;
-        Task<bool> UpdateAsync(INoSql entity, Installation installation);
-        Task<bool> UpdateBatchAsync(IEnumerable<INoSql> entity, Installation installation);
-        Task<bool> DeleteAsync(INoSql entity, Installation installation);
-        Task<bool> DeleteBatchAsync(IEnumerable<INoSql> entities, Installation installation);
+        Task<bool> ExistsAsync(TEntity entity, Installation installation);
+        Task<IList<TEntity>> GetAsync(TEntity entity, Installation installation, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null);
+        Task<bool> UpdateAsync(TEntity entity, Installation installation);
+        Task<bool> UpdateBatchAsync(IEnumerable<TEntity> entity, Installation installation);
+        Task<bool> DeleteAsync(TEntity entity, Installation installation);
+        Task<bool> DeleteBatchAsync(IEnumerable<TEntity> entities, Installation installation);
         string GetName(Installation installation);
     }
 }

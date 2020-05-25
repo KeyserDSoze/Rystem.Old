@@ -12,5 +12,6 @@ namespace Rystem.Azure.Data
         public DataType Type { get; set; }
         public IDataReader<Entity> Reader { get; set; }
         public IDataWriter<Entity> Writer { get; set; }
+        internal DataConfiguration() { }
     }
 }

@@ -8,7 +8,7 @@ namespace Rystem.Crypting
     {
         private readonly IConfiguration CryptoConfiguration;
         private readonly CryptoSelector CryptoSelector;
-        public CryptoBuilder(IConfiguration cryptoConfiguration, CryptoSelector cryptoSelector)
+        internal CryptoBuilder(IConfiguration cryptoConfiguration, CryptoSelector cryptoSelector)
         {
             this.CryptoConfiguration = cryptoConfiguration;
             this.CryptoSelector = cryptoSelector;

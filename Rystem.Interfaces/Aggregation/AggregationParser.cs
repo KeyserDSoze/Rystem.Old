@@ -4,21 +4,21 @@ using System.Text;
 
 namespace Rystem.Aggregation
 {
-    public class AggregationParser
+    public class AggregationParser<T>
     {
-        private readonly AggregationSelector AggregationSelector;
-        private readonly AggregationBuilder AggregationBuilder;
-        public AggregationParser(AggregationSelector aggregationSelector, AggregationBuilder aggregationBuilder)
+        private readonly AggregationSelector<T> AggregationSelector;
+        private readonly AggregationBuilder<T> AggregationBuilder;
+        public AggregationParser(AggregationSelector<T> aggregationSelector, AggregationBuilder<T> aggregationBuilder)
         {
             this.AggregationBuilder = aggregationBuilder;
             this.AggregationSelector = aggregationSelector;
         }
-        public AggregationParser AddParser(IAggregationParser parser)
+        public AggregationParser<T> AddParser(IAggregationParser<T> parser)
         {
-            (this.AggregationBuilder.AggregationConfiguration as AggregationConfiguration).Parsers.Add(parser);
+            (this.AggregationBuilder.AggregationConfiguration as AggregationConfiguration<T>).Parsers.Add(parser);
             return this;
         }
-        public AggregationBuilder Configure()
+        public AggregationBuilder<T> Configure()
             => this.AggregationBuilder;
     }
 }

@@ -9,16 +9,45 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.Data.Integration
 {
-    internal static class BlobStorageBaseIntegration
+    internal abstract class BlobStorageBaseIntegration<TEntity>
+        where TEntity : IData
     {
-        internal static BlobRequestOptions BlobRequestOptions = new BlobRequestOptions() { DisableContentMD5Validation = true };
-        public static async Task<bool> DeleteAsync(ICloudBlob cloudBlob)
+        private protected BlobRequestOptions BlobRequestOptions = new BlobRequestOptions() { DisableContentMD5Validation = true };
+
+        private static readonly object TrafficLight = new object();
+        private CloudBlobContainer context;
+        private protected CloudBlobContainer Context
+        {
+            get
+            {
+                if (context != null)
+                    return context;
+                lock (TrafficLight)
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
+                    CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
+                    context = Client.GetContainerReference(Configuration.Name.ToLower());
+                }
+                context.CreateIfNotExistsAsync().ToResult();
+                return context;
+            }
+        }
+        private protected IDataWriter<TEntity> Writer;
+        private protected IDataReader<TEntity> Reader;
+        private protected readonly DataConfiguration<TEntity> Configuration;
+        private protected readonly Type EntityType;
+        internal BlobStorageBaseIntegration(DataConfiguration<TEntity> configuration, TEntity entity)
+        {
+            this.Configuration = configuration;
+            this.EntityType = entity.GetType();
+        }
+        private protected async Task<bool> DeleteAsync(ICloudBlob cloudBlob)
             => await cloudBlob.DeleteIfExistsAsync().NoContext();
 
-        public static async Task<bool> ExistsAsync(ICloudBlob cloudBlob)
+        private protected async Task<bool> ExistsAsync(ICloudBlob cloudBlob)
             => await cloudBlob.ExistsAsync().NoContext();
 
-        public static async Task<IList<string>> SearchAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
+        private protected async Task<IList<string>> SearchAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
         {
             IList<string> items = new List<string>();
             BlobContinuationToken token = null;
@@ -33,7 +62,7 @@ namespace Rystem.Azure.Data.Integration
             } while (token != null);
             return items;
         }
-        public static async Task<IList<DataWrapper>> FetchPropertiesAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
+        private protected async Task<IList<DataWrapper>> FetchPropertiesAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
         {
             IList<DataWrapper> items = new List<DataWrapper>();
             BlobContinuationToken token = null;
@@ -44,7 +73,7 @@ namespace Rystem.Azure.Data.Integration
                 foreach (IListBlobItem blobItem in segment.Results)
                 {
                     await (blobItem as ICloudBlob).FetchAttributesAsync().NoContext();
-                    items.Add(new DataWrapper() { Name = blobItem.Uri.AbsolutePath, Properties = (blobItem as ICloudBlob).Properties.ToAggregatedDataProperties() });
+                    items.Add(new DataWrapper() { Name = blobItem.Uri.AbsolutePath, Properties = GetDataProperties((blobItem as ICloudBlob).Properties) });
                 }
                 if (takeCount != null && items.Count >= takeCount)
                     break;
@@ -52,7 +81,7 @@ namespace Rystem.Azure.Data.Integration
             return items;
         }
 
-        public static async Task<bool> SetBlobPropertyIfNecessaryAsync(IData entity, ICloudBlob cloudBlob, DataWrapper wrapper)
+        private protected async Task<bool> SetBlobPropertyIfNecessaryAsync(IData entity, ICloudBlob cloudBlob, DataWrapper wrapper)
         {
             BlobDataProperties blobDataProperties = wrapper.Properties as BlobDataProperties;
             bool changeSomethingInProperty = false;
@@ -93,11 +122,16 @@ namespace Rystem.Azure.Data.Integration
                 await cloudBlob.SetPropertiesAsync().NoContext();
             return changeSomethingInProperty;
         }
-        public static async Task<Stream> ReadAsync(ICloudBlob cloudBlob)
+        private protected async Task<IList<TEntity>> ReadAsync(ICloudBlob cloudBlob)
         {
-            return await cloudBlob.OpenReadAsync(null, BlobRequestOptions, null).NoContext();
+            return (await this.Reader.ReadAsync(new DataWrapper()
+            {
+                Name = cloudBlob.Name,
+                Stream = await cloudBlob.OpenReadAsync(null, BlobRequestOptions, null).NoContext(),
+                Properties = this.GetDataProperties(cloudBlob.Properties)
+            }).NoContext()).Entities;
         }
-        internal static BlobDataProperties ToAggregatedDataProperties(this BlobProperties blobProperties)
+        private protected BlobDataProperties GetDataProperties(BlobProperties blobProperties)
         {
             return new BlobDataProperties(blobProperties.BlobTierLastModifiedTime,
                 blobProperties.BlobTierInferred,

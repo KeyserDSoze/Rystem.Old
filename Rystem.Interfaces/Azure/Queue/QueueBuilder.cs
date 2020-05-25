@@ -8,7 +8,7 @@ namespace Rystem.Azure.Queue
     {
         private readonly IConfiguration QueueConfiguration;
         private readonly QueueSelector QueueChoser;
-        public QueueBuilder(IConfiguration queueConfiguration, QueueSelector queueChoser)
+        internal QueueBuilder(IConfiguration queueConfiguration, QueueSelector queueChoser)
         {
             this.QueueConfiguration = queueConfiguration;
             this.QueueChoser = queueChoser;

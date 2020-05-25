@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Rystem.Aggregation
 {
-    public class AggregationSelector
+    public class AggregationSelector<T>
     {
         internal readonly Installer Installer;
         internal AggregationSelector(Installer installer)
             => this.Installer = installer;
-        public AggregationParser WithLinq(LinqBuilder linqBuilder)
-            => new AggregationParser(this, new AggregationBuilder((linqBuilder ?? new LinqBuilder(string.Empty)).AggregationConfiguration, this));
+        public AggregationParser<T> WithLinq(LinqBuilder<T> linqBuilder)
+            => new AggregationParser<T>(this, new AggregationBuilder<T>((linqBuilder ?? new LinqBuilder<T>(string.Empty)).AggregationConfiguration, this));
     }
 }

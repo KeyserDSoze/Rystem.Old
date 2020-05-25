@@ -9,5 +9,6 @@ namespace Rystem.Azure.NoSql
         public string ConnectionString { get; set; }
         public string Name { get; set; }
         public NoSqlType Type { get; set; }
+        internal NoSqlConfiguration() { }
     }
 }

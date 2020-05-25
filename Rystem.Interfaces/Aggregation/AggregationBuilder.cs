@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Rystem.Aggregation
 {
-    public class AggregationBuilder
+    public class AggregationBuilder<T>
     {
         internal readonly IConfiguration AggregationConfiguration;
-        private readonly AggregationSelector AggregationSelector;
-        public AggregationBuilder(IConfiguration aggregationConfiguration, AggregationSelector aggregationSelector)
+        private readonly AggregationSelector<T> AggregationSelector;
+        internal AggregationBuilder(IConfiguration aggregationConfiguration, AggregationSelector<T> aggregationSelector)
         {
             this.AggregationConfiguration = aggregationConfiguration;
             this.AggregationSelector = aggregationSelector;
