@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Rystem.Azure.Queue
@@ -47,25 +48,29 @@ namespace Rystem.Azure.Queue
             this.DeleteQuery = $"Delete from SmartQueue_{property.Name} where Id = ";
             this.DeleteOnReadingQuery = $"Delete from SmartQueue_{property.Name} where Id in (";
             this.CleanRetentionQuery = $"Delete from SmartQueueDeleted_{property.Name} where DATEDIFF(day, ManagedTime, GETUTCDATE()) > {property.Retention}";
+            ThreadPool.UnsafeQueueUserWorkItem(this.CreateIfNotExists, new object());
+        }
+        private void CreateIfNotExists(object state)
+        {
             using (SqlConnection connection = NewConnection())
             {
                 connection.Open();
-                using (SqlCommand existingCommand = new SqlCommand($"SELECT count(*) FROM sysobjects WHERE name='SmartQueue_{property.Name}' and xtype='U'", connection))
+                using (SqlCommand existingCommand = new SqlCommand($"SELECT count(*) FROM sysobjects WHERE name='SmartQueue_{this.QueueConfiguration.Name}' and xtype='U'", connection))
                 {
                     int returnCode = (int)existingCommand.ExecuteScalar();
                     if (returnCode == 0)
                     {
                         StringBuilder sb = new StringBuilder();
-                        sb.Append($"IF NOT EXISTS (SELECT TOP 1 * FROM sysobjects WHERE name='SmartQueue_{property.Name}' and xtype='U')");
-                        sb.Append($"CREATE TABLE SmartQueue_{property.Name} (");
+                        sb.Append($"IF NOT EXISTS (SELECT TOP 1 * FROM sysobjects WHERE name='SmartQueue_{this.QueueConfiguration.Name}' and xtype='U')");
+                        sb.Append($"CREATE TABLE SmartQueue_{this.QueueConfiguration.Name} (");
                         sb.Append("Id bigint NOT NULL IDENTITY(1,1) PRIMARY KEY,");
                         sb.Append("Path int NOT NULL,");
                         sb.Append("Organization int NOT NULL,");
                         sb.Append("Message varchar(max) NOT NULL,");
                         sb.Append("Timestamp datetime NOT NULL,");
                         sb.Append("Ticks bigint NOT NULL);");
-                        sb.Append($"IF NOT EXISTS (SELECT TOP 1 * FROM sysobjects WHERE name='SmartQueueDeleted_{property.Name}' and xtype='U')");
-                        sb.Append($"CREATE TABLE SmartQueueDeleted_{property.Name} (");
+                        sb.Append($"IF NOT EXISTS (SELECT TOP 1 * FROM sysobjects WHERE name='SmartQueueDeleted_{this.QueueConfiguration.Name}' and xtype='U')");
+                        sb.Append($"CREATE TABLE SmartQueueDeleted_{this.QueueConfiguration.Name} (");
                         sb.Append("Id bigint NOT NULL PRIMARY KEY,");
                         sb.Append("Path int NOT NULL,");
                         sb.Append("Organization int NOT NULL,");
@@ -74,14 +79,14 @@ namespace Rystem.Azure.Queue
                         sb.Append("Ticks bigint NOT NULL,");
                         sb.Append("ManagedTime datetime NOT NULL);");
                         StringBuilder sbNonClusteredIndex = new StringBuilder();
-                        sbNonClusteredIndex.Append($"IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = N'SmartQueue_{property.Name}_Index')");
-                        sbNonClusteredIndex.Append($"CREATE NONCLUSTERED INDEX SmartQueue_{property.Name}_Index ON SmartQueue_{property.Name}(Path, Organization, Timestamp, Ticks) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY];");
-                        sbNonClusteredIndex.Append($"IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = N'SmartQueueDeleted_{property.Name}_Index')");
-                        sbNonClusteredIndex.Append($"CREATE NONCLUSTERED INDEX SmartQueueDeleted_{property.Name}_Index ON SmartQueueDeleted_{property.Name}(Path, Organization, Timestamp, Ticks, ManagedTime) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY];");
+                        sbNonClusteredIndex.Append($"IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = N'SmartQueue_{this.QueueConfiguration.Name}_Index')");
+                        sbNonClusteredIndex.Append($"CREATE NONCLUSTERED INDEX SmartQueue_{this.QueueConfiguration.Name}_Index ON SmartQueue_{this.QueueConfiguration.Name}(Path, Organization, Timestamp, Ticks) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY];");
+                        sbNonClusteredIndex.Append($"IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = N'SmartQueueDeleted_{this.QueueConfiguration.Name}_Index')");
+                        sbNonClusteredIndex.Append($"CREATE NONCLUSTERED INDEX SmartQueueDeleted_{this.QueueConfiguration.Name}_Index ON SmartQueueDeleted_{this.QueueConfiguration.Name}(Path, Organization, Timestamp, Ticks, ManagedTime) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY];");
                         StringBuilder sbTrigger = new StringBuilder();
-                        sbTrigger.Append($"CREATE TRIGGER Trigger_Delete_{property.Name}");
-                        sbTrigger.Append($" ON SmartQueue_{property.Name}");
-                        sbTrigger.Append($" AFTER DELETE AS INSERT INTO SmartQueueDeleted_{property.Name} (Id, Path, Organization, Message, Timestamp, Ticks, ManagedTime) SELECT d.Id, d.Path, d.Organization, d.Message, d.Timestamp, d.Ticks, GETUTCDATE() FROM Deleted d");
+                        sbTrigger.Append($"CREATE TRIGGER Trigger_Delete_{this.QueueConfiguration.Name}");
+                        sbTrigger.Append($" ON SmartQueue_{this.QueueConfiguration.Name}");
+                        sbTrigger.Append($" AFTER DELETE AS INSERT INTO SmartQueueDeleted_{this.QueueConfiguration.Name} (Id, Path, Organization, Message, Timestamp, Ticks, ManagedTime) SELECT d.Id, d.Path, d.Organization, d.Message, d.Timestamp, d.Ticks, GETUTCDATE() FROM Deleted d");
                         using (SqlCommand command = new SqlCommand(sb.ToString(), connection))
                             command.ExecuteNonQuery();
                         using (SqlCommand commandForNonClusteredIndex = new SqlCommand(sbNonClusteredIndex.ToString(), connection))

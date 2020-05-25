@@ -10,16 +10,27 @@ namespace Rystem.Azure.Queue
 {
     internal class QueueStorageIntegration<TEntity> : IQueueIntegration<TEntity>
     {
-        private readonly CloudQueue Client;
-        private readonly QueueConfiguration QueueConfiguration;
-        internal QueueStorageIntegration(QueueConfiguration property)
+        private static readonly object TrafficLight = new object();
+        private CloudQueue client;
+        private CloudQueue Client
         {
-            this.QueueConfiguration = property;
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(property.ConnectionString);
-            CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
-            this.Client = queueClient.GetQueueReference(property.Name);
-            this.Client.CreateIfNotExistsAsync().ToResult();
+            get
+            {
+                if (client != null)
+                    return client;
+                lock (TrafficLight)
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(QueueConfiguration.ConnectionString);
+                    CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
+                    client = queueClient.GetQueueReference(QueueConfiguration.Name ?? typeof(TEntity).Name);
+                }
+                try { client.CreateIfNotExistsAsync().ToResult(); } catch { }
+                return client;
+            }
         }
+        private readonly QueueConfiguration QueueConfiguration;
+        internal QueueStorageIntegration(QueueConfiguration property) 
+            => this.QueueConfiguration = property;
 
         public Task<bool> CleanAsync()
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");

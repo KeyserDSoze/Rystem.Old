@@ -12,18 +12,33 @@ namespace Rystem.Cache
     internal class InBlobStorage<T> : IMultitonIntegrationAsync<T>
     {
         private readonly CacheProperties Properties;
-        private static CloudBlobContainer Context;
+        private static readonly object TrafficLight = new object();
+        private CloudBlobContainer context;
+        private protected CloudBlobContainer Context
+        {
+            get
+            {
+                if (context != null)
+                    return context;
+                lock (TrafficLight)
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
+                    CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
+                    context = Client.GetContainerReference(ContainerName);
+                }
+                context.CreateIfNotExistsAsync().ToResult();
+                return context;
+            }
+        }
         private static long ExpireCache = 0;
         private const string ContainerName = "rystemcache";
         private readonly static string FullName = typeof(T).FullName + "/";
+        private readonly RystemCacheProperty Configuration;
         internal InBlobStorage(RystemCacheProperty configuration)
         {
+            Configuration = configuration;
             Properties = configuration.CloudProperties;
             ExpireCache = Properties.ExpireTimeSpan.Ticks;
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
-            CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
-            Context = Client.GetContainerReference(ContainerName);
-            Context.CreateIfNotExistsAsync().ToResult();
         }
         public async Task<T> InstanceAsync(string key)
         {

@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using Rystem.Aggregation;
 using Rystem.Azure;
-using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Aggregation
+namespace System
 {
     public static class AggregationExtensions
     {

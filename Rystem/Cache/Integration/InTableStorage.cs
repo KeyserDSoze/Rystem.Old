@@ -13,19 +13,35 @@ namespace Rystem.Cache
 {
     internal class InTableStorage<T> : IMultitonIntegrationAsync<T>
     {
-        private static CloudTable Context;
+        private static readonly object TrafficLight = new object();
+        private CloudTable context;
+        private CloudTable Context
+        {
+            get
+            {
+                if (context != null)
+                    return context;
+                lock (TrafficLight)
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
+                    CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+                    context = tableClient.GetTableReference(TableName);
+                }
+                try { context.CreateIfNotExistsAsync().ToResult(); } catch { }
+                return context;
+            }
+        }   
         private static long ExpireCache = 0;
         private const string TableName = "RystemCache";
         private readonly static string FullName = typeof(T).FullName;
         private readonly CacheProperties Properties;
+        private readonly RystemCacheProperty Configuration;
         internal InTableStorage(RystemCacheProperty configuration)
         {
+            Configuration = configuration;
             Properties = configuration.CloudProperties;
             ExpireCache = Properties.ExpireTimeSpan.Ticks;
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(configuration.ConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-            Context = tableClient.GetTableReference(TableName);
-            Context.CreateIfNotExistsAsync().ToResult();
+
         }
         public async Task<T> InstanceAsync(string key)
         {
@@ -101,7 +117,7 @@ namespace Rystem.Cache
             } while (tableContinuationToken != null);
             return keys;
         }
-        public Task WarmUp() 
+        public Task WarmUp()
             => Task.CompletedTask;
         private class RystemCache : TableEntity
         {
