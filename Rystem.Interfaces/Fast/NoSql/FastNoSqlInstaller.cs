@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Rystem.Fast
 {
-    public class FastNoSqlInstaller
+    internal class FastNoSqlInstaller
     {
         public static ConfigurationBuilder Builder { get; private set; }
         public static void Configure(ConfigurationBuilder configurationBuilder)

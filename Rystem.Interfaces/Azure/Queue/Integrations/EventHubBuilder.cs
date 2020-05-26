@@ -4,10 +4,10 @@ using System.Text;
 
 namespace Rystem.Azure.Queue
 {
-    public class RijndaelBuilder
+    public class EventHubBuilder
     {
         public QueueConfiguration QueueConfiguration { get; }
-        public RijndaelBuilder(string name)
+        public EventHubBuilder(string name)
         {
             this.QueueConfiguration = new QueueConfiguration()
             {

@@ -10,7 +10,10 @@ namespace Rystem.Fast
     {
         public static void ConfigureMultiton(CacheBuilder builder)
             => FastCacheInstaller.Configure(builder);
-        public static void ConfigureNoSql(ConfigurationBuilder configurationBuilder)
-            => FastNoSqlInstaller.Configure(configurationBuilder);
+        public static void ConfigureTableStorage(string connectionString)
+            => FastNoSqlInstaller.Configure(new ConfigurationBuilder().WithInstallation()
+                .WithNoSql(connectionString)
+                .WithTableStorage(new TableStorageBuilder())
+                .Build());
     }
 }

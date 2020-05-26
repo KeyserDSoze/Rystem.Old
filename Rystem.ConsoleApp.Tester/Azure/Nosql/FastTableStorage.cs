@@ -17,7 +17,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
-            FastInstaller.ConfigureNoSql(new ConfigurationBuilder().WithInstallation().WithNoSql(ConnectionString).WithTableStorage(new TableStorageBuilder()).Build());
+            FastInstaller.ConfigureTableStorage(ConnectionString);
             Solute example = new Facezia()
             {
                 PartitionKey = "Alto",
@@ -70,12 +70,8 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
 
             return true;
         }
-        private abstract class Solute
+        private abstract class Solute : FastTableStorage
         {
-            public string PartitionKey { get; set; }
-            public string RowKey { get; set; }
-            public DateTime Timestamp { get; set; }
-            public string ETag { get; set; }
             public string Alo { get; set; }
         }
         private class Facezia : Solute

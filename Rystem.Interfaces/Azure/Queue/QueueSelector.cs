@@ -18,7 +18,7 @@ namespace Rystem.Azure.Queue
             serviceBusBuilder.QueueConfiguration.ConnectionString = this.ConnectionString;
             return new QueueBuilder(serviceBusBuilder.QueueConfiguration, this);
         }
-        public QueueBuilder WithEventHub(RijndaelBuilder eventHubBuilder)
+        public QueueBuilder WithEventHub(EventHubBuilder eventHubBuilder)
         {
             eventHubBuilder.QueueConfiguration.ConnectionString = this.ConnectionString;
             return new QueueBuilder(eventHubBuilder.QueueConfiguration, this);

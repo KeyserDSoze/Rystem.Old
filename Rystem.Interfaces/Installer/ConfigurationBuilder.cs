@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem.Cache;
+using System;
 using System.Collections.Generic;
 
 namespace Rystem
@@ -16,5 +17,7 @@ namespace Rystem
         /// <returns>Installer</returns>
         public Installer WithInstallation(Installation installation = Installation.Default)
             => new Installer(this, installation);
+        //public CacheBuilder WithCache(CacheConsistency cacheConsistency = CacheConsistency.Always)
+        //    => new CacheBuilder(cacheConsistency);
     }
 }

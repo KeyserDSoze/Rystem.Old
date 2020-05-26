@@ -46,11 +46,11 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 return new ConfigurationBuilder()
                     .WithInstallation(Installation.Default)
                     .WithQueue(ConnectionString)
-                    .WithEventHub(new RijndaelBuilder("queue"))
+                    .WithEventHub(new EventHubBuilder("queue"))
                         .Build()
                             .WithInstallation(Installation.Inst00)
                             .WithQueue(ConnectionString)
-                            .WithEventHub(new RijndaelBuilder("aloa"))
+                            .WithEventHub(new EventHubBuilder("aloa"))
                                 .Build();
             }
         }
