@@ -2,7 +2,7 @@
 
 namespace Rystem.Crypting
 {
-    internal interface ICryptoManager
+    internal interface ICryptoManager : IManager
     {
         TEntity Encrypt<TEntity>(TEntity entity, Installation installation) where TEntity : ICrypto;
         TEntity Decrypt<TEntity>(TEntity entity, Installation installation) where TEntity : ICrypto;

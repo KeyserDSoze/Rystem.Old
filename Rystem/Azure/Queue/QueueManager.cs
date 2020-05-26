@@ -13,10 +13,13 @@ namespace Rystem.Azure.Queue
         private readonly IDictionary<Installation, IQueueIntegration<TEntity>> Integrations = new Dictionary<Installation, IQueueIntegration<TEntity>>();
         private readonly IDictionary<Installation, QueueConfiguration> QueueConfiguration;
         private readonly Type EntityType;
+
+        public InstallerType InstallerType => InstallerType.Queue;
+
         public QueueManager(ConfigurationBuilder configurationBuilder, TEntity entity)
         {
             this.EntityType = entity.GetType();
-            QueueConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as QueueConfiguration);
+            QueueConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as QueueConfiguration);
             foreach (KeyValuePair<Installation, QueueConfiguration> configuration in QueueConfiguration)
                 switch (configuration.Value.Type)
                 {

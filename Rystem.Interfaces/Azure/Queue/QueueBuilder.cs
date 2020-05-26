@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure.Queue
 {
-    public class QueueBuilder
+    public class QueueBuilder : IBuilder
     {
         private readonly IConfiguration QueueConfiguration;
         private readonly QueueSelector QueueChoser;
@@ -13,9 +13,10 @@ namespace Rystem.Azure.Queue
             this.QueueConfiguration = queueConfiguration;
             this.QueueChoser = queueChoser;
         }
+        public InstallerType InstallerType => InstallerType.Queue;
         public ConfigurationBuilder Build()
         {
-            this.QueueChoser.AzureInstaller.AddConfiguration(this.QueueConfiguration);
+            this.QueueChoser.AzureInstaller.AddConfiguration(this.QueueConfiguration, this.InstallerType);
             return this.QueueChoser.AzureInstaller.Builder;
         }
     }

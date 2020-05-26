@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Crypting
 {
-    public class CryptoBuilder
+    public class CryptoBuilder : IBuilder
     {
         private readonly IConfiguration CryptoConfiguration;
         private readonly CryptoSelector CryptoSelector;
@@ -13,9 +13,10 @@ namespace Rystem.Crypting
             this.CryptoConfiguration = cryptoConfiguration;
             this.CryptoSelector = cryptoSelector;
         }
+        public InstallerType InstallerType => InstallerType.Crypting;
         public ConfigurationBuilder Build()
         {
-            this.CryptoSelector.Installer.AddConfiguration(this.CryptoConfiguration);
+            this.CryptoSelector.Installer.AddConfiguration(this.CryptoConfiguration, this.InstallerType);
             return this.CryptoSelector.Installer.Builder;
         }
     }

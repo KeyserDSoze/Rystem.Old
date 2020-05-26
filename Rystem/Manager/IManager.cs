@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure
 {
-    internal interface IManager<TEntity>
+    internal interface IManager<TEntity> : IManager
     {
     }
 }

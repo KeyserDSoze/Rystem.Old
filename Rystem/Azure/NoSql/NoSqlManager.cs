@@ -11,10 +11,13 @@ namespace Rystem.Azure.NoSql
     {
         private readonly IDictionary<Installation, INoSqlIntegration<TEntity>> Integrations;
         private readonly IDictionary<Installation, NoSqlConfiguration> NoSqlConfiguration;
+
+        public InstallerType InstallerType => InstallerType.NoSql;
+
         public NoSqlManager(ConfigurationBuilder configurationBuilder, TEntity entity)
         {
             Integrations = new Dictionary<Installation, INoSqlIntegration<TEntity>>();
-            NoSqlConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as NoSqlConfiguration);
+            NoSqlConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as NoSqlConfiguration);
             foreach (KeyValuePair<Installation, NoSqlConfiguration> configuration in NoSqlConfiguration)
                 switch (configuration.Value.Type)
                 {

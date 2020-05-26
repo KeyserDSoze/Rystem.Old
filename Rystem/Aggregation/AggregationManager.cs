@@ -15,11 +15,14 @@ namespace Rystem.Aggregation
         private readonly static Dictionary<Installation, BufferBearer> Buffer = new Dictionary<Installation, BufferBearer>();
         private static readonly object AcquireToken = new object();
         private readonly IDictionary<Installation, AggregationConfiguration<T>> AggregationProperties;
+
+        public InstallerType InstallerType => InstallerType.Aggregation;
+
         private string AggregationName(Installation installation)
             => this.AggregationProperties[installation].Name;
         public AggregationManager(ConfigurationBuilder configurationBuilder)
         {
-            this.AggregationProperties = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as AggregationConfiguration<T>);
+            this.AggregationProperties = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as AggregationConfiguration<T>);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]

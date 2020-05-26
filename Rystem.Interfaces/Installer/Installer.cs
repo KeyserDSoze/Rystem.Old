@@ -22,8 +22,13 @@ namespace Rystem
             this.Builder = builder;
         }
 
-        internal void AddConfiguration(IConfiguration configuration)
-            => this.Builder.Configurations.Add(this.Installation, configuration);
+        internal void AddConfiguration(IConfiguration configuration, InstallerType installerType)
+        {
+            if (!this.Builder.Configurations.ContainsKey(installerType))
+                this.Builder.Configurations.Add(installerType, new Dictionary<Installation, IConfiguration>());
+            this.Builder.Configurations[installerType].Add(this.Installation, configuration);
+        }
+
         /// <summary>
         /// Add a Queue integration
         /// </summary>

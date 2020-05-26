@@ -12,7 +12,7 @@ namespace Rystem.Crypting
         public CryptoManager(ConfigurationBuilder configurationBuilder)
         {
             Integrations = new Dictionary<Installation, ICryptoIntegration>();
-            CryptoConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as CryptoConfiguration);
+            CryptoConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as CryptoConfiguration);
             foreach (KeyValuePair<Installation, CryptoConfiguration> configuration in CryptoConfiguration)
                 switch (configuration.Value.Type)
                 {
@@ -26,6 +26,8 @@ namespace Rystem.Crypting
                         throw new InvalidOperationException($"Wrong type installed {configuration.Value.Type}");
                 }
         }
+
+        public InstallerType InstallerType => InstallerType.Crypting;
 
         public TInnerEntity Decrypt<TInnerEntity>(TInnerEntity entity, Installation installation)
             where TInnerEntity : ICrypto

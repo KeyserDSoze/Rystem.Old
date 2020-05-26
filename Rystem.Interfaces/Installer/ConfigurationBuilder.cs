@@ -9,7 +9,7 @@ namespace Rystem
     /// </summary>
     public class ConfigurationBuilder
     {
-        public Dictionary<Installation, IConfiguration> Configurations { get; } = new Dictionary<Installation, IConfiguration>();
+        internal Dictionary<InstallerType, Dictionary<Installation, IConfiguration>> Configurations { get; } = new Dictionary<InstallerType, Dictionary<Installation, IConfiguration>>();
         /// <summary>
         /// Starts the configuration building
         /// </summary>
@@ -19,5 +19,7 @@ namespace Rystem
             => new Installer(this, installation);
         //public CacheBuilder WithCache(CacheConsistency cacheConsistency = CacheConsistency.Always)
         //    => new CacheBuilder(cacheConsistency);
+        public Dictionary<Installation, IConfiguration> GetConfigurations(InstallerType installerType)
+            => this.Configurations[installerType];
     }
 }

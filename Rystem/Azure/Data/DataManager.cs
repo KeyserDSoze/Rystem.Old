@@ -11,10 +11,13 @@ namespace Rystem.Azure.Data
     {
         private readonly IDictionary<Installation, IDataIntegration<TEntity>> Integrations;
         private readonly IDictionary<Installation, DataConfiguration<TEntity>> AggregatedDataConfiguration;
+
+        public InstallerType InstallerType => InstallerType.Data;
+
         public DataManager(ConfigurationBuilder configurationBuilder, TEntity entity)
         {
             Integrations = new Dictionary<Installation, IDataIntegration<TEntity>>();
-            AggregatedDataConfiguration = configurationBuilder.Configurations.ToDictionary(x => x.Key, x => x.Value as DataConfiguration<TEntity>);
+            AggregatedDataConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as DataConfiguration<TEntity>);
             foreach (KeyValuePair<Installation, DataConfiguration<TEntity>> configuration in AggregatedDataConfiguration)
                 switch (configuration.Value.Type)
                 {
