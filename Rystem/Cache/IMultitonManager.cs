@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
-    internal interface ICacheManager { }
+    internal interface ICacheManager : IManager { }
     internal interface ICacheManager<TCacheKey, TCache> : ICacheManager
         where TCacheKey : ICacheKey<TCache>
     {

@@ -62,10 +62,10 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder GetCacheBuilder()
+        public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new CacheBuilder().WithCloud(ConnectionString)
-                .WithTablestorage(new TableStorageCacheProperties(ExpireTime.FiveSeconds));
+            return new ConfigurationBuilder().WithCache().WithCloud(ConnectionString)
+                .WithTablestorage(new TableStorageCacheProperties(ExpireTime.FiveSeconds)).Build();
         }
     }
     public class SmallTable

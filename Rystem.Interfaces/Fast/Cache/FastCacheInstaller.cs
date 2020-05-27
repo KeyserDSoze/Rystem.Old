@@ -7,8 +7,8 @@ namespace Rystem.Fast
 {
     public class FastCacheInstaller
     {
-        public static CacheBuilder Properties { get; private set; } = new CacheBuilder().WithMemory(new MemoryCacheProperties(ExpireTime.OneDay));
-        public static void Configure(CacheBuilder builder)
+        public static ConfigurationBuilder Properties { get; private set; } = new ConfigurationBuilder().WithCache().WithMemory(new MemoryCacheProperties(ExpireTime.OneDay)).Build();
+        public static void Configure(ConfigurationBuilder builder)
             => Properties = builder;
     }
 }

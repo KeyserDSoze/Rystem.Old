@@ -117,14 +117,19 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 
         public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new ConfigurationBuilder().WithInstallation(Installation.Inst01).WithQueue(ConnectionString)
-                .WithSmartQueue(new SmartQueueBuilder("Billing", QueueDuplication.PathAndMessage, 100, 3, -1)).Build()
-                .WithInstallation(Installation.Inst00).WithQueue(ConnectionString)
-                .WithSmartQueue(new SmartQueueBuilder("Unsubscription", QueueDuplication.Message, 100, 3)).Build()
-                .WithInstallation(Installation.Default).WithQueue(ConnectionString)
-                .WithSmartQueue(new SmartQueueBuilder("Notification", QueueDuplication.Path, 100, 3, 30)).Build()
-                .WithInstallation(Installation.Inst05).WithQueue(ConnectionString)
-                .WithSmartQueue(new SmartQueueBuilder("Business", QueueDuplication.Allow, 100, 3, 30)).Build();
+            return new ConfigurationBuilder()
+                .WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Billing", QueueDuplication.PathAndMessage, 100, 3, -1))
+                .Build(Installation.Inst01)
+                .WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Unsubscription", QueueDuplication.Message, 100, 3))
+                .Build(Installation.Inst00)
+                .WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Notification", QueueDuplication.Path, 100, 3, 30))
+                .Build(Installation.Default)
+                .WithQueue(ConnectionString)
+                .WithSmartQueue(new SmartQueueBuilder("Business", QueueDuplication.Allow, 100, 3, 30))
+                .Build(Installation.Inst05);
         }
     }
     public class MyManagerImporter

@@ -62,10 +62,11 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder GetCacheBuilder() 
-            => new CacheBuilder()
+        public ConfigurationBuilder GetConfigurationBuilder()
+          => new ConfigurationBuilder().WithCache()
                 .WithCloud(ConnectionString)
-                    .WithBlobstorage(new BlobStorageCacheProperties(ExpireTime.FiveSeconds));
+                    .WithBlobstorage(new BlobStorageCacheProperties(ExpireTime.FiveSeconds))
+            .Build();
     }
     public class SmallBlob
     {

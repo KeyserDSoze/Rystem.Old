@@ -40,7 +40,10 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 
         public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new ConfigurationBuilder().WithInstallation(Installation.Inst00).WithCrypting().WithSha256(new Sha256Builder()).Build();
+            return new ConfigurationBuilder()
+                .WithCrypting()
+                .WithSha256(new Sha256Builder())
+                .Build(Installation.Inst00);
         }
     }
 }

@@ -6,13 +6,13 @@ namespace Rystem.Cache
 {
     public class TableStorageCacheProperties
     {
-        public CacheProperties Properties { get; }
+        public CacheConfiguration Properties { get; }
         public TableStorageCacheProperties(ExpireTime expireTime, bool consistency = false) : this((int)expireTime, consistency)
         {
         }
         public TableStorageCacheProperties(int expireSeconds, bool consistency = false)
         {
-            this.Properties = new CacheProperties()
+            this.Properties = new CacheConfiguration()
             {
                 ExpireSeconds = expireSeconds,
                 Consistency = consistency,

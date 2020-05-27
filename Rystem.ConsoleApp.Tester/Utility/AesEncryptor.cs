@@ -40,10 +40,12 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 
         public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new ConfigurationBuilder().WithInstallation().WithCrypting().WithAes(new RijndaelBuilder()).Build()
-                .WithInstallation(Installation.Inst00).WithCrypting()
+            return new ConfigurationBuilder().WithCrypting().WithAes(new RijndaelBuilder())
+                .Build()
+                .WithCrypting()
 #pragma warning disable SCS0011 // CBC mode is weak
-                .WithAes(new RijndaelBuilder("A9@#d56P", "7§hg!8@g", "01tyç°@#78gh_aax", System.Security.Cryptography.CipherMode.CBC, System.Security.Cryptography.PaddingMode.Zeros)).Build();
+                .WithAes(new RijndaelBuilder("A9@#d56P", "7§hg!8@g", "01tyç°@#78gh_aax", System.Security.Cryptography.CipherMode.CBC, System.Security.Cryptography.PaddingMode.Zeros))
+                .Build(Installation.Inst00);
 #pragma warning restore SCS0011 // CBC mode is weak
         }
     }

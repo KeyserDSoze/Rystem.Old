@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Azure.NoSql
 {
-    public class NoSqlBuilder : IBuilder
+    public class NoSqlBuilder : IInstallingBuilder
     {
         private readonly IConfiguration NoSqlConfiguration;
         private readonly NoSqlSelector NoSqlSelector;
@@ -16,10 +16,10 @@ namespace Rystem.Azure.NoSql
 
         public InstallerType InstallerType => InstallerType.NoSql;
 
-        public ConfigurationBuilder Build()
+        public ConfigurationBuilder Build(Installation installation = Installation.Default)
         {
-            this.NoSqlSelector.Installer.AddConfiguration(this.NoSqlConfiguration, this.InstallerType);
-            return this.NoSqlSelector.Installer.Builder;
+            this.NoSqlSelector.Builder.AddConfiguration(this.NoSqlConfiguration, this.InstallerType, installation);
+            return this.NoSqlSelector.Builder;
         }
     }
 }

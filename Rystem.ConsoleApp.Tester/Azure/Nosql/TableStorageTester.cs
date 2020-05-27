@@ -105,10 +105,11 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
 
             public override ConfigurationBuilder GetConfigurationBuilder()
             {
-                return new ConfigurationBuilder().WithInstallation(Installation.Default)
-                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Example")).Build()
-                    .WithInstallation(Installation.Inst00).WithNoSql(TableStorageTester.ConnectionString)
-                    .WithTableStorage(new TableStorageBuilder("Doppelganger")).Build();
+                return new ConfigurationBuilder()
+                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Example"))
+                    .Build(Installation.Default)
+                    .WithNoSql(TableStorageTester.ConnectionString)
+                    .WithTableStorage(new TableStorageBuilder("Doppelganger")).Build(Installation.Inst00);
             }
         }
         private class Caruni : Solute
@@ -116,10 +117,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             public Lazlo Lazlo { get; set; }
             public override ConfigurationBuilder GetConfigurationBuilder()
             {
-                return new ConfigurationBuilder().WithInstallation(Installation.Default)
-                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Caruni")).Build()
-                    .WithInstallation(Installation.Inst00).WithNoSql(TableStorageTester.ConnectionString)
-                    .WithTableStorage(new TableStorageBuilder("Doppelganger2")).Build();
+                return new ConfigurationBuilder()
+                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Caruni"))
+                    .Build(Installation.Default)
+                    .WithNoSql(TableStorageTester.ConnectionString)
+                    .WithTableStorage(new TableStorageBuilder("Doppelganger2"))
+                    .Build(Installation.Inst00);
             }
         }
         public class Lazlo

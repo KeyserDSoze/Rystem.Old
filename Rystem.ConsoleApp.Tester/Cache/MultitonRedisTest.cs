@@ -63,11 +63,11 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder GetCacheBuilder()
+        public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new CacheBuilder(CacheConsistency.Always)
+            return new ConfigurationBuilder().WithCache(CacheConsistency.Always)
                 .WithCloud(ConnectionString)
-                    .WithRedis(new RedisCacheProperties(ExpireTime.FiveSeconds));
+                    .WithRedis(new RedisCacheProperties(ExpireTime.FiveSeconds)).Build();
         }
 
         internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";

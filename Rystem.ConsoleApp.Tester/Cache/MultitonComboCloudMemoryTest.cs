@@ -57,12 +57,14 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             });
         }
 
-        public CacheBuilder GetCacheBuilder()
+        public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new CacheBuilder(CacheConsistency.Always)
+            return new ConfigurationBuilder().WithCache(CacheConsistency.Always)
                 .WithMemory(new MemoryCacheProperties(ExpireTime.FiveSeconds))
+                .And()
                  .WithCloud(ConnectionString)
-                    .WithBlobstorage(new BlobStorageCacheProperties(ExpireTime.Infinite));
+                    .WithBlobstorage(new BlobStorageCacheProperties(ExpireTime.Infinite))
+                    .Build();
         }
     }
     public class Service3

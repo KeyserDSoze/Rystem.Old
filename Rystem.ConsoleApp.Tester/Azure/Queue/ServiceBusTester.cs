@@ -87,10 +87,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             private const string ConnectionString = "Endpoint=sb://testone3.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=GbBogIG4NIPjyzb5qdr0VCH3fFmGSxXt9xChxtfkdVw=";
             public ConfigurationBuilder GetConfigurationBuilder()
             {
-                return new ConfigurationBuilder().WithInstallation(Installation.Default).WithQueue(ConnectionString)
-                    .WithServiceBus(new ServiceBusBuilder("dario")).Build()
-                    .WithInstallation(Installation.Inst00).WithQueue(ConnectionString).WithServiceBus(new ServiceBusBuilder("aloa"))
-                    .Build();
+                return new ConfigurationBuilder()
+                    .WithQueue(ConnectionString)
+                    .WithServiceBus(new ServiceBusBuilder("dario"))
+                    .Build(Installation.Default)
+                    .WithQueue(ConnectionString).WithServiceBus(new ServiceBusBuilder("aloa"))
+                    .Build(Installation.Inst00);
             }
         }
         private class MyObject

@@ -1,4 +1,9 @@
-﻿using Rystem.Cache;
+﻿using Rystem.Aggregation;
+using Rystem.Azure.Data;
+using Rystem.Azure.NoSql;
+using Rystem.Azure.Queue;
+using Rystem.Cache;
+using Rystem.Crypting;
 using System;
 using System.Collections.Generic;
 
@@ -10,15 +15,52 @@ namespace Rystem
     public class ConfigurationBuilder
     {
         internal Dictionary<InstallerType, Dictionary<Installation, IConfiguration>> Configurations { get; } = new Dictionary<InstallerType, Dictionary<Installation, IConfiguration>>();
+        internal void AddConfiguration(IConfiguration configuration, InstallerType installerType, Installation installation)
+        {
+            if (!this.Configurations.ContainsKey(installerType))
+                this.Configurations.Add(installerType, new Dictionary<Installation, IConfiguration>());
+            this.Configurations[installerType].Add(installation, configuration);
+        }
+
         /// <summary>
-        /// Starts the configuration building
+        /// Add a Queue integration
         /// </summary>
-        /// <param name="installation">installation flow</param>
-        /// <returns>Installer</returns>
-        public Installer WithInstallation(Installation installation = Installation.Default)
-            => new Installer(this, installation);
-        //public CacheBuilder WithCache(CacheConsistency cacheConsistency = CacheConsistency.Always)
-        //    => new CacheBuilder(cacheConsistency);
+        /// <param name="connectionString">ConnectionString for your queue</param>
+        /// <returns>specific integration selector</returns>
+        public QueueSelector WithQueue(string connectionString)
+            => new QueueSelector(connectionString, this);
+        /// <summary>
+        /// Add a NoSql integration
+        /// </summary>
+        /// <param name="connectionString">ConnectionString for your sql</param>
+        /// <returns>specific integration selector</returns>
+        public NoSqlSelector WithNoSql(string connectionString)
+            => new NoSqlSelector(connectionString, this);
+        /// <summary>
+        /// Add a Data integration
+        /// </summary>
+        /// <param name="connectionString">ConnectionString for your Data</param>
+        /// <returns>specific integration selector</returns>
+        public DataSelector WithData(string connectionString)
+            => new DataSelector(connectionString, this);
+        /// <summary>
+        /// Add a Crypting integration
+        /// </summary>
+        /// <returns>specific integration selector</returns>
+        public CryptoSelector WithCrypting()
+            => new CryptoSelector(this);
+        /// <summary>
+        /// Add an Aggregation integration
+        /// </summary>
+        /// <returns>specific integration selector</returns>
+        public AggregationSelector<T> WithAggregation<T>()
+            => new AggregationSelector<T>(this);
+        /// <summary>
+        /// Add a Cache integration
+        /// </summary>
+        /// <returns>specific integration selector</returns>
+        public CacheSelector WithCache(CacheConsistency cacheConsistency = CacheConsistency.Always)
+            => new CacheSelector(this, cacheConsistency);
         public Dictionary<Installation, IConfiguration> GetConfigurations(InstallerType installerType)
             => this.Configurations[installerType];
     }

@@ -4,14 +4,15 @@ using System.Text;
 
 namespace Rystem.Azure.Data
 {
-    public class DataSelector
+    public class DataSelector : IBuildingSelector
     {
         private readonly string ConnectionString;
-        internal readonly Installer AzureInstaller;
-        internal DataSelector(string connectionString, Installer azureInstaller)
+        public ConfigurationBuilder Builder { get; }
+
+        internal DataSelector(string connectionString, ConfigurationBuilder builder)
         {
             this.ConnectionString = connectionString;
-            this.AzureInstaller = azureInstaller;
+            this.Builder = builder;
         }
         public DataBuilder WithBlockBlobStorage<TData>(BlockBlobBuilder<TData> blockBlobBuilder)
             where TData : IData

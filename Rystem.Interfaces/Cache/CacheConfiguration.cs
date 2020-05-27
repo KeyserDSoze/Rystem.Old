@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    public class CacheProperties
+    public class CacheConfiguration
     {
         public int ExpireSeconds { get; set; }
         public bool Consistency { get; set; }

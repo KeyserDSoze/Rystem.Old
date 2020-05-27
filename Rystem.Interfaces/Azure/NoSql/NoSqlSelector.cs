@@ -4,14 +4,14 @@ using System.Text;
 
 namespace Rystem.Azure.NoSql
 {
-    public class NoSqlSelector
+    public class NoSqlSelector : IBuildingSelector
     {
         private readonly string ConnectionString;
-        internal readonly Installer Installer;
-        internal NoSqlSelector(string connectionString, Installer azureInstaller)
+        public ConfigurationBuilder Builder { get; }
+        internal NoSqlSelector(string connectionString, ConfigurationBuilder builder)
         {
             this.ConnectionString = connectionString;
-            this.Installer = azureInstaller;
+            this.Builder = builder;
         }
         public NoSqlBuilder WithTableStorage(TableStorageBuilder tableStorageBuilder)
         {

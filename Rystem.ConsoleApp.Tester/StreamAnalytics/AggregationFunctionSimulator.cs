@@ -51,12 +51,11 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
     {
         public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new ConfigurationBuilder().WithInstallation()
+            return new ConfigurationBuilder()
                 .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 80, TimeSpan.FromMinutes(5)))
                 .AddParser(new FunctionParser()).Configure().Build()
-                .WithInstallation(Installation.Inst00)
                 .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 100, TimeSpan.FromMinutes(5)))
-                .AddParser(new FunctionParser()).Configure().Build();
+                .AddParser(new FunctionParser()).Configure().Build(Installation.Inst00);
         }
     }
 

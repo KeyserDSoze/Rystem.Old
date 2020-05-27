@@ -11,7 +11,7 @@ namespace Rystem.Cache
 {
     internal class InBlobStorage<T> : IMultitonIntegrationAsync<T>
     {
-        private readonly CacheProperties Properties;
+        private readonly CacheConfiguration Properties;
         private static readonly object TrafficLight = new object();
         private CloudBlobContainer context;
         private protected CloudBlobContainer Context
@@ -33,8 +33,8 @@ namespace Rystem.Cache
         private static long ExpireCache = 0;
         private const string ContainerName = "rystemcache";
         private readonly static string FullName = typeof(T).FullName + "/";
-        private readonly RystemCacheProperty Configuration;
-        internal InBlobStorage(RystemCacheProperty configuration)
+        private readonly RystemCacheConfiguration Configuration;
+        internal InBlobStorage(RystemCacheConfiguration configuration)
         {
             Configuration = configuration;
             Properties = configuration.CloudProperties;

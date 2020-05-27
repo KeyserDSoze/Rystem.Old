@@ -60,10 +60,12 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 C = Alea.GetNumber(100)
             });
         }
-
-        public CacheBuilder GetCacheBuilder()
+        public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new CacheBuilder(CacheConsistency.Always).WithMemory(new MemoryCacheProperties(ExpireTime.OneSecond));
+            return new ConfigurationBuilder()
+                .WithCache(CacheConsistency.Always)
+                .WithMemory(new MemoryCacheProperties(ExpireTime.OneSecond))
+                .Build();
         }
         
     }

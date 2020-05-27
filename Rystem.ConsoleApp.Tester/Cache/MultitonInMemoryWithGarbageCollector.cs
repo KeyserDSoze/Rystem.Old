@@ -40,8 +40,8 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 });
             }
 
-            public CacheBuilder GetCacheBuilder() 
-                => new CacheBuilder().WithMemory(new MemoryCacheProperties(ExpireTime.TenSeconds, true, true));
+            public ConfigurationBuilder GetConfigurationBuilder()
+              => new ConfigurationBuilder().WithCache().WithMemory(new MemoryCacheProperties(ExpireTime.TenSeconds, true, true)).Build();
         }
         private class Service2 
         {

@@ -8,4 +8,16 @@ namespace Rystem
     {
         InstallerType InstallerType { get; }
     }
+    public interface IInstallingBuilder : IBuilder
+    {
+        ConfigurationBuilder Build(Installation installation);
+    }
+    public interface INoInstallingBuilder : IBuilder
+    {
+        ConfigurationBuilder Build();
+    }
+    public interface IBuildingSelector
+    {
+        ConfigurationBuilder Builder { get; }
+    }
 }

@@ -10,11 +10,11 @@ namespace Rystem.Cache
 {
     internal class InMemory<T> : IMultitonIntegration<T>
     {
-        private readonly CacheProperties Properties;
+        private readonly CacheConfiguration Properties;
         private readonly static ConcurrentDictionary<string, IInMemoryInstance> Instances = new ConcurrentDictionary<string, IInMemoryInstance>();
         private InMemoryInstance<T> MemoryInstance(string key)
             => Instances[key] as InMemoryInstance<T>;
-        internal InMemory(RystemCacheProperty configuration)
+        internal InMemory(RystemCacheConfiguration configuration)
         {
             Properties = configuration.MemoryProperties;
             if (Properties.GarbageCollection)

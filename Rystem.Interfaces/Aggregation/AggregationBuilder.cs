@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem.Aggregation
 {
-    public class AggregationBuilder<T> : IBuilder
+    public class AggregationBuilder<T> : IInstallingBuilder
     {
         internal readonly IConfiguration AggregationConfiguration;
         private readonly AggregationSelector<T> AggregationSelector;
@@ -13,13 +13,12 @@ namespace Rystem.Aggregation
             this.AggregationConfiguration = aggregationConfiguration;
             this.AggregationSelector = aggregationSelector;
         }
-
         public InstallerType InstallerType => InstallerType.Aggregation;
 
-        public ConfigurationBuilder Build()
+        public ConfigurationBuilder Build(Installation installation = Installation.Default)
         {
-            this.AggregationSelector.Installer.AddConfiguration(this.AggregationConfiguration, this.InstallerType);
-            return this.AggregationSelector.Installer.Builder;
+            this.AggregationSelector.Builder.AddConfiguration(this.AggregationConfiguration, this.InstallerType, installation);
+            return this.AggregationSelector.Builder;
         }
     }
 }

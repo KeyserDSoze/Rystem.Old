@@ -4,11 +4,12 @@ using System.Text;
 
 namespace Rystem.Crypting
 {
-    public class CryptoSelector
+    public class CryptoSelector : IBuildingSelector
     {
-        internal readonly Installer Installer;
-        internal CryptoSelector(Installer installer)
-            => this.Installer = installer;
+        public ConfigurationBuilder Builder { get; }
+        internal CryptoSelector(ConfigurationBuilder builder)
+            => this.Builder = builder;
+
         public CryptoBuilder WithAes(RijndaelBuilder rijndaelBuilder = default)
             => new CryptoBuilder((rijndaelBuilder ?? new RijndaelBuilder()).CryptoConfiguration, this);
         public CryptoBuilder WithSha256(Sha256Builder sha256Builder = default)

@@ -9,7 +9,7 @@ namespace Rystem.Fast
     internal class FastCacheKey : ICacheKey<FastCache>
     {
         public string Key { get; set; }
-        public CacheBuilder GetCacheBuilder() 
+        public ConfigurationBuilder GetConfigurationBuilder() 
             => FastCacheInstaller.Properties;
 
         public Task<FastCache> FetchAsync()

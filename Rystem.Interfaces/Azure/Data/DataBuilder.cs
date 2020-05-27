@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rystem.Azure.Data
 {
-    public class DataBuilder : IBuilder
+    public class DataBuilder : IInstallingBuilder
     {
         private readonly IConfiguration DataConfiguration;
         private readonly DataSelector DataSelector;
@@ -17,10 +17,10 @@ namespace Rystem.Azure.Data
 
         public InstallerType InstallerType => InstallerType.Data;
 
-        public ConfigurationBuilder Build()
+        public ConfigurationBuilder Build(Installation installation = Installation.Default)
         {
-            this.DataSelector.AzureInstaller.AddConfiguration(this.DataConfiguration, this.InstallerType);
-            return this.DataSelector.AzureInstaller.Builder;
+            this.DataSelector.Builder.AddConfiguration(this.DataConfiguration, this.InstallerType, installation);
+            return this.DataSelector.Builder;
         }
     }
 }

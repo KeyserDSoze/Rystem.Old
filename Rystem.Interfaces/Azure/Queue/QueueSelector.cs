@@ -4,14 +4,15 @@ using System.Text;
 
 namespace Rystem.Azure.Queue
 {
-    public class QueueSelector
+    public class QueueSelector : IBuildingSelector
     {
         private readonly string ConnectionString;
-        internal readonly Installer AzureInstaller;
-        internal QueueSelector(string connectionString, Installer azureInstaller)
+        public ConfigurationBuilder Builder { get; }
+
+        internal QueueSelector(string connectionString, ConfigurationBuilder builder)
         {
             this.ConnectionString = connectionString;
-            this.AzureInstaller = azureInstaller;
+            this.Builder = builder;
         }
         public QueueBuilder WithServiceBus(ServiceBusBuilder serviceBusBuilder)
         {

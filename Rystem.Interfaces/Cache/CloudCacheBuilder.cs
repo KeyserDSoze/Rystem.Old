@@ -6,23 +6,23 @@ namespace Rystem.Cache
 {
     public class CloudCacheBuilder
     {
-        private readonly CacheBuilder CacheBuilder;
-        internal CloudCacheBuilder(CacheBuilder cacheBuilder)
-            => this.CacheBuilder = cacheBuilder;
+        private readonly CacheSelector CacheSelector;
+        internal CloudCacheBuilder(CacheSelector cacheSelector)
+            => this.CacheSelector = cacheSelector;
         public CacheBuilder WithRedis(RedisCacheProperties configuration)
         {
-            this.CacheBuilder.CloudProperties = configuration.Properties;
-            return this.CacheBuilder;
+            this.CacheSelector.Configuration.CloudProperties = configuration.Properties;
+            return new CacheBuilder(this.CacheSelector.Configuration, this.CacheSelector);
         }
         public CacheBuilder WithTablestorage(TableStorageCacheProperties configuration)
         {
-            this.CacheBuilder.CloudProperties = configuration.Properties;
-            return this.CacheBuilder;
+            this.CacheSelector.Configuration.CloudProperties = configuration.Properties;
+            return new CacheBuilder(this.CacheSelector.Configuration, this.CacheSelector);
         }
         public CacheBuilder WithBlobstorage(BlobStorageCacheProperties configuration)
         {
-            this.CacheBuilder.CloudProperties = configuration.Properties;
-            return this.CacheBuilder;
+            this.CacheSelector.Configuration.CloudProperties = configuration.Properties;
+            return new CacheBuilder(this.CacheSelector.Configuration, this.CacheSelector);
         }
     }
 }

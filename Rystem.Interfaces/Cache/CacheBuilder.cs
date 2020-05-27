@@ -4,31 +4,22 @@ using System.Text;
 
 namespace Rystem.Cache
 {
-    public class CacheBuilder
+    public class CacheBuilder : INoInstallingBuilder
     {
-        internal CacheConsistency Consistency { get; private set; }
-        internal string ConnectionString { get; private set; }
-        internal CacheProperties MemoryProperties { get; private set; }
-        internal CacheProperties CloudProperties { get; set; }
-        public RystemCacheProperty Property
-            => new RystemCacheProperty(this.Consistency, this.ConnectionString, this.MemoryProperties, this.CloudProperties);
-        public CacheBuilder() : this(CacheConsistency.Always)
+        private readonly IConfiguration Configuration;
+        private readonly CacheSelector CacheSelector;
+        public CacheBuilder(IConfiguration configuration, CacheSelector cacheSelector)
         {
-
+            this.Configuration = configuration;
+            this.CacheSelector = cacheSelector;
         }
-        public CacheBuilder(CacheConsistency consistency)
+        public InstallerType InstallerType => InstallerType.Cache;
+        public ConfigurationBuilder Build()
         {
-            this.Consistency = consistency;
+            this.CacheSelector.Builder.AddConfiguration(this.Configuration, this.InstallerType, Installation.Default);
+            return this.CacheSelector.Builder;
         }
-        public CacheBuilder WithMemory(MemoryCacheProperties properties)
-        {
-            this.MemoryProperties = properties.Properties;
-            return this;
-        }
-        public CloudCacheBuilder WithCloud(string connectionString)
-        {
-            this.ConnectionString = connectionString;
-            return new CloudCacheBuilder(this);
-        }
+        public CacheSelector And()
+            => this.CacheSelector;
     }
 }

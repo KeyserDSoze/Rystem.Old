@@ -19,10 +19,13 @@ namespace Rystem.Cache
         private readonly IMultitonIntegrationAsync<TCache> InCloud;
         private bool CloudIsActive 
             => this.Configuration.HasCloud;
-        private readonly RystemCacheProperty Configuration;
-        public CacheManager(CacheBuilder builder)
+
+        public InstallerType InstallerType => InstallerType.Cache;
+
+        private readonly RystemCacheConfiguration Configuration;
+        public CacheManager(ConfigurationBuilder builder)
         {
-            this.Configuration = builder.Property;
+            this.Configuration = builder.GetConfigurations(this.InstallerType)[Installation.Default] as RystemCacheConfiguration;
             if (this.MemoryIsActive)
                 InMemory = new InMemory<TCache>(this.Configuration);
             if (this.CloudIsActive)
