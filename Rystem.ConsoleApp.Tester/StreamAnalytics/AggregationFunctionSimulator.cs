@@ -29,7 +29,9 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                                 {
                                     X = i
                                 });
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
             IList<AbstractToParse> flusheds = await aggregator.RunAsync(messages, new ConsoleLogger(), async x => Console.WriteLine("action: " + x), async (x, _) => Console.WriteLine("Action on error: " + x));
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             IList<AbstractToParse> flusheds2 = aggregator.Run(messages, new ConsoleLogger(), x => Console.WriteLine("action2: " + x), (x, _) => Console.WriteLine("Action on error2: " + x), Installation.Inst00);
             return true;
         }
@@ -53,9 +55,9 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
         {
             return new ConfigurationBuilder()
                 .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 80, TimeSpan.FromMinutes(5)))
-                .AddParser(new FunctionParser()).Configure().Build()
+                .AddParser(new FunctionParser()).Build()
                 .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 100, TimeSpan.FromMinutes(5)))
-                .AddParser(new FunctionParser()).Configure().Build(Installation.Inst00);
+                .AddParser(new FunctionParser()).Build(Installation.Inst00);
         }
     }
 

@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem.Interfaces</id>
-    <version>6.0.6</version>
+    <version>6.0.7</version>
     <title>Rystem Interfaces</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -11,11 +11,10 @@
     <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
-      Interfaces for Rystem, to prevent installation of Rystem when you need only the interfaces to use it.
-      You need to implemente Rystem only when the rystem engine works.
+      You need to implement Rystem only when the rystem engine is needed.
     </description>
     <releaseNotes>
-      - Fourth Release.
+      - Sixth Release.
     </releaseNotes>
     <copyright>Copyright 2019-2026</copyright>
     <tags>Rystem Interfaces</tags>

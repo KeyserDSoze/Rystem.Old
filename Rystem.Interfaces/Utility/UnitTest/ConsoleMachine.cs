@@ -37,6 +37,7 @@ namespace Rystem.UnitTest
         {
             int value = 0;
             Console.WriteLine($"For Test everything use {AllCommand}");
+            Console.WriteLine($"For Test everything with a specific containing names use {AllCommand} {{ContainedString}}");
             foreach (IUnitTest test in this.Tests)
                 Console.WriteLine($"For {ToName(test)} use {value++}");
             Console.WriteLine("Write 'exit' if you want to close this app.");
@@ -55,11 +56,16 @@ namespace Rystem.UnitTest
         {
             while ((Result = this.WhatDoYouWantToSeeInAction()) != ExitCommand)
             {
-                if (Result == AllCommand)
+                if (Result.StartsWith(AllCommand))
                 {
+                    string pattern = Result.Replace(AllCommand, string.Empty).Trim();
                     List<(string, bool)> results = new List<(string, bool)>();
                     for (int i = 0; i < this.Tests.Count; i++)
-                        results.Add((this.Tests[i].GetType().Name, await ExecuteAsync(i, action, string.Empty, args).NoContext()));
+                    {
+                        Type type = this.Tests[i].GetType();
+                        if (string.IsNullOrWhiteSpace(pattern) || type.FullName.ToLower().Contains(pattern.ToLower()))
+                            results.Add((type.Name, await ExecuteAsync(i, action, string.Empty, args).NoContext()));
+                    }
                     Console.WriteLine("------------------------------");
                     Console.WriteLine("Test Resume");
                     Console.WriteLine("------------------------------");

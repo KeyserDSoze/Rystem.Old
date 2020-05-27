@@ -13,7 +13,8 @@ namespace Rystem.Azure.Data.Integration
         where TEntity : IData
     {
         private protected BlobRequestOptions BlobRequestOptions = new BlobRequestOptions() { DisableContentMD5Validation = true };
-
+        private protected abstract IDataReader<TEntity> DefaultReader { get; }
+        private protected abstract IDataWriter<TEntity> DefaultWriter { get; }
         private static readonly object TrafficLight = new object();
         private CloudBlobContainer context;
         private protected CloudBlobContainer Context
@@ -40,6 +41,12 @@ namespace Rystem.Azure.Data.Integration
         {
             this.Configuration = configuration;
             this.EntityType = entity.GetType();
+            if (configuration.Reader != null && !(configuration.Reader is IDataReader<TEntity>))
+                throw new MissingMethodException($"Installed reader {configuration.Reader.GetType().FullName} is not a {typeof(IDataReader<TEntity>).FullName}");
+            if (configuration.Writer != null && !(configuration.Writer is IDataWriter<TEntity>))
+                throw new MissingMethodException($"Installed writer {configuration.Writer.GetType().FullName} is not a {typeof(IDataWriter<TEntity>).FullName}");
+            this.Reader = configuration.Reader as IDataReader<TEntity> ?? DefaultReader;
+            this.Writer = configuration.Writer as IDataWriter<TEntity> ?? DefaultWriter;
         }
         private protected async Task<bool> DeleteAsync(ICloudBlob cloudBlob)
             => await cloudBlob.DeleteIfExistsAsync().NoContext();
@@ -83,9 +90,8 @@ namespace Rystem.Azure.Data.Integration
 
         private protected async Task<bool> SetBlobPropertyIfNecessaryAsync(IData entity, ICloudBlob cloudBlob, DataWrapper wrapper)
         {
-            BlobDataProperties blobDataProperties = wrapper.Properties as BlobDataProperties;
             bool changeSomethingInProperty = false;
-            if (blobDataProperties != null)
+            if (wrapper.Properties is BlobDataProperties blobDataProperties)
             {
                 if (blobDataProperties.ContentType != cloudBlob.Properties.ContentType)
                 {

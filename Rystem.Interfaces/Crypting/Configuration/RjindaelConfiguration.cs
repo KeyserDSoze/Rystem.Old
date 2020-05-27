@@ -14,6 +14,8 @@ namespace Rystem.Crypting
         public string PasswordHash => this.passowrdHash ?? DefaultPasswordHash;
         public string SaltKey => this.saltKey ?? DefaultSaltKey;
         public string VIKey => this.vIKey ?? DefaultVIKey;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "SCS0011:CBC mode is weak", Justification = "CBC is only default")]
         private CipherMode CipherMode => this.cipherMode ?? CipherMode.CBC;
         private PaddingMode PaddingMode => this.paddingMode ?? PaddingMode.ISO10126;
         private byte[] SaltKeyAsBytes => Encoding.ASCII.GetBytes(this.SaltKey);

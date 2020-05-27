@@ -66,6 +66,23 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             if (meatball2.Count != 0)
                 return false;
 
+            try
+            {
+                await new ForthBall().DeleteAsync(Installation.Inst01);
+                return false;
+            }
+            catch
+            {
+            }
+            try
+            {
+                await new ZartBall().DeleteAsync(Installation.Inst02);
+                return false;
+            }
+            catch
+            {
+            }
+
             return true;
         }
     }
@@ -86,13 +103,47 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
     {
         public override ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new ConfigurationBuilder().WithData(StorageConnectionString)
-                .WithAppendBlobStorage(new AppendBlobBuilder("meatball")).Build(MeatballType.MyDefault.ToInstallation())
+            return new ConfigurationBuilder()
+                .WithData(StorageConnectionString)
+                .WithAppendBlobStorage(new AppendBlobBuilder("meatball"))
+                .Build(MeatballType.MyDefault.ToInstallation())
                 .WithData(StorageConnectionString)
                 .WithAppendBlobStorage(new AppendBlobBuilder("kollipop"))
                 .Build(Installation.Inst00);
         }
         public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-
+    }
+    public sealed class ForthBall : Ricotta
+    {
+        public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
+        public override ConfigurationBuilder GetConfigurationBuilder()
+        {
+            return new ConfigurationBuilder()
+            .WithData(StorageConnectionString)
+            .WithAppendBlobStorage(new AppendBlobBuilder("kualpop", new MeatballManager()))
+            .Build(Installation.Inst01);
+        }
+    }
+    public sealed class ZartBall : Ricotta
+    {
+        public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
+        public override ConfigurationBuilder GetConfigurationBuilder()
+        {
+            return new ConfigurationBuilder()
+            .WithData(StorageConnectionString)
+            .WithAppendBlobStorage(new AppendBlobBuilder("kualpopdasdas", null, new MeatballManager()))
+            .Build(Installation.Inst02);
+        }
+    }
+    public sealed class MeatballManager : IDataReader<Meatball>, IDataWriter<Meatball>
+    {
+        public Task<WrapperEntity<Meatball>> ReadAsync(DataWrapper dummy)
+        {
+            throw new NotImplementedException();
+        }
+        public Task<DataWrapper> WriteAsync(Meatball entity)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

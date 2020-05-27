@@ -11,6 +11,6 @@ namespace Rystem.Aggregation
             => this.Builder = builder;
 
         public AggregationParser<T> WithLinq(LinqBuilder<T> linqBuilder)
-            => new AggregationParser<T>(this, new AggregationBuilder<T>((linqBuilder ?? new LinqBuilder<T>(string.Empty)).AggregationConfiguration, this));
+            => new AggregationParser<T>(new AggregationBuilder<T>((linqBuilder ?? new LinqBuilder<T>(string.Empty)).AggregationConfiguration, this));
     }
 }
