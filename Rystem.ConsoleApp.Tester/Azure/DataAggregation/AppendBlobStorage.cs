@@ -14,7 +14,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
-            Meatball meatball = new Meatball()
+            Ricotta meatball = new Meatball()
             {
                 Name = "Hello2.csv",
                 Properties = new BlobDataProperties()
@@ -30,7 +30,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             meatball.A = 6;
             meatball.B = "dsadsadsa";
             await meatball.WriteAsync();
-            IList<Meatball> meatball2 = (await meatball.ListAsync()).ToList();
+            IList<Ricotta> meatball2 = (await meatball.ListAsync()).ToList();
             if (meatball2.Count != 3)
                 return false;
             IList<DataWrapper> properties = await meatball.FetchPropertiesAsync();
@@ -74,21 +74,25 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         MyDefault = -1,
         OtherRepository
     }
-
-    public class Meatball : IData
+    public class Ricotta : IData
     {
-        public ConfigurationBuilder GetConfigurationBuilder()
+        public string Name { get; set; }
+        public IDataProperties Properties { get; set; }
+        public int A { get; set; }
+        public string B { get; set; }
+        public virtual ConfigurationBuilder GetConfigurationBuilder() { return default; }
+    }
+    public sealed class Meatball : Ricotta
+    {
+        public override ConfigurationBuilder GetConfigurationBuilder()
         {
             return new ConfigurationBuilder().WithData(StorageConnectionString)
-                .WithAppendBlobStorage(new AppendBlobBuilder<Meatball>("meatball")).Build(MeatballType.MyDefault.ToInstallation())
+                .WithAppendBlobStorage(new AppendBlobBuilder("meatball")).Build(MeatballType.MyDefault.ToInstallation())
                 .WithData(StorageConnectionString)
-                .WithAppendBlobStorage(new AppendBlobBuilder<Meatball>("kollipop"))
+                .WithAppendBlobStorage(new AppendBlobBuilder("kollipop"))
                 .Build(Installation.Inst00);
         }
         public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-        public int A { get; set; }
-        public string B { get; set; }
-        public string Name { get; set; }
-        public IDataProperties Properties { get; set; }
+
     }
 }

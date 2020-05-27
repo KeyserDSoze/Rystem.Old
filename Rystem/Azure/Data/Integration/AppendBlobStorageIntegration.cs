@@ -14,10 +14,10 @@ namespace Rystem.Azure.Data
         where TEntity : IData
     {
         private const int MaximumAttempt = 3;
-        internal AppendBlobStorageIntegration(DataConfiguration<TEntity> configuration, TEntity entity) : base(configuration, entity)
+        internal AppendBlobStorageIntegration(DataConfiguration configuration, TEntity entity) : base(configuration, entity)
         {
-            this.Writer = configuration.Writer ?? new CsvDataManager<TEntity>();
-            this.Reader = configuration.Reader ?? new CsvDataManager<TEntity>();
+            this.Writer = configuration.Writer as IDataWriter<TEntity> ?? new CsvDataManager<TEntity>();
+            this.Reader = configuration.Reader as IDataReader<TEntity> ?? new CsvDataManager<TEntity>();
         }
         public async Task<bool> DeleteAsync(TEntity entity)
             => await this.DeleteAsync(this.Context.GetAppendBlobReference(entity.Name)).NoContext();

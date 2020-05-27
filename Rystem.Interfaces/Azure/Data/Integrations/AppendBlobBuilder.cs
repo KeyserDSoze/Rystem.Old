@@ -4,13 +4,12 @@ using System.Text;
 
 namespace Rystem.Azure.Data
 {
-    public class AppendBlobBuilder<TData>
-        where TData : IData
+    public class AppendBlobBuilder
     {
-        public DataConfiguration<TData> DataConfiguration { get; }
-        public AppendBlobBuilder(string name, IDataReader<TData> reader = default, IDataWriter<TData> writer = default)
+        public DataConfiguration DataConfiguration { get; }
+        public AppendBlobBuilder(string name, IDataReader reader = default, IDataWriter writer = default)
         {
-            this.DataConfiguration = new DataConfiguration<TData>()
+            this.DataConfiguration = new DataConfiguration()
             {
                 Name = name,
                 Reader = reader,

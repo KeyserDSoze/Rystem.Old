@@ -10,15 +10,15 @@ namespace Rystem.Azure.Data
         where TEntity : IData
     {
         private readonly IDictionary<Installation, IDataIntegration<TEntity>> Integrations;
-        private readonly IDictionary<Installation, DataConfiguration<TEntity>> AggregatedDataConfiguration;
+        private readonly IDictionary<Installation, DataConfiguration> AggregatedDataConfiguration;
 
         public InstallerType InstallerType => InstallerType.Data;
 
         public DataManager(ConfigurationBuilder configurationBuilder, TEntity entity)
         {
             Integrations = new Dictionary<Installation, IDataIntegration<TEntity>>();
-            AggregatedDataConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as DataConfiguration<TEntity>);
-            foreach (KeyValuePair<Installation, DataConfiguration<TEntity>> configuration in AggregatedDataConfiguration)
+            AggregatedDataConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as DataConfiguration);
+            foreach (KeyValuePair<Installation, DataConfiguration> configuration in AggregatedDataConfiguration)
                 switch (configuration.Value.Type)
                 {
                     case DataType.BlockBlob:

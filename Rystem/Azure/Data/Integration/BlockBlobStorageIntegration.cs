@@ -14,10 +14,10 @@ namespace Rystem.Azure.Data
     internal class BlockBlobStorageIntegration<TEntity> : BlobStorageBaseIntegration<TEntity>, IDataIntegration<TEntity>
         where TEntity : IData
     {
-        internal BlockBlobStorageIntegration(DataConfiguration<TEntity> configuration, TEntity entity) : base(configuration, entity)
+        internal BlockBlobStorageIntegration(DataConfiguration configuration, TEntity entity) : base(configuration, entity)
         {
-            this.Reader = configuration.Reader ?? new JsonDataManager<TEntity>();
-            this.Writer = configuration.Writer ?? new JsonDataManager<TEntity>();
+            this.Reader = configuration.Reader as IDataReader<TEntity> ?? new JsonDataManager<TEntity>();
+            this.Writer = configuration.Writer as IDataWriter<TEntity> ?? new JsonDataManager<TEntity>();
         }
         public async Task<bool> DeleteAsync(TEntity entity)
             => await this.DeleteAsync(this.Context.GetBlockBlobReference(entity.Name)).NoContext();

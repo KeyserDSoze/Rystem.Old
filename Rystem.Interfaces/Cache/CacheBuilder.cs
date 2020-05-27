@@ -8,7 +8,7 @@ namespace Rystem.Cache
     {
         private readonly IConfiguration Configuration;
         private readonly CacheSelector CacheSelector;
-        public CacheBuilder(IConfiguration configuration, CacheSelector cacheSelector)
+        internal CacheBuilder(IConfiguration configuration, CacheSelector cacheSelector)
         {
             this.Configuration = configuration;
             this.CacheSelector = cacheSelector;

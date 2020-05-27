@@ -14,26 +14,22 @@ namespace Rystem.Azure.Data
             this.ConnectionString = connectionString;
             this.Builder = builder;
         }
-        public DataBuilder WithBlockBlobStorage<TData>(BlockBlobBuilder<TData> blockBlobBuilder)
-            where TData : IData
+        public DataBuilder WithBlockBlobStorage(BlockBlobBuilder blockBlobBuilder)
         {
             blockBlobBuilder.DataConfiguration.ConnectionString = this.ConnectionString;
             return new DataBuilder(blockBlobBuilder.DataConfiguration, this);
         }
-        public DataBuilder WithAppendBlobStorage<TData>(AppendBlobBuilder<TData> appendBlobBuilder)
-            where TData : IData
+        public DataBuilder WithAppendBlobStorage(AppendBlobBuilder appendBlobBuilder)
         {
             appendBlobBuilder.DataConfiguration.ConnectionString = this.ConnectionString;
             return new DataBuilder(appendBlobBuilder.DataConfiguration, this);
         }
-        public DataBuilder WithPageBlobStorage<TData>(PageBlobBuilder<TData> pageBlobBuilder)
-            where TData : IData
+        public DataBuilder WithPageBlobStorage(PageBlobBuilder pageBlobBuilder)
         {
             pageBlobBuilder.DataConfiguration.ConnectionString = this.ConnectionString;
             return new DataBuilder(pageBlobBuilder.DataConfiguration, this);
         }
-        public DataBuilder WithDataLakeV2<TData>(DataLakeV2Builder<TData> dataLakeV2Builder)
-            where TData : IData
+        public DataBuilder WithDataLakeV2(DataLakeV2Builder dataLakeV2Builder)
         {
             dataLakeV2Builder.DataConfiguration.ConnectionString = this.ConnectionString;
             return new DataBuilder(dataLakeV2Builder.DataConfiguration, this);

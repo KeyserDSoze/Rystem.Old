@@ -14,7 +14,7 @@ namespace Rystem.WebApp.Models
         public ConfigurationBuilder GetConfigurationBuilder()
         {
             return new ConfigurationBuilder().WithData("DefaultEndpointsProtocol=https;AccountName=rystem;AccountKey=OeOn4ae4HmlWjJCE1wGZRCsrPsjGwtMr0tjte3F+TAQ4sSA+uNiBQtKrgwI+RxlkF60IBOwI9J7qe3wPFSvm8A==;EndpointSuffix=core.windows.net")
-                .WithBlockBlobStorage<Video>(new BlockBlobBuilder<Video>("video", default, default)).Build();
+                .WithBlockBlobStorage(new BlockBlobBuilder("video", default, default)).Build();
         }
     }
     public class Alo

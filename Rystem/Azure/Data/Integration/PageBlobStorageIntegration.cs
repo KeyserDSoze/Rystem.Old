@@ -13,11 +13,10 @@ namespace Rystem.Azure.Data
     internal class PageBlobStorageIntegration<TEntity> : BlobStorageBaseIntegration<TEntity>, IDataIntegration<TEntity>
         where TEntity : IData
     {
-        
-        internal PageBlobStorageIntegration(DataConfiguration<TEntity> configuration, TEntity entity): base(configuration, entity)
+        public PageBlobStorageIntegration(DataConfiguration configuration, TEntity entity): base(configuration, entity)
         {
-            this.Writer = configuration.Writer ?? new CsvDataManager<TEntity>();
-            this.Reader = configuration.Reader ?? new CsvDataManager<TEntity>();
+            this.Writer = configuration.Writer as IDataWriter<TEntity>  ?? new CsvDataManager<TEntity>();
+            this.Reader = configuration.Reader as IDataReader<TEntity> ?? new CsvDataManager<TEntity>();
         }
         public async Task<bool> DeleteAsync(TEntity entity)
             => await this.DeleteAsync(this.Context.GetAppendBlobReference(entity.Name)).NoContext();

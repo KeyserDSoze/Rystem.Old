@@ -34,9 +34,9 @@ namespace Rystem.Azure.Data.Integration
         }
         private protected IDataWriter<TEntity> Writer;
         private protected IDataReader<TEntity> Reader;
-        private protected readonly DataConfiguration<TEntity> Configuration;
+        private protected readonly DataConfiguration Configuration;
         private protected readonly Type EntityType;
-        internal BlobStorageBaseIntegration(DataConfiguration<TEntity> configuration, TEntity entity)
+        internal BlobStorageBaseIntegration(DataConfiguration configuration, TEntity entity)
         {
             this.Configuration = configuration;
             this.EntityType = entity.GetType();

@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace Rystem.Azure.Data
 {
-    public interface IDataWriter<TEntity>
+    public interface IDataWriter { }
+    public interface IDataWriter<TEntity> : IDataWriter
         where TEntity : IData
     {
         Task<DataWrapper> WriteAsync(TEntity entity);
