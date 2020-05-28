@@ -12,59 +12,59 @@ namespace Rystem.Azure.Queue
     {
         private readonly IDictionary<Installation, IQueueIntegration<TEntity>> Integrations = new Dictionary<Installation, IQueueIntegration<TEntity>>();
         private readonly IDictionary<Installation, QueueConfiguration> QueueConfiguration;
-        private readonly Type EntityType;
-
+        private static readonly object TrafficLight = new object();
+        private IQueueIntegration<TEntity> Integration(Installation installation)
+        {
+            if (!Integrations.ContainsKey(installation))
+                lock (TrafficLight)
+                    if (!Integrations.ContainsKey(installation))
+                    {
+                        QueueConfiguration configuration = QueueConfiguration[installation];
+                        switch (configuration.Type)
+                        {
+                            case QueueType.QueueStorage:
+                                Integrations.Add(installation, new QueueStorageIntegration<TEntity>(configuration));
+                                break;
+                            case QueueType.EventHub:
+                                Integrations.Add(installation, new EventHubIntegration<TEntity>(configuration));
+                                break;
+                            case QueueType.ServiceBus:
+                                Integrations.Add(installation, new ServiceBusIntegration<TEntity>(configuration));
+                                break;
+                            case QueueType.SmartQueue:
+                                Integrations.Add(installation, new SmartQueueIntegration<TEntity>(configuration));
+                                break;
+                            default:
+                                throw new InvalidOperationException($"Wrong type installed {configuration.Type}");
+                        }
+                    }
+            return Integrations[installation];
+        }
         public InstallerType InstallerType => InstallerType.Queue;
-
+        private readonly TEntity DefaultEntity;
         public QueueManager(ConfigurationBuilder configurationBuilder, TEntity entity)
         {
-            this.EntityType = entity.GetType();
+            this.DefaultEntity = entity;
             QueueConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as QueueConfiguration);
-            foreach (KeyValuePair<Installation, QueueConfiguration> configuration in QueueConfiguration)
-                switch (configuration.Value.Type)
-                {
-                    case QueueType.QueueStorage:
-                        Integrations.Add(configuration.Key, new QueueStorageIntegration<TEntity>(configuration.Value));
-                        break;
-                    case QueueType.EventHub:
-                        Integrations.Add(configuration.Key, new EventHubIntegration<TEntity>(configuration.Value));
-                        break;
-                    case QueueType.ServiceBus:
-                        Integrations.Add(configuration.Key, new ServiceBusIntegration<TEntity>(configuration.Value));
-                        break;
-                    case QueueType.SmartQueue:
-                        Integrations.Add(configuration.Key, new SmartQueueIntegration<TEntity>(configuration.Value));
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Wrong type installed {configuration.Value.Type}");
-                }
         }
         public async Task<bool> SendAsync(TEntity message, Installation installation, int path, int organization)
-            => await Integrations[installation].SendAsync(message, path, organization).NoContext();
+            => await Integration(installation).SendAsync(message, path, organization).NoContext();
         public async Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, Installation installation, int path, int organization)
-            => await Integrations[installation].SendScheduledAsync(message, delayInSeconds, path, organization).NoContext();
+            => await Integration(installation).SendScheduledAsync(message, delayInSeconds, path, organization).NoContext();
         public async Task<bool> DeleteScheduledAsync(long messageId, Installation installation)
-            => await Integrations[installation].DeleteScheduledAsync(messageId).NoContext();
+            => await Integration(installation).DeleteScheduledAsync(messageId).NoContext();
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, Installation installation, int path, int organization)
-            => await Integrations[installation].SendBatchAsync(messages.Select(x => x), path, organization).NoContext();
+            => await Integration(installation).SendBatchAsync(messages.Select(x => x), path, organization).NoContext();
         public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, Installation installation, int path, int organization)
-            => await Integrations[installation].SendScheduledBatchAsync(messages.Select(x => x), delayInSeconds, path, organization).NoContext();
-        public async Task<DebugMessage> DebugSendAsync(TEntity message, int delayInSeconds, Installation installation, int path, int organization)
-        {
-            await Task.Delay(0).NoContext();
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = message.ToDefaultJson(), SmartMessage = message.ToDefaultJson(), EventDatas = new EventData[1] { new EventData(message.ToSendable()) } };
-        }
-        public async Task<DebugMessage> DebugSendBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, Installation installation, int path, int organization)
-        {
-            await Task.Delay(0).NoContext();
-            return new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.Select(x => x).ToDefaultJson(), SmartMessage = messages.Select(x => x).ToDefaultJson(), EventDatas = messages.Select(x => new EventData(x.ToSendable())).ToArray() };
-        }
-        public string GetName(Installation installation) => QueueConfiguration[installation].Name;
-
+            => await Integration(installation).SendScheduledBatchAsync(messages.Select(x => x), delayInSeconds, path, organization).NoContext();
         public async Task<IEnumerable<TEntity>> ReadAsync(Installation installation, int path, int organization)
-            => await Integrations[installation].ReadAsync(path, organization).NoContext();
-
+           => await Integration(installation).ReadAsync(path, organization).NoContext();
         public async Task<bool> CleanAsync(Installation installation)
-            => await Integrations[installation].CleanAsync().NoContext();
+            => await Integration(installation).CleanAsync().NoContext();
+        public Task<DebugMessage> DebugSendAsync(TEntity message, int delayInSeconds, Installation installation, int path, int organization)
+            => Task.FromResult(new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = message.ToDefaultJson(), SmartMessage = message.ToDefaultJson(), EventDatas = new EventData[1] { new EventData(message.ToSendable()) } });
+        public Task<DebugMessage> DebugSendBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, Installation installation, int path, int organization)
+            => Task.FromResult(new DebugMessage() { DelayInSeconds = delayInSeconds, ServiceBusMessage = messages.Select(x => x).ToDefaultJson(), SmartMessage = messages.Select(x => x).ToDefaultJson(), EventDatas = messages.Select(x => new EventData(x.ToSendable())).ToArray() });
+        public string GetName(Installation installation) => QueueConfiguration[installation].Name;
     }
 }

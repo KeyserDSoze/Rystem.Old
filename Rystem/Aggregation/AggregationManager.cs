@@ -15,9 +15,7 @@ namespace Rystem.Aggregation
         private readonly static Dictionary<Installation, BufferBearer> Buffer = new Dictionary<Installation, BufferBearer>();
         private static readonly object AcquireToken = new object();
         private readonly IDictionary<Installation, AggregationConfiguration<T>> AggregationProperties;
-
         public InstallerType InstallerType => InstallerType.Aggregation;
-
         private string AggregationName(Installation installation)
             => this.AggregationProperties[installation].Name;
         public AggregationManager(ConfigurationBuilder configurationBuilder)
