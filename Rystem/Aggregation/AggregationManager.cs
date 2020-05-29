@@ -37,12 +37,14 @@ namespace Rystem.Aggregation
                 try
                 {
                     totalCount++;
-                    await action?.Invoke(eventData);
+                    if (action != null)
+                        await action.Invoke(eventData);
                     this.Add(eventData, installation);
                 }
                 catch (Exception e)
                 {
-                    await errorCatcher?.Invoke(e, eventData);
+                    if (errorCatcher != null)
+                        await errorCatcher.Invoke(e, eventData);
                     exceptions.Add(e);
                 }
             }
