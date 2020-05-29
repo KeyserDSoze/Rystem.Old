@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem.Web</id>
-    <version>1.0.0</version>
+    <version>1.0.0.0</version>
     <title>Rystem.Web</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -19,8 +19,8 @@
     <copyright>Copyright 2019-2026</copyright>
     <tags>Rystem Web Utility</tags>
     <dependencies>
-      <dependency id="Rystem.Interfaces" version="5.2.0" />
-      <dependency id="Rystem" version="5.2.0" />
+      <dependency id="Rystem.Interfaces" version="6.0.8" />
+      <dependency id="Rystem" version="6.0.9" />
       <dependency id="Microsoft.AspNetCore.Mvc" version="2.2.0" />
       <dependency id="Microsoft.AspNetCore.Mvc.Abstractions" version="2.2.0" />
       <dependency id="Microsoft.AspNetCore.Mvc.DataAnnotations" version="2.2.0" />
