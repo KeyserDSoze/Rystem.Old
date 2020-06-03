@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem.Web</id>
-    <version>1.0.0.0</version>
+    <version>1.0.1</version>
     <title>Rystem.Web</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -28,6 +28,7 @@
       <dependency id="Microsoft.AspNetCore.Routing" version="2.2.2" />
       <dependency id="Microsoft.AspNetCore.StaticFiles" version="2.2.0" />
       <dependency id="Microsoft.Extensions.FileProviders.Embedded" version="3.1.4" />
+      <dependency id="Microsoft.AspNetCore.Razor.Language" version="3.1.4" />
     </dependencies>
     <references>
       <reference file="Rystem.Web.dll" />

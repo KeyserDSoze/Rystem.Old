@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="3.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.1.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
@@ -12,6 +14,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="3.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,14 +28,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Remove="wwwroot\bootstrap\bootstrap-select.css.map" />
-    <Content Remove="wwwroot\bootstrap\bootstrap-select.js.map" />
-    <Content Remove="wwwroot\bootstrap\bootstrap-select.min.js" />
-    <Content Remove="wwwroot\bootstrap\bootstrap-select.min.js.map" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="Areas\Rystem\Views\Shared\*.cshtml">
+    <Content Update="Views\Shared\*.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>

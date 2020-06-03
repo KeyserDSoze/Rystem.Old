@@ -1,5 +1,5 @@
 ﻿/*#region loader*/
-svg {
+#rystem-loader {
     stroke: none;
     width: 10%;
     left: 45%;
@@ -7,40 +7,40 @@ svg {
     top: 40vh;
 }
 
-.r1 {
-    fill: #fff;
-}
+    #rystem-loader .r1 {
+        fill: #fff;
+    }
 
-.big {
-    transform: scale(5) translate(calc(-9px / 5), calc(-9px / 5));
-    transform-origin: 100% 100%;
-    transform-box: fill-box;
-}
+    #rystem-loader .big {
+        transform: scale(5) translate(calc(-9px / 5), calc(-9px / 5));
+        transform-origin: 100% 100%;
+        transform-box: fill-box;
+    }
 
-.r_ol {
-    transform-origin: 0% 0%;
-    transform-box: fill-box;
-}
+    #rystem-loader .r_ol {
+        transform-origin: 0% 0%;
+        transform-box: fill-box;
+    }
 
-svg .r_ol {
-    animation: small2big 4s ease-in-out infinite;
-}
+    #rystem-loader .r_ol {
+        animation: small2big 4s ease-in-out infinite;
+    }
 
-svg .big {
-    animation: big2small 4s ease-in-out infinite;
-}
+    #rystem-loader .big {
+        animation: big2small 4s ease-in-out infinite;
+    }
 
-svg .r_or {
-    animation: or2ol 4s ease-in-out infinite;
-}
+    #rystem-loader .r_or {
+        animation: or2ol 4s ease-in-out infinite;
+    }
 
-svg .r_ul {
-    animation: ul2ol 4s ease-in-out infinite;
-}
+    #rystem-loader .r_ul {
+        animation: ul2ol 4s ease-in-out infinite;
+    }
 
-svg .g1 {
-    animation: rot 8s ease infinite;
-}
+    #rystem-loader .g1 {
+        animation: rot 8s ease infinite;
+    }
 
 @keyframes or2ol {
     0% {
@@ -169,3 +169,49 @@ svg .g1 {
     transform: rotate(45deg);
 }
 /*#endregion*/
+/*#region fant-awesome extensions*/
+.fa-margin-left {
+    margin-left: 1em;
+}
+
+.fa-margin-right {
+    margin-right: 1em;
+}
+/*#endregion*/
+/*#region toast*/
+.toast-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1052 !important;
+}
+
+.toast-message-ok {
+    background: var(--success) !important;
+    color: var(--white);
+}
+
+.toast-message-notok {
+    background: var(--danger) !important;
+    color: var(--white);
+}
+
+/*overwrite*/
+.ui-widget-header {
+    border: 1px solid var(--primary) !important;
+    background: var(--primary) !important;
+}
+
+    .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus {
+        background: var(--primary) !important;
+        border: 1px solid var(--secondary) !important;
+    }
+
+.rystemtable .odd {
+    background: var(--white);
+}
+
+.rystemtable .even {
+    background: var(--light);
+}
+/*#endregion toast*/

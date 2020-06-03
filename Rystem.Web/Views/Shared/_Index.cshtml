@@ -1,0 +1,55 @@
+﻿@model Rystem.Web.Backoffice.INavigationIndex
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = @Model.Title;
+}
+
+<h1>@Model.Title</h1>
+
+@if (Model.CanCreate)
+{
+    <p>
+        <a asp-action="Manage">@Model.Create</a>
+    </p>
+}
+<table class="table rystemtable">
+    <thead>
+        <tr>
+            @foreach (string header in Model.Headers())
+            {
+                <th>
+                    @header
+                </th>
+            }
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Values())
+        {
+            <tr>
+                @foreach (string value in item.Values)
+                {
+                    <td>
+                        @value
+                    </td>
+                }
+                <td>
+                    @if (Model.CanModify)
+                    {
+                        <a asp-action="Manage" asp-route-id="@item.Key">@Model.Edit</a>
+                    }
+                    @if (Model.CanDelete)
+                    {
+                        if (Model.CanModify)
+                        {
+                            @:|
+                        }
+                        <a asp-action="Delete" asp-route-id="@item.Key">@Model.Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

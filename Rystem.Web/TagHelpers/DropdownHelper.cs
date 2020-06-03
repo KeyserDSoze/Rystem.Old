@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Web
 {
-    [HtmlTargetElement("rystem-dropdown", Attributes = "rystem-data", TagStructure = TagStructure.NormalOrSelfClosing)]
+    [HtmlTargetElement("rystem-dropdown", Attributes = "rystem-data,name", TagStructure = TagStructure.NormalOrSelfClosing)]
     public class DropdownHelper : TagHelper
     {
         [ViewContext]
@@ -36,19 +36,22 @@ namespace Rystem.Web
         public int MaxSelected { get; set; }
         [HtmlAttributeName("rystem-size")]
         public SizeType Size { get; set; }
-
-        private string Id { get; set; } = $"rystem-dropdown-{Guid.NewGuid():N}";
+        [HtmlAttributeName("name")]
+        public string Name { get; set; }
+        [HtmlAttributeName("rystem-item-name")]
+        public string ItemName { get; set; } = ItemNameBase;
+        private const string ItemNameBase = "selectedItems";
+        private readonly string Id = $"rystem-dropdown-{Guid.NewGuid():N}";
         public override void Process(TagHelperContext context, TagHelperOutput output)
             => ProcessAsync(context, output).ToResult();
         private const string EmptyFunction = "undefined";
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            string id = context.AllAttributes["id"]?.ToString();
-            if (!string.IsNullOrWhiteSpace(id))
-                this.Id = id;
             StringBuilder stringBuilder = new StringBuilder();
             output.TagName = "div";
-            stringBuilder.Append($"<select id='{this.Id}' class='{context.AllAttributes["class"]} selectpicker'");
+            if (context.AllAttributes["class"] != null)
+                output.Attributes.Remove(context.AllAttributes["class"]);
+            stringBuilder.Append($"<select id='{this.Id}' name='{this.Name}' class='{context.AllAttributes["class"]?.Value} selectpicker {this.Id}'");
             if (HasSearch)
                 stringBuilder.Append(" data-live-search='true'");
             if (IsMultiple)
@@ -88,12 +91,13 @@ namespace Rystem.Web
             output.Content.AppendHtml("</select>");
             output.PostContent.AppendHtml(string.Format(StarterScript,
                     this.Id,
+                    this.ItemName,
                     this.RequestContext?.FinalizeRequestContext(ViewContext.HttpContext.Request) ?? EmptyFunction,
                     this.UpdateRequestContext?.FinalizeRequestContext(ViewContext.HttpContext.Request) ?? EmptyFunction));
 
             return Task.CompletedTask;
         }
-        private const string StarterScript = "<script>new DropdownRystem('{0}', {1}, {2}).show();</script>";
+        private const string StarterScript = "<script>new DropdownRystem('{0}', '{1}', {2}, {3}).show();</script>";
         private string GetSize()
             => this.Size switch
             {

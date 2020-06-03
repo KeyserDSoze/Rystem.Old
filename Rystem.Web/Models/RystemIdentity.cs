@@ -4,11 +4,7 @@ using System.Text;
 
 namespace Rystem.Web
 {
-    public enum SizeType
+    public class RystemIdentity
     {
-        ExtraLarge,
-        Medium,
-        Small,
-        Large
     }
 }
