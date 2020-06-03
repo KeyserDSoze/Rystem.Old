@@ -14,37 +14,30 @@ namespace Rystem.Web.Backoffice
         where T : class
     {
         internal NavigationOptions Options { get; }
-        public IEnumerable<T> Values { get; }
-        public Navigation(IEnumerable<T> values, NavigationOptions options)
+        public IEnumerable<T> Values { get; internal set; }
+        public Navigation(NavigationOptions options)
         {
-            this.Values = values;
             this.Options = options;
         }
-        public Navigation(T value, NavigationOptions options) 
-            : this(new List<T>() { value }, options)
-        {
-        }
         internal List<Property> Properties { get; } = new List<Property>();
-        public NavigationProperty<T, TProperty> Include<TProperty>(Expression<Func<T, TProperty>> navigationPropertyPath, PropertyOptions options = null)
+        private IncludingNavigation<T, TProperty> InternalInclude<TProperty>(dynamic body, PropertyOptions options = null)
         {
-            dynamic body = navigationPropertyPath.Body;
             this.Properties.Add(new Property(body.Member, options));
             this.Last = this.Properties.Last();
-            return new NavigationProperty<T, TProperty>(this);
+            return new IncludingNavigation<T, TProperty>(this);
         }
-        public NavigationProperty<T, TProperty> Include<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
-        {
-            dynamic body = navigationPropertyPath.Body;
-            this.Properties.Add(new Property(body.Member, options));
-            this.Last = this.Properties.Last();
-            return new NavigationProperty<T, TProperty>(this);
-        }
+        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, TProperty>> navigationPropertyPath, PropertyOptions options = null)
+            => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
+        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> navigationPropertyPath, PropertyOptions options = null) 
+            => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
+        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, ICollection<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
+            => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
         private Property Last;
-        internal NavigationProperty<T, TNewProperty> SetSon<TNewProperty>(PropertyInfo propertyInfo, PropertyOptions options)
+        internal IncludingNavigation<T, TNewProperty> SetSon<TNewProperty>(PropertyInfo propertyInfo, PropertyOptions options)
         {
             this.Last.Properties.Add(new Property(propertyInfo, options, this.Last));
             this.Last = this.Last.Properties.Last();
-            return new NavigationProperty<T, TNewProperty>(this);
+            return new IncludingNavigation<T, TNewProperty>(this);
         }
         private IEnumerable<Property> GetAllProperties()
         {

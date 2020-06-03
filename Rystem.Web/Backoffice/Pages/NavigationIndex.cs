@@ -18,10 +18,12 @@ namespace Rystem.Web.Backoffice
         IEnumerable<string> Headers();
         IEnumerable<NavigationValue> Values();
     }
-    public class NavigationIndex<T> : INavigationIndex
+    public class NavigationIndex<T> : NavigationPage<T>, INavigationIndex
         where T : class
     {
-        public Navigation<T> Navigation { get; }
+        internal NavigationIndex(Navigation<T> navigation) : base(navigation)
+        {
+        }
         public string Title => this.Navigation.Options.Title;
         public string Create => this.Navigation.Options.GetLocalizedString("Create New");
         public string Edit => this.Navigation.Options.GetLocalizedString("Edit");
@@ -29,10 +31,6 @@ namespace Rystem.Web.Backoffice
         public bool CanCreate => this.Navigation.Options.CanCreate;
         public bool CanModify => this.Navigation.Options.CanModify;
         public bool CanDelete => this.Navigation.Options.CanDelete;
-        public NavigationIndex(Navigation<T> navigation)
-        {
-            this.Navigation = navigation;
-        }
         public IEnumerable<string> Headers()
             => this.Navigation.GetHeaders();
         public IEnumerable<NavigationValue> Values()

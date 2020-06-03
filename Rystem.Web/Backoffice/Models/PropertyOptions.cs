@@ -22,6 +22,7 @@ namespace Rystem.Web.Backoffice
             this.IsLocalized = isLocalized;
             this.IsKey = isKey;
         }
-        public static PropertyOptions Key { get; } = new PropertyOptions(OutputType.String, false, true);
+        public static PropertyOptions Key { get; } = new PropertyOptions(OutputType.String, true, true);
+        public static PropertyOptions Count { get; } = new PropertyOptions(OutputType.Count, true);
     }
 }
