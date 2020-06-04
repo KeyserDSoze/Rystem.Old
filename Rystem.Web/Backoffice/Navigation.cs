@@ -28,7 +28,7 @@ namespace Rystem.Web.Backoffice
         }
         public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, TProperty>> navigationPropertyPath, PropertyOptions options = null)
             => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
-        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> navigationPropertyPath, PropertyOptions options = null) 
+        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
             => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
         public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, ICollection<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
             => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
@@ -48,7 +48,7 @@ namespace Rystem.Web.Backoffice
         internal IEnumerable<string> GetHeaders()
         {
             foreach (Property property in GetAllProperties())
-                yield return this.Options.GetLocalizedString(property.PropertyInfo.Name);
+                yield return this.Options.GetLocalizedString(property.FullName);
         }
         internal NavigationValue GetValues(T entity)
         {

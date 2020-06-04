@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Rystem.Web
@@ -94,10 +95,9 @@ namespace Rystem.Web
                     this.ItemName,
                     this.RequestContext?.FinalizeRequestContext(ViewContext.HttpContext.Request) ?? EmptyFunction,
                     this.UpdateRequestContext?.FinalizeRequestContext(ViewContext.HttpContext.Request) ?? EmptyFunction));
-
             return Task.CompletedTask;
         }
-        private const string StarterScript = "<script>new DropdownRystem('{0}', '{1}', {2}, {3}).show();</script>";
+        private const string StarterScript = "<script>$(document).ready(function() {{new DropdownRystem('{0}', '{1}', {2}, {3}).show();}});</script>";
         private string GetSize()
             => this.Size switch
             {

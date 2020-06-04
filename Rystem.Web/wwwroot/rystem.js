@@ -52,32 +52,6 @@
         });
     }
 
-    static jUrls = new Array();
-
-    static loadAsyncJavascript() {
-        while (Rystem.jUrls.length) {
-            let urls = Rystem.jUrls.shift();
-            Rystem.loadJavascript(urls);
-        }
-    }
-
-    static loadJavascript(urls) {
-        if (urls.length > 0) {
-            let url = urls.shift();
-            if (url.indexOf("http") == 0 || url.indexOf("//") == 0) {
-                let scriptToAdd = document.createElement('script');
-                scriptToAdd.setAttribute('type', 'text/javascript');
-                scriptToAdd.setAttribute('src', url);
-                scriptToAdd.addEventListener("load", () => Rystem.loadJavascript(urls));
-                scriptToAdd.addEventListener("error", () => Rystem.loadJavascript(urls));
-                document.getElementsByTagName('head')[0].appendChild(scriptToAdd);
-            } else {
-                try { eval(url); } catch{ }
-                Rystem.loadJavascript(urls);
-            }
-        }
-    }
-
     static generateGUID() {
         let d = new Date().getTime();
         let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
@@ -326,5 +300,20 @@ class ChartRystem extends Rystem {
     show() {
         let ctx = this.$id[0].getContext('2d');
         this.chart = new Chart(ctx, this.data);
+    }
+}
+
+class TableRystem extends Rystem {
+    constructor(id, language) {
+        super(id);
+        this.language = language;
+    }
+    show() {
+        if (this.language)
+            $("#" + this.id).DataTable({
+                language: { url: this.language }
+            });
+        else
+            $("#" + this.id).DataTable();
     }
 }

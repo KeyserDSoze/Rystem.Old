@@ -3,6 +3,7 @@ using Rystem.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,18 +15,29 @@ namespace Rystem.Web.Backoffice
     {
         public PropertyInfo PropertyInfo { get; }
         public List<Property> Properties { get; }
-        public Property Father { get; }
-        public bool HasFather { get; }
         public PropertyOptions Options { get; }
         private static readonly PropertyOptions DefaultOptions = new PropertyOptions();
+        private readonly List<Property> Tree = new List<Property>();
         public Property(PropertyInfo propertyInfo, PropertyOptions options, Property father = null)
         {
             this.PropertyInfo = propertyInfo;
             this.Options = options ?? DefaultOptions;
             this.Properties = new List<Property>();
-            if (this.HasFather = father != null)
-                this.Father = father;
+            if (father != null)
+                this.Tree.AddRange(father.Tree);
+            this.Tree.Add(this);
         }
+        public string FullName
+        {
+            get
+            {
+                DisplayAttribute displayAttribute = this.PropertyInfo.GetCustomAttribute<DisplayAttribute>();
+                if (displayAttribute != null)
+                    return displayAttribute.Name;
+                return string.Join(".", this.Tree.Select(x => x.PropertyInfo.Name));
+            }
+        }
+
         public IEnumerable<Property> GetAllProperties()
         {
             if (this.Properties.Count == 0)
@@ -37,18 +49,9 @@ namespace Rystem.Web.Backoffice
         }
         public string FromObject(object entity)
         {
-            Property father = this.Father;
-            Stack<Property> tree = new Stack<Property>();
-            tree.Push(this);
-            while (father != null)
-            {
-                tree.Push(father);
-                father = father.Father;
-            }
             List<PropertyObjectWrapper> result = new List<PropertyObjectWrapper>() { new PropertyObjectWrapper() { Value = entity } };
-            while (tree.Count > 0)
+            foreach (Property property in this.Tree)
             {
-                Property property = tree.Pop();
                 List<PropertyObjectWrapper> innerResult = new List<PropertyObjectWrapper>();
                 if (!Primitive.Is(property.PropertyInfo.PropertyType) && typeof(IEnumerable).IsAssignableFrom(property.PropertyInfo.PropertyType))
                 {

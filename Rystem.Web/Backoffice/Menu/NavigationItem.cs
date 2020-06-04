@@ -16,7 +16,7 @@ namespace Rystem.Web.Backoffice
         private string title;
         public string Title
         {
-            get => this.NavigationBar.IsLocalized ? this.NavigationBar.Localizer[title] : title;
+            get => this.NavigationBar.IsLocalized && title != null ? this.NavigationBar.Localizer[title] : title;
             private set => title = value;
         }
         private protected readonly NavigationBar NavigationBar;

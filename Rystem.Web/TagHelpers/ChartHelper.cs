@@ -27,7 +27,7 @@ namespace Rystem.Web
         {
             ProcessAsync(context, output).ToResult();
         }
-        private const string SwiperScript = "<script>new ChartRystem('{0}', {1}).show();</script>";
+        private const string SwiperScript = "<script>$(document).ready(function() {{new ChartRystem('{0}', {1}).show();}});</script>";
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "div";

@@ -21,6 +21,8 @@ namespace Rystem.Web.Backoffice
         }
         public NavigationGroup AddSuperGroup(string title = null, string fontAwesomeIconClass = null, NavigationUrl navigationUrl = null, params string[] roles)
         {
+            if (this.SuperGroups.Count > 0)
+                this.SuperGroups.Last().Last = false;
             this.SuperGroups.Add(new NavigationSuperGroup(title, this, navigationUrl, fontAwesomeIconClass, roles));
             return this.SuperGroups.Last();
         }

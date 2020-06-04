@@ -29,7 +29,7 @@ namespace Rystem.Web
         {
             ProcessAsync(context, output).ToResult();
         }
-        private const string DatePickerScript = "<script>$('#{0}').datepicker({1});</script>";
+        private const string DatePickerScript = "<script>$(document).ready(function() {{$('#{0}').datepicker({1});}});</script>";
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "div";

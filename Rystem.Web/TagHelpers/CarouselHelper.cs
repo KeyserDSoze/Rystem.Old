@@ -29,7 +29,7 @@ namespace Rystem.Web
         {
             ProcessAsync(context, output).ToResult();
         }
-        private const string SwiperScript = "<script>new CarouselRystem('{0}', '{1}', {2}, {3}).show();</script>";
+        private const string SwiperScript = "<script>$(document).ready(function() {{new CarouselRystem('{0}', '{1}', {2}, {3}).show();}});</script>";
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             string containerId = $"container-{this.Id}";

@@ -42,9 +42,9 @@ namespace Rystem.WebApp
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseRouting();
             app.UseRystem();
 
-            app.UseRouting();
 
             app.UseAuthorization();
 
