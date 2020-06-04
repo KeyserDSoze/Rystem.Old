@@ -21,7 +21,26 @@ namespace Rystem
                 this.Configurations.Add(installerType, new Dictionary<Installation, IConfiguration>());
             this.Configurations[installerType].Add(installation, configuration);
         }
-
+        /// <summary>
+        /// Concat a configuration builder to your configuration
+        /// </summary>
+        /// <returns>Configuration builder</returns>
+        public ConfigurationBuilder Concat(ConfigurationBuilder builder)
+        {
+            foreach (var config in builder.Configurations)
+            {
+                if (!this.Configurations.ContainsKey(config.Key))
+                    this.Configurations.Add(config.Key, new Dictionary<Installation, IConfiguration>());
+                foreach (var installer in config.Value)
+                {
+                    if (!this.Configurations[config.Key].ContainsKey(installer.Key))
+                        this.Configurations[config.Key].Add(installer.Key, installer.Value);
+                    else
+                        throw new ArgumentException($"{installer.Key} already installed.");
+                }
+            }
+            return this;
+        }
         /// <summary>
         /// Add a Queue integration
         /// </summary>
