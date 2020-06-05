@@ -36,6 +36,14 @@ namespace Rystem.Web.Backoffice
                 Localizer = localizer,
                 Title = title
             };
-
+        public static NavigationOptions CanDone(bool canCreate, bool canModify, bool canDelete, string title = null, IStringLocalizer localizer = null)
+            => new NavigationOptions()
+            {
+                CanCreate = canCreate,
+                CanDelete = canDelete,
+                CanModify = canModify,
+                Localizer = localizer,
+                Title = title
+            };
     }
 }

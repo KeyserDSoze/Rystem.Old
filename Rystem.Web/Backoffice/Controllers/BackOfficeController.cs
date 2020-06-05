@@ -13,15 +13,15 @@ namespace Rystem.Web.Backoffice
     {
         public abstract INavigation<T> GetNavigation();
         public abstract Task<IEnumerable<T>> GetList();
-        public abstract Task<T> GetModel(object id);
-        public abstract Task<bool> Remove(object id);
+        public abstract Task<T> GetModel(string id);
+        public abstract Task<bool> Remove(string id);
         public async Task<IActionResult> Index()
           => View("_Index", this.GetNavigation().ToIndex(await this.GetList()));
-        public async Task<IActionResult> Delete(object id)
+        public async Task<IActionResult> Delete(string id)
           => View("_Delete", this.GetNavigation().ToDelete(await this.GetModel(id)));
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(object id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
             await this.Remove(id);
             return RedirectToAction(nameof(Index));

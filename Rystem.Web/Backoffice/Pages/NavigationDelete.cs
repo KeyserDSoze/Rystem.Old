@@ -13,7 +13,7 @@ namespace Rystem.Web.Backoffice
         string BackToList { get; }
         string Delete { get; }
         string Id { get; }
-        IEnumerable<(string Label, NavigationValue Value)> Values();
+        IEnumerable<(string Label, string Value)> Values();
     }
     public class NavigationDelete<T> : NavigationPage<T>, INavigationDelete
         where T : class
@@ -35,7 +35,7 @@ namespace Rystem.Web.Backoffice
         /// </summary>
         public string Delete => this.Navigation.Options.GetLocalizedString("Delete");
         public string Id { get; private set; }
-        public IEnumerable<(string Label, NavigationValue Value)> Values()
+        public IEnumerable<(string Label, string Value)> Values()
         {
             IEnumerator<string> enumerator = this.Navigation.GetHeaders().GetEnumerator();
             foreach (var entity in this.Navigation.Values)
@@ -43,8 +43,11 @@ namespace Rystem.Web.Backoffice
                 var navigationValue = this.Navigation.GetValues(entity);
                 if (navigationValue.Key != null)
                     this.Id = navigationValue.Key;
-                yield return (enumerator.Current, navigationValue);
-                enumerator.MoveNext();
+                foreach (var value in navigationValue.Values)
+                {
+                    enumerator.MoveNext();
+                    yield return (enumerator.Current, value);
+                }
             }
         }
 

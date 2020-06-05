@@ -1,6 +1,7 @@
 ﻿@model Rystem.Web.Backoffice.INavigationIndex
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, Rystem.Web
+@using Rystem.Web
 
 @{
     ViewData["Title"] = @Model.Title;
@@ -14,43 +15,6 @@
         <a asp-action="Manage">@Model.Create</a>
     </p>
 }
-<rystem-table rystem-culture="@System.Threading.Thread.CurrentThread.CurrentCulture" class="table">
-    <thead>
-        <tr>
-            @foreach (string header in Model.Headers())
-            {
-                <th>
-                    @header
-                </th>
-            }
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Values())
-        {
-            <tr>
-                @foreach (string value in item.Values)
-                {
-                    <td>
-                        @value
-                    </td>
-                }
-                <td>
-                    @if (Model.CanModify)
-                    {
-                        <a asp-action="Manage" asp-route-id="@item.Key">@Model.Edit</a>
-                    }
-                    @if (Model.CanDelete)
-                    {
-                        if (Model.CanModify)
-                        {
-                            @:|
-                        }
-                        <a asp-action="Delete" asp-route-id="@item.Key">@Model.Delete</a>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
+<rystem-table rystem-culture="@System.Threading.Thread.CurrentThread.CurrentCulture" rystem-can-delete="Model.CanDelete" rystem-can-modify="Model.CanModify" rystem-headers="Model.Headers()" rystem-values="Model.Values()" rystem-delete-request='new RoutingContext() { Action = "Delete"}' rystem-modify-request='new RoutingContext() { Action = "Manage"}' class="table">
+    
 </rystem-table>

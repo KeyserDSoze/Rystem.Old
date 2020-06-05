@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 using System.Text;
 
 namespace Rystem.Web
-{
+{     
     public class RequestContext
     {
         [JsonIgnore]
@@ -38,38 +38,14 @@ namespace Rystem.Web
         public string Data => this.Model.ToDefaultJson();
         internal string FinalizeRequestContext(HttpRequest request)
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append($"{request.Scheme}://{request.Host}");
-            string[] splittingPath = request.Path.Value.Split('/');
-            if (this.Area != null)
-                builder.Append($"/{this.Area}");
-            if (this.Controller != null)
-                builder.Append($"/{this.Controller}");
-            else
+            this.Url = new RoutingContext()
             {
-                if (this.Area == null && splittingPath.Length > 1 && !string.IsNullOrWhiteSpace(splittingPath[1]))
-                    builder.Append($"/{splittingPath[1]}");
-                else if (this.Area != null && splittingPath.Length > 2 && !string.IsNullOrWhiteSpace(splittingPath[2]))
-                    builder.Append($"/{splittingPath[2]}");
-            }
-
-            if (this.Action != null)
-                builder.Append($"/{this.Action}");
-            else if (this.Area == null && splittingPath.Length > 2)
-                builder.Append($"/{splittingPath[2]}");
-            else if (this.Area != null && splittingPath.Length > 3)
-                builder.Append($"/{splittingPath[3]}");
-
-            if (this.FurtherPath != null)
-                builder.Append($"/{this.FurtherPath}");
-            else if (this.Area == null && splittingPath.Length > 3)
-                builder.Append($"/{string.Join("/", splittingPath.Skip(3))}");
-            else if (this.Area != null && splittingPath.Length > 4)
-                builder.Append($"/{string.Join("/", splittingPath.Skip(4))}");
-
-            if (this.QueryString != null && this.QueryString.Count > 0)
-                builder.Append($"?{string.Join("&", this.QueryString.Select(x => $"{x.Key}={x.Value}"))}");
-            this.Url = builder.ToString();
+                Action = this.Action,
+                Area = this.Area,
+                Controller = this.Controller,
+                FurtherPath = this.FurtherPath,
+                QueryString = this.QueryString
+            }.GetUrl(request);
             return this.ToJsonNoNull();
         }
     }
