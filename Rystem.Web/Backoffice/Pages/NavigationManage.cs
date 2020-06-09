@@ -1,25 +1,25 @@
 ﻿using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace Rystem.Web.Backoffice
 {
-    public interface INavigationDelete
+    public interface INavigationManage
     {
         string Title { get; }
         string ConfirmDelete { get; }
         string BackToList { get; }
         string Delete { get; }
         string Id { get; }
-        IEnumerable<(string Label, string Value)> Values();
+        IStringLocalizer Localizer { get; }
+        IEnumerable<(string Index, string Label, string Value, PropertyOptions Options, IEnumerable<object> Objects)> Values();
     }
-    internal class NavigationDelete<T> : NavigationPage<T>, INavigationDelete
+    internal class NavigationManage<T> : NavigationPage<T>, INavigationManage
         where T : class
     {
         private readonly T Entity;
-        internal NavigationDelete(Navigation<T> navigation, T entity) : base(navigation)
+        internal NavigationManage(Navigation<T> navigation, T entity) : base(navigation)
             => this.Entity = entity;
         public string Title
             => this.Navigation.Options.Title;
@@ -38,8 +38,10 @@ namespace Rystem.Web.Backoffice
         /// </summary>
         public string Delete
             => this.Navigation.Options.GetLocalizedString("Delete");
+        public IStringLocalizer Localizer
+            => this.Navigation.Options.Localizer;
         public string Id { get; private set; }
-        public IEnumerable<(string Label, string Value)> Values()
+        public IEnumerable<(string Index, string Label, string Value, PropertyOptions Options, IEnumerable<object> Objects)> Values()
         {
             IEnumerator<(string Value, string Localized)> enumerator = this.Navigation.GetHeaders().GetEnumerator();
             var navigationValue = this.Navigation.GetValues(this.Entity);
@@ -48,7 +50,7 @@ namespace Rystem.Web.Backoffice
             foreach (var element in navigationValue.Elements)
             {
                 enumerator.MoveNext();
-                yield return (enumerator.Current.Localized, element.Value);
+                yield return (enumerator.Current.Value, enumerator.Current.Localized, element.Value, element.Options, element.BaseObjects);
             }
         }
     }

@@ -18,12 +18,12 @@ namespace Rystem.Web.Backoffice
         IEnumerable<string> Headers();
         IEnumerable<NavigationValue> Values();
     }
-    public class NavigationIndex<T> : NavigationPage<T>, INavigationIndex
+    internal class NavigationIndex<T> : NavigationPage<T>, INavigationIndex
         where T : class
     {
-        internal NavigationIndex(Navigation<T> navigation) : base(navigation)
-        {
-        }
+        private readonly IEnumerable<T> _values;
+        internal NavigationIndex(Navigation<T> navigation, IEnumerable<T> values) : base(navigation)
+            => this._values = values;
         public string Title => this.Navigation.Options.Title;
         public string Create => this.Navigation.Options.GetLocalizedString("Create New");
         public string Edit => this.Navigation.Options.GetLocalizedString("Edit");
@@ -32,10 +32,10 @@ namespace Rystem.Web.Backoffice
         public bool CanModify => this.Navigation.Options.CanModify;
         public bool CanDelete => this.Navigation.Options.CanDelete;
         public IEnumerable<string> Headers()
-            => this.Navigation.GetHeaders();
+            => this.Navigation.GetHeaders().Select(x => x.Localized);
         public IEnumerable<NavigationValue> Values()
         {
-            foreach (var entity in this.Navigation.Values)
+            foreach (var entity in this._values)
                 yield return this.Navigation.GetValues(entity);
         }
     }

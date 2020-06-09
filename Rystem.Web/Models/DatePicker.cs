@@ -21,6 +21,8 @@ namespace Rystem.Web
         public bool ShowWeek { get; set; }
         [JsonProperty("autoSize")]
         public bool AutoSize { get; set; }
+        private const string DataFormat = "yy/mm/dd";
+        public string dateFormat => DataFormat;
         public static readonly DatePicker Default = new DatePicker()
         {
             AutoSize = true

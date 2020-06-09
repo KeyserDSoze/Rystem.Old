@@ -11,14 +11,18 @@ namespace Rystem.Web.Backoffice
     public abstract class BackOfficeController<T> : Controller
         where T : class
     {
-        public abstract INavigation<T> GetNavigation();
+        public abstract INavigation<T> GetIndexNavigation();
+        public abstract INavigation<T> GetDeleteNavigation();
+        public virtual INavigation<T> GetManageNavigation() => null;
         public abstract Task<IEnumerable<T>> GetList();
         public abstract Task<T> GetModel(string id);
         public abstract Task<bool> Remove(string id);
         public async Task<IActionResult> Index()
-          => View("_Index", this.GetNavigation().ToIndex(await this.GetList()));
+          => View("_Index", this.GetIndexNavigation().ToIndex(await this.GetList()));
         public async Task<IActionResult> Delete(string id)
-          => View("_Delete", this.GetNavigation().ToDelete(await this.GetModel(id)));
+          => View("_Delete", this.GetDeleteNavigation().ToDelete(await this.GetModel(id)));
+        public async Task<IActionResult> Manage(string id)
+          => View("_Manage", this.GetManageNavigation().ToDelete(await this.GetModel(id)));
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)

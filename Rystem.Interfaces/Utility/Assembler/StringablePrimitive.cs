@@ -58,7 +58,8 @@ namespace Rystem.Utility
             typeof(ulong?),
             typeof(short?),
             typeof(ushort?),
-            typeof(Guid)
+            typeof(Guid),
+            typeof(Guid?)
         };
     }
 }

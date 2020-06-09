@@ -1,0 +1,27 @@
+﻿@model Rystem.Web.Backoffice.INavigationManage
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Rystem.Web
+@using Rystem.Web
+@using Rystem.Web.Backoffice
+
+@{
+    ViewData["Title"] = @Model.Title;
+}
+
+<h1>@Model.Title</h1>
+
+<rystem-ajax-form rystem-request-context='new RequestContext() { Action = "Manage"}'>
+    @foreach (var value in Model.Values())
+    {
+        switch (value.Options.Type)
+        {
+            case PropertyType.Normal:
+                <rystem-input rystem-value="@value.Objects.First()" rystem-localization="@Model.Localizer" rystem-readonly="@value.Options.IsReadOnly" rystem-hidden="@value.Options.IsHidden" class="form-group"></rystem-input>
+                break;
+            case PropertyType.Dropdown:
+                DropdownHelper dropdown = ((DropdownPropertyOptions)value.Options).DropdownHelper;
+                <rystem-dropdown rystem-data="@dropdown.Data" name="@value.Index" rystem-data-disabled="@dropdown.DisabledValues" rystem-data-header="@dropdown.DataHeader" rystem-data-maxselected="@dropdown.MaxSelected" rystem-data-multiple="@dropdown.IsMultiple" rystem-data-search="@dropdown.HasSearch" rystem-data-selectfirst="@dropdown.SelectedFirst" rystem-data-sorting="@dropdown.Sorting" rystem-item-name="@dropdown.ItemName" rystem-request-context="@dropdown.RequestContext" rystem-update-context="@dropdown.UpdateRequestContext" rystem-size="@dropdown.Size"></rystem-dropdown>
+                break;
+        }
+    }
+</rystem-ajax-form>

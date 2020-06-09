@@ -63,9 +63,9 @@ namespace Rystem.Web
                     this.ModifyRequest.FurtherPath = navigationValue.Key;
                     valueBase = $"<a style='cursor:pointer;' href='{this.ModifyRequest.GetUrl(ViewContext.HttpContext.Request)}'>{{0}}</a>";
                 }
-                foreach (var value in navigationValue.Values)
+                foreach (var element in navigationValue.Elements)
                 {
-                    output.Content.AppendHtml(string.Format(BodyElement, string.Format(valueBase, value)));
+                    output.Content.AppendHtml(string.Format(BodyElement, string.Format(valueBase, element.Value)));
                 }
                 if (this.CanModify)
                     output.Content.AppendHtml("</a>");

@@ -14,30 +14,29 @@ namespace Rystem.Web.Backoffice
         where T : class
     {
         internal NavigationOptions Options { get; }
-        public IEnumerable<T> Values { get; internal set; }
-        public Navigation(NavigationOptions options)
+        internal Navigation(NavigationOptions options)
         {
             this.Options = options;
         }
         internal List<Property> Properties { get; } = new List<Property>();
-        private IncludingNavigation<T, TProperty> InternalInclude<TProperty>(dynamic body, PropertyOptions options = null)
+        private IncludedNavigation<T, TProperty> InternalInclude<TProperty>(dynamic body, PropertyOptions options = null)
         {
             this.Properties.Add(new Property(body.Member, options));
             this.Last = this.Properties.Last();
-            return new IncludingNavigation<T, TProperty>(this);
+            return new IncludedNavigation<T, TProperty>(this);
         }
-        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, TProperty>> navigationPropertyPath, PropertyOptions options = null)
+        public IncludedNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, TProperty>> navigationPropertyPath, PropertyOptions options = null)
             => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
-        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
+        public IncludedNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
             => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
-        public IncludingNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, ICollection<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
+        public IncludedNavigation<T, TProperty> Include<TProperty>(Expression<Func<T, ICollection<TProperty>>> navigationPropertyPath, PropertyOptions options = null)
             => InternalInclude<TProperty>(navigationPropertyPath.Body, options);
         private Property Last;
-        internal IncludingNavigation<T, TNewProperty> SetSon<TNewProperty>(PropertyInfo propertyInfo, PropertyOptions options)
+        internal IncludedNavigation<T, TNewProperty> SetSon<TNewProperty>(PropertyInfo propertyInfo, PropertyOptions options)
         {
             this.Last.Properties.Add(new Property(propertyInfo, options, this.Last));
             this.Last = this.Last.Properties.Last();
-            return new IncludingNavigation<T, TNewProperty>(this);
+            return new IncludedNavigation<T, TNewProperty>(this);
         }
         private IEnumerable<Property> GetAllProperties()
         {
@@ -45,25 +44,26 @@ namespace Rystem.Web.Backoffice
                 foreach (var property in properties.GetAllProperties())
                     yield return property;
         }
-        internal IEnumerable<string> GetHeaders()
+        internal IEnumerable<(string Value, string Localized)> GetHeaders()
         {
             foreach (Property property in GetAllProperties())
-                yield return this.Options.GetLocalizedString(property.FullName);
+                yield return (property.FullName, this.Options.GetLocalizedString(property.FullName));
         }
         internal NavigationValue GetValues(T entity)
         {
             NavigationValue navigationValue = new NavigationValue();
             foreach (Property property in GetAllProperties())
             {
-                string value = property.FromObject(entity);
+                var trueEntity = property.FromObject(entity);
+                string value = trueEntity.AsString;
                 if (property.Options.IsLocalized)
                     value = this.Options.GetLocalizedString(value);
-                navigationValue.Values.Add(value);
+                navigationValue.Elements.Add(new NavigationObject(value, property.Options, trueEntity.AsObject.Select(x => x.Value)));
                 if (property.Options.IsKey)
                     navigationValue.Key = value;
             }
             if (navigationValue.Key == null)
-                navigationValue.Key = navigationValue.Values.FirstOrDefault();
+                navigationValue.Key = navigationValue.Elements.FirstOrDefault().Value;
             return navigationValue;
         }
     }
