@@ -15,6 +15,7 @@ namespace Rystem.Web.Backoffice
         bool CanCreate { get; }
         bool CanModify { get; }
         bool CanDelete { get; }
+        string EditAction { get; }
         IEnumerable<string> Headers();
         IEnumerable<NavigationValue> Values();
     }
@@ -31,6 +32,8 @@ namespace Rystem.Web.Backoffice
         public bool CanCreate => this.Navigation.Options.CanCreate;
         public bool CanModify => this.Navigation.Options.CanModify;
         public bool CanDelete => this.Navigation.Options.CanDelete;
+        private const string Manage = "Manage";
+        public string EditAction => this.Navigation.Options.EditAction ?? Manage;
         public IEnumerable<string> Headers()
             => this.Navigation.GetHeaders().Select(x => x.Localized);
         public IEnumerable<NavigationValue> Values()

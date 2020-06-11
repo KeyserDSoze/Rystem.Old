@@ -25,6 +25,8 @@ namespace Rystem.Azure.Data.Integration
                     return context;
                 lock (TrafficLight)
                 {
+                    if (context != null)
+                        return context;
                     CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
                     CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
                     context = Client.GetContainerReference(Configuration.Name.ToLower());

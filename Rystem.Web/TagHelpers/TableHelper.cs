@@ -61,7 +61,7 @@ namespace Rystem.Web
                 if (this.CanModify)
                 {
                     this.ModifyRequest.FurtherPath = navigationValue.Key;
-                    valueBase = $"<a style='cursor:pointer;' href='{this.ModifyRequest.GetUrl(ViewContext.HttpContext.Request)}'>{{0}}</a>";
+                    valueBase = $"<a style='cursor:pointer;' href='{this.ModifyRequest.GetUrl(ViewContext)}'>{{0}}</a>";
                 }
                 foreach (var element in navigationValue.Elements)
                 {
@@ -72,7 +72,7 @@ namespace Rystem.Web
                 if (this.CanDelete)
                 {
                     this.DeleteRequest.FurtherPath = navigationValue.Key;
-                    output.Content.AppendHtml(string.Format(Trash, this.DeleteRequest.GetUrl(ViewContext.HttpContext.Request)));
+                    output.Content.AppendHtml(string.Format(Trash, this.DeleteRequest.GetUrl(ViewContext)));
                 }
                 output.Content.AppendHtml("</tr>");
             }

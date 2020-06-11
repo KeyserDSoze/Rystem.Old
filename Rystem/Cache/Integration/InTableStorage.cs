@@ -23,14 +23,16 @@ namespace Rystem.Cache
                     return context;
                 lock (TrafficLight)
                 {
+                    if (context != null)
+                        return context;
                     CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
                     CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
                     context = tableClient.GetTableReference(TableName);
                 }
-                try { context.CreateIfNotExistsAsync().ToResult(); } catch { }
+                context.CreateIfNotExistsAsync().ToResult();
                 return context;
             }
-        }   
+        }
         private static long ExpireCache = 0;
         private const string TableName = "RystemCache";
         private readonly static string FullName = typeof(T).FullName;

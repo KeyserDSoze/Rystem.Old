@@ -25,25 +25,33 @@
             Rystem.showLoader();
         $.ajax({
             type: request.method,
+            enctype: 'multipart/form-data',
+            processData: false,
+            contentType: false,
+            cache: false,
             url: request.url + (query && query.length > 0 ? (request.url.indexOf("?") > -1 ? "&" : "?") + query : Rystem.stringEmpty),
             data: request.data == "null" ? Rystem.stringEmpty : request.data,
             success: function (data) {
-                if (onSuccess)
+                if (request.onSuccess) {
+                    request.onSuccess = eval(request.onSuccess);
+                    request.onSuccess(data, event, obj);
+                }
+                else if (onSuccess)
                     onSuccess(data);
                 if (request.selector && request.selector.length > 0)
                     $(request.selector).html(data);
-                if (request.onSuccess)
-                    request.onSuccess(data, event, obj);
+
                 if (withLoader)
                     Rystem.hideLoader();
                 if (feedback)
                     ToastRystem.ok();
             },
             error: function (data) {
-                if (onFailure)
-                    onFailure(data);
-                if (request.onFailure)
+                if (request.onFailure) {
+                    request.onFailure = eval(request.onFailure);
                     request.onFailure(data, event, obj);
+                } else if (onFailure)
+                    onFailure(data);
                 if (withLoader)
                     Rystem.hideLoader();
                 if (feedbackNotOk)
@@ -176,7 +184,7 @@ class FormRystem extends Rystem {
     submit(e, obj) {
         e.preventDefault();
         let form = this;
-        form.request.data = $(obj).serialize();
+        form.request.data = new FormData(obj);
         Rystem.httpRequest(form.request, true, Rystem.stringEmpty, e, obj, function (data) {
             if (form.ifInModalCloseAfterValidSubmit)
                 ModalRystem.forceClose();

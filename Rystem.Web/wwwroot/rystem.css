@@ -180,7 +180,7 @@
 /*#endregion*/
 /*#region toast*/
 .toast-container {
-    position: absolute;
+    position: fixed;
     top: 20px;
     right: 20px;
     z-index: 1052 !important;

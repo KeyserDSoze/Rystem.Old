@@ -34,7 +34,7 @@ namespace Rystem.Web
         [HtmlAttributeName("jquery-cdn")]
         public bool UseJQueryCoreCdn { get; set; } = true;
         [HtmlAttributeName("jquery-ui-cdn")]
-        public JQueryUIType UseJQueryUiCdn { get; set; }
+        public JQueryUIType UseJQueryUiCdn { get; set; } = JQueryUIType.Light;
         [HtmlAttributeName("bootstrap-cdn")]
         public bool UseBootstrapCdn { get; set; } = true;
         [HtmlAttributeName("swiper-cdn")]
@@ -49,6 +49,8 @@ namespace Rystem.Web
         public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
         [HtmlAttributeName("rystem-default-ui")]
         public DefaultUI DefaultUI { get; set; }
+        [HtmlAttributeName("summernote")]
+        public bool UseSummernote { get; set; } = true;
         [HtmlAttributeName("rystem-cache")]
         public bool Cache { get; set; } = true;
         [HtmlAttributeName("jquery-datatable")]
@@ -120,6 +122,13 @@ namespace Rystem.Web
                     stringBuilder.Append("<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css' />");
                 if (this.OnBottom)
                     stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js'></script>");
+            }
+            if (this.UseSummernote)
+            {
+                if (this.OnTop)
+                    stringBuilder.Append("<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css' />");
+                if (this.OnBottom)
+                    stringBuilder.Append("<script src='https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js'></script>");
             }
             if (this.UseDataTable)
             {

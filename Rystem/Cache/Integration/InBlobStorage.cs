@@ -22,6 +22,8 @@ namespace Rystem.Cache
                     return context;
                 lock (TrafficLight)
                 {
+                    if (context != null)
+                        return context;
                     CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
                     CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
                     context = Client.GetContainerReference(ContainerName);

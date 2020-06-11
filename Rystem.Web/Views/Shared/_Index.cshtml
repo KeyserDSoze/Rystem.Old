@@ -12,9 +12,9 @@
 @if (Model.CanCreate)
 {
     <p>
-        <a asp-action="Manage">@Model.Create</a>
+        <a asp-action="@Model.EditAction">@Model.Create</a>
     </p>
 }
-<rystem-table rystem-culture="@System.Threading.Thread.CurrentThread.CurrentCulture" rystem-can-delete="Model.CanDelete" rystem-can-modify="Model.CanModify" rystem-headers="Model.Headers()" rystem-values="Model.Values()" rystem-delete-request='new RoutingContext() { Action = "Delete"}' rystem-modify-request='new RoutingContext() { Action = "Manage"}' class="table">
+<rystem-table rystem-culture="@System.Threading.Thread.CurrentThread.CurrentCulture" rystem-can-delete="Model.CanDelete" rystem-can-modify="Model.CanModify" rystem-headers="Model.Headers()" rystem-values="Model.Values()" rystem-delete-request='new RoutingContext() { Action = "Delete"}' rystem-modify-request='new RoutingContext() { Action = Model.EditAction }' class="table">
 
 </rystem-table>

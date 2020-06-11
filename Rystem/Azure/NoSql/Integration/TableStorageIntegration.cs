@@ -24,6 +24,8 @@ namespace Rystem.Azure.NoSql
                     return context;
                 lock (TrafficLight)
                 {
+                    if (context != null)
+                        return context;
                     CloudStorageAccount storageAccount = CloudStorageAccount.Parse(NoSqlConfiguration.ConnectionString);
                     CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
                     context = tableClient.GetTableReference(NoSqlConfiguration.Name ?? EntityType.Name);

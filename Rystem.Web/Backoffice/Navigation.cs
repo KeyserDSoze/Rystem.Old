@@ -52,6 +52,7 @@ namespace Rystem.Web.Backoffice
         internal NavigationValue GetValues(T entity)
         {
             NavigationValue navigationValue = new NavigationValue();
+            navigationValue.Key = string.Empty;
             foreach (Property property in GetAllProperties())
             {
                 var trueEntity = property.FromObject(entity);
@@ -60,9 +61,14 @@ namespace Rystem.Web.Backoffice
                     value = this.Options.GetLocalizedString(value);
                 navigationValue.Elements.Add(new NavigationObject(value, property.Options, trueEntity.AsObject.Select(x => x.Value)));
                 if (property.Options.IsKey)
-                    navigationValue.Key = value;
+                {
+                    if (navigationValue.Key.Length == 0)
+                        navigationValue.Key = value;
+                    else
+                        navigationValue.Key += $"/{value}";
+                }
             }
-            if (navigationValue.Key == null)
+            if (navigationValue.Key.Length == 0)
                 navigationValue.Key = navigationValue.Elements.FirstOrDefault().Value;
             return navigationValue;
         }
