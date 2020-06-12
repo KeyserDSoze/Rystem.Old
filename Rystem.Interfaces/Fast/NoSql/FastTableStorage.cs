@@ -7,7 +7,7 @@ namespace Rystem.Fast
 {
     public abstract class FastTableStorage : TableStorage
     {
-        public override ConfigurationBuilder GetConfigurationBuilder() 
+        public override ConfigurationBuilder GetConfigurationBuilder()
             => FastNoSqlInstaller.Builder;
     }
 }

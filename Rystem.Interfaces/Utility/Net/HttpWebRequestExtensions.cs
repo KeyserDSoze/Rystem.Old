@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Net
+namespace System.Net
 {
     public static class HttpWebRequestExtensions
     {
