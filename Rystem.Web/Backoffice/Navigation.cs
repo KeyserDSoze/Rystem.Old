@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Web;
 
 namespace Rystem.Web.Backoffice
 {
@@ -65,7 +66,7 @@ namespace Rystem.Web.Backoffice
                     if (navigationValue.Key.Length == 0)
                         navigationValue.Key = value;
                     else
-                        navigationValue.Key += $"/{value}";
+                        navigationValue.Key += $"/{HttpUtility.UrlEncode(value)}";
                 }
             }
             if (navigationValue.Key.Length == 0)

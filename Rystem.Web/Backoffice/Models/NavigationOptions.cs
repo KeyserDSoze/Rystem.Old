@@ -28,23 +28,25 @@ namespace Rystem.Web.Backoffice
         public bool CanModify { get; set; }
         public bool CanDelete { get; set; }
         public string EditAction { get; set; }
-        public static NavigationOptions CanDoneAll(string title = null, IStringLocalizer localizer = null)
+        public static NavigationOptions CanDoneAll(string title = null, IStringLocalizer localizer = null, string editAction = null)
             => new NavigationOptions()
             {
                 CanCreate = true,
                 CanDelete = true,
                 CanModify = true,
                 Localizer = localizer,
-                Title = title
+                Title = title,
+                EditAction = editAction
             };
-        public static NavigationOptions CanDone(bool canCreate, bool canModify, bool canDelete, string title = null, IStringLocalizer localizer = null)
+        public static NavigationOptions CanDone(bool canCreate, bool canModify, bool canDelete, string title = null, IStringLocalizer localizer = null, string editAction = null)
             => new NavigationOptions()
             {
                 CanCreate = canCreate,
                 CanDelete = canDelete,
                 CanModify = canModify,
                 Localizer = localizer,
-                Title = title
+                Title = title,
+                EditAction = editAction
             };
     }
 }

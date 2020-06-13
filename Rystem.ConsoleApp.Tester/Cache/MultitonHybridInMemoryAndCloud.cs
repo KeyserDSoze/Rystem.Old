@@ -38,14 +38,12 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         }
 
         public ConfigurationBuilder GetConfigurationBuilder()
-        {
-            return new ConfigurationBuilder()
+            => new ConfigurationBuilder()
                 .WithCache()
                 .WithMemory(new MemoryCacheProperties(ExpireTime.FiveMinutes, true))
                 .And()
                 .WithCloud(ConnectionString)
                 .WithTablestorage(new TableStorageCacheProperties(ExpireTime.Infinite)).Build();
-        }
     }
     public class SecondHybridTableKey : ICacheKey<HybridTable>
     {
@@ -58,7 +56,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 Id = this.Id
             });
         }
-        public ConfigurationBuilder GetConfigurationBuilder() 
+        public ConfigurationBuilder GetConfigurationBuilder()
             => new ConfigurationBuilder().WithCache()
                 .WithMemory(new MemoryCacheProperties(ExpireTime.FiveSeconds, true))
                 .And()
