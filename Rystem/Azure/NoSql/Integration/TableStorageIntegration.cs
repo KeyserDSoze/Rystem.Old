@@ -30,7 +30,8 @@ namespace Rystem.Azure.NoSql
                     CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
                     context = tableClient.GetTableReference(NoSqlConfiguration.Name ?? EntityType.Name);
                 }
-                try { context.CreateIfNotExistsAsync().ToResult(); } catch { }
+                if (!context.ExistsAsync().ToResult())
+                    context.CreateIfNotExistsAsync();
                 return context;
             }
         }

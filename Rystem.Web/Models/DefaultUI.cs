@@ -15,7 +15,7 @@ namespace Rystem.Web
         public string Light { get; set; }
         public string Dark { get; set; }
         public string White { get; set; }
-        public static DefaultUI Default { get; } = new DefaultUI()
+        public static DefaultUI Default => new DefaultUI()
         {
             Primary = "#4E7374",
             Secondary = "#224A63",

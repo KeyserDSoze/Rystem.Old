@@ -31,7 +31,8 @@ namespace Rystem.Azure.Data.Integration
                     CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
                     context = Client.GetContainerReference(Configuration.Name.ToLower());
                 }
-                context.CreateIfNotExistsAsync().ToResult();
+                if (!context.ExistsAsync().ToResult())
+                    context.CreateIfNotExistsAsync();
                 return context;
             }
         }

@@ -15,6 +15,6 @@ namespace Rystem.Web
         public bool Autohide { get; set; }
         [JsonProperty("cssClass")]
         public bool CssClass { get; set; }
-        public static Toast Default = new Toast() { Animation = true, Autohide = true, Delay = 1000 };
+        public static Toast Default => new Toast() { Animation = true, Autohide = true, Delay = 1000 };
     }
 }

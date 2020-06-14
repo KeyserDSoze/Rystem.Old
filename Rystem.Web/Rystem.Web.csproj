@@ -18,5 +18,12 @@
     <EmbeddedResource Include="wwwroot\**\*" />
   </ItemGroup>
   
+  <ItemGroup>
+    <Content Remove="wwwroot\dropzone\basic.min.css" />
+    <Content Remove="wwwroot\dropzone\dropzone-amd-module.min.js" />
+    <Content Remove="wwwroot\dropzone\dropzone.min.css" />
+    <Content Remove="wwwroot\dropzone\dropzone.min.js" />
+  </ItemGroup>
+  
   
 </Project>

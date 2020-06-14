@@ -10,7 +10,7 @@ namespace Rystem.Web
 #pragma warning disable IDE1006 // Naming Styles
     public class CarouselComponent
     {
-        public static CarouselComponent Default = new CarouselComponent()
+        public static CarouselComponent Default => new CarouselComponent()
         {
             navigation = new Navigation(),
             pagination = new Pagination()

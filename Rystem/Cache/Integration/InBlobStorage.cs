@@ -28,7 +28,8 @@ namespace Rystem.Cache
                     CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
                     context = Client.GetContainerReference(ContainerName);
                 }
-                context.CreateIfNotExistsAsync().ToResult();
+                if (!context.ExistsAsync().ToResult())
+                    context.CreateIfNotExistsAsync();
                 return context;
             }
         }

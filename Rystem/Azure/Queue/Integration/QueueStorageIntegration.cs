@@ -24,7 +24,8 @@ namespace Rystem.Azure.Queue
                     CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
                     client = queueClient.GetQueueReference(QueueConfiguration.Name ?? typeof(TEntity).Name);
                 }
-                try { client.CreateIfNotExistsAsync().ToResult(); } catch { }
+                if (!client.ExistsAsync().ToResult())
+                    client.CreateIfNotExistsAsync();
                 return client;
             }
         }

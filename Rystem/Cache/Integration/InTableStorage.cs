@@ -29,7 +29,8 @@ namespace Rystem.Cache
                     CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
                     context = tableClient.GetTableReference(TableName);
                 }
-                context.CreateIfNotExistsAsync().ToResult();
+                if (!context.ExistsAsync().ToResult())
+                    context.CreateIfNotExistsAsync();
                 return context;
             }
         }

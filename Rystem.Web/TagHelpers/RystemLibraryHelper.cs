@@ -51,6 +51,8 @@ namespace Rystem.Web
         public DefaultUI DefaultUI { get; set; }
         [HtmlAttributeName("summernote")]
         public bool UseSummernote { get; set; } = true;
+        [HtmlAttributeName("dropzone")]
+        public bool UseDropZone { get; set; } = true;
         [HtmlAttributeName("rystem-cache")]
         public bool Cache { get; set; } = true;
         [HtmlAttributeName("jquery-datatable")]
@@ -115,6 +117,16 @@ namespace Rystem.Web
             if (this.UseMomentJsCdn)
             {
                 stringBuilder.Append("<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.3/moment.min.js'></script>");
+            }
+            if (this.UseDropZone)
+            {
+                if (this.OnTop)
+                {
+                    stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/basic.min.css' />");
+                    stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/dropzone.min.css' />");
+                }
+                if (this.OnBottom)
+                    stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/dropzone.min.js'></script>");
             }
             if (this.UseCharJsCdn)
             {
