@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.Queue
+namespace Rystem.Queue
 {
     internal class SmartMessage<TEntity>
         where TEntity : IQueue

@@ -1,9 +1,9 @@
-﻿using Rystem.Azure.Data;
+﻿using Rystem.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.Data
+namespace Rystem.Data
 {
     public class DataBuilder : IInstallingBuilder
     {

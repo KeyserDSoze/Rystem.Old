@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Data.Integration
+namespace Rystem.Data.Integration
 {
     public class JsonDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
         where TEntity : IData
@@ -26,7 +26,7 @@ namespace Rystem.Azure.Data.Integration
             await Task.Delay(0).NoContext();
             return new DataWrapper()
             {
-                Properties = entity.Properties ?? new BlobDataProperties() { ContentType = "text/json" },
+                Properties = entity.Properties ?? new DataProperties() { ContentType = "text/json" },
                 Name = entity.Name,
                 Stream = new MemoryStream(Encoding.UTF8.GetBytes(entity.ToDefaultJson()))
             };

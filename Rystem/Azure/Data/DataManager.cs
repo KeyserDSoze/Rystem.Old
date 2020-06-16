@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Data
+namespace Rystem.Data
 {
     internal class DataManager<TEntity> : IDataManager<TEntity>
         where TEntity : IData

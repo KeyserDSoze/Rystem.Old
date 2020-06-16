@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Queue
+namespace Rystem.Queue
 {
     internal interface IQueueManager<TQueue> : IManager<TQueue>
     {

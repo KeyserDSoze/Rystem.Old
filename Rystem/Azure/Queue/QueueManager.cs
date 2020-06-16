@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Queue
+namespace Rystem.Queue
 {
     internal class QueueManager<TEntity> : IQueueManager<TEntity>
     {

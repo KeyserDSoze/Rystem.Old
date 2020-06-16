@@ -1,4 +1,4 @@
-﻿namespace Rystem.Azure.Queue
+﻿namespace Rystem.Queue
 {
     /// <summary>
     /// Configuration of your queue

@@ -1,5 +1,5 @@
-﻿using Rystem.Azure;
-using Rystem.Azure.Data;
+﻿using Rystem;
+using Rystem.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace Rystem.WebApp.Models
     public class Video : IData
     {
         public string Name { get; set; }
-        public IDataProperties Properties { get; set; }
+        public DataProperties Properties { get; set; }
         public ConfigurationBuilder GetConfigurationBuilder()
         {
             return new ConfigurationBuilder().WithData("DefaultEndpointsProtocol=https;AccountName=rystem;AccountKey=OeOn4ae4HmlWjJCE1wGZRCsrPsjGwtMr0tjte3F+TAQ4sSA+uNiBQtKrgwI+RxlkF60IBOwI9J7qe3wPFSvm8A==;EndpointSuffix=core.windows.net")

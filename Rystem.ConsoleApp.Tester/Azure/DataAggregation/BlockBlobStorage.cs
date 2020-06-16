@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Azure.Data;
+﻿using Rystem.Data;
 using Rystem.ConsoleApp.Tester;
 using Rystem.UnitTest;
 using System;
@@ -17,7 +16,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             Meatball2 meatball = new Meatball2()
             {
                 Name = "Hello2.json",
-                Properties = new BlobDataProperties()
+                Properties = new DataProperties()
                 {
                     ContentType = "text/json"
                 }
@@ -90,6 +89,6 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         public int A { get; set; }
         public string B { get; set; }
         public string Name { get; set; }
-        public IDataProperties Properties { get; set; }
+        public DataProperties Properties { get; set; }
     }
 }

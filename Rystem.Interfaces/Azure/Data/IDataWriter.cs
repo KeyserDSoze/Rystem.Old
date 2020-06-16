@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Data
+namespace Rystem.Data
 {
     public interface IDataWriter { }
     public interface IDataWriter<TEntity> : IDataWriter

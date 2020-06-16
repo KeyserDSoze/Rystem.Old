@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Azure.Data;
+﻿using Rystem.Data;
 using Rystem.ConsoleApp.Tester;
 using Rystem.UnitTest;
 using System;
@@ -17,7 +16,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             Ricotta meatball = new Meatball()
             {
                 Name = "Hello2.csv",
-                Properties = new BlobDataProperties()
+                Properties = new DataProperties()
                 {
                     ContentType = "text/csv"
                 }
@@ -94,7 +93,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
     public class Ricotta : IData
     {
         public string Name { get; set; }
-        public IDataProperties Properties { get; set; }
+        public DataProperties Properties { get; set; }
         public int A { get; set; }
         public string B { get; set; }
         public virtual ConfigurationBuilder GetConfigurationBuilder() { return default; }

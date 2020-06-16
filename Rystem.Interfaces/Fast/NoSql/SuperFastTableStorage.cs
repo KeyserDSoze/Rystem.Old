@@ -1,4 +1,4 @@
-﻿using Rystem.Azure.NoSql;
+﻿using Rystem.NoSql;
 using System;
 using System.Collections.Generic;
 using System.Text;

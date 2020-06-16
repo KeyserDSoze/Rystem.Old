@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json;
 using Rystem.Cache;
 using Rystem.Const;
@@ -113,7 +112,7 @@ namespace Rystem.Cache
             List<string> keys = new List<string>();
             do
             {
-                TableQuerySegment tableQuerySegment = await Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).NoContext();
+                TableQuerySegment<DynamicTableEntity> tableQuerySegment = await Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).NoContext();
                 IEnumerable<string> keysFromQuery = tableQuerySegment.Results.Select(x => x.RowKey);
                 tableContinuationToken = tableQuerySegment.ContinuationToken;
                 keys.AddRange(keysFromQuery);

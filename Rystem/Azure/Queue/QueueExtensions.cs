@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Rystem.Azure;
-using Rystem.Azure.Queue;
+using Rystem;
+using Rystem.Queue;
 using Rystem.Const;
 using Rystem.Debug;
 

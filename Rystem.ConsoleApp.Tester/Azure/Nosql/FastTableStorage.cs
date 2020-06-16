@@ -1,5 +1,5 @@
-﻿using Rystem.Azure;
-using Rystem.Azure.NoSql;
+﻿using Rystem;
+using Rystem.NoSql;
 using Rystem.UnitTest;
 using System;
 using System.Collections.Generic;

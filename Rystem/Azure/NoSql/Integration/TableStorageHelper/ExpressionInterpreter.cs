@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Rystem.Azure.NoSql
+namespace Rystem.NoSql
 {
     internal static class ExpressionTypeExtensions
     {

@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Data.Integration
+namespace Rystem.Data.Integration
 {
     public class FileDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
           where TEntity : IFileData, new()

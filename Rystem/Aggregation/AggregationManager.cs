@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System.Linq;
-
 using System.Threading.Tasks;
-using Rystem.Azure;
+using Rystem;
 using Rystem.Fast;
 
 namespace Rystem.Aggregation

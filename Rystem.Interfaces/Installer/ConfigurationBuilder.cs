@@ -1,7 +1,7 @@
 ﻿using Rystem.Aggregation;
-using Rystem.Azure.Data;
-using Rystem.Azure.NoSql;
-using Rystem.Azure.Queue;
+using Rystem.Data;
+using Rystem.NoSql;
+using Rystem.Queue;
 using Rystem.Cache;
 using Rystem.Crypting;
 using System;

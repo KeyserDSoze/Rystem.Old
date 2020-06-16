@@ -1,28 +1,29 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Azure.Data.Integration;
+﻿using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
+using Rystem.Data.Integration;
 using Rystem.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Data
+namespace Rystem.Data
 {
     internal class PageBlobStorageIntegration<TEntity> : BlobStorageBaseIntegration<TEntity>, IDataIntegration<TEntity>
         where TEntity : IData
     {
         private protected override IDataReader<TEntity> DefaultReader => new CsvDataManager<TEntity>();
         private protected override IDataWriter<TEntity> DefaultWriter => new CsvDataManager<TEntity>();
-        public PageBlobStorageIntegration(DataConfiguration configuration, TEntity entity): base(configuration, entity)
+        public PageBlobStorageIntegration(DataConfiguration configuration, TEntity entity) : base(configuration, entity)
         {
         }
         public async Task<bool> DeleteAsync(TEntity entity)
-            => await this.DeleteAsync(this.Context.GetAppendBlobReference(entity.Name)).NoContext();
+            => await this.DeleteAsync(entity.Name).NoContext();
 
         public async Task<bool> ExistsAsync(TEntity entity)
-            => await this.ExistsAsync(this.Context.GetAppendBlobReference(entity.Name)).NoContext();
+            => await this.ExistsAsync(entity.Name).NoContext();
 
         public Task<TEntity> FetchAsync(TEntity entity)
             => throw new NotImplementedException($"With pageblob you can retrieve only a list of your items. Please use {nameof(ListAsync)}");
@@ -30,32 +31,28 @@ namespace Rystem.Azure.Data
         public async Task<IList<TEntity>> ListAsync(TEntity entity, string prefix, int? takeCount)
         {
             List<TEntity> items = new List<TEntity>();
-            BlobContinuationToken token = null;
-            do
+            CancellationToken token = default;
+            int count = 0;
+            await foreach (BlobItem blobItem in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
-                BlobResultSegment segment = await this.Context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, takeCount, token, this.BlobRequestOptions, new OperationContext() { }).NoContext();
-                token = segment.ContinuationToken;
-                foreach (IListBlobItem blobItem in segment.Results)
-                {
-                    if (blobItem is CloudBlobDirectory)
-                        continue;
-                    items.AddRange(await this.ReadAsync(blobItem as ICloudBlob).NoContext());
-                }
-                if (takeCount != null && items.Count >= takeCount) break;
-            } while (token != null);
+                items.AddRange(await this.ReadAsync(blobItem).NoContext());
+                count++;
+                if (takeCount != null && items.Count >= takeCount)
+                    break;
+            }
             return items;
         }
 
         public async Task<IList<string>> SearchAsync(TEntity entity, string prefix, int? takeCount)
-            => await this.SearchAsync(this.Context, prefix, takeCount).NoContext();
+            => await this.SearchAsync(prefix, takeCount).NoContext();
         public async Task<IList<DataWrapper>> FetchPropertiesAsync(TEntity entity, string prefix, int? takeCount)
-          => await this.FetchPropertiesAsync(this.Context, prefix, takeCount).NoContext();
+          => await this.FetchPropertiesAsync(prefix, takeCount).NoContext();
 
         private readonly static object TrafficLight = new object();
         private const long Size = 512;
         public async Task<bool> WriteAsync(TEntity entity, long offset)
         {
-            CloudPageBlob pageBlob = this.Context.GetPageBlobReference(entity.Name);
+            var pageBlob = this.Context.GetPageBlobClient(entity.Name);
             DataWrapper dummy = await this.Writer.WriteAsync((TEntity)entity).NoContext();
             if (!await pageBlob.ExistsAsync().NoContext())
                 lock (TrafficLight)
@@ -68,7 +65,7 @@ namespace Rystem.Azure.Data
                 byte[] finalizingStream = new byte[Size];
                 for (int i = 0; i < Size; i++)
                     finalizingStream[i] = i < dummy.Stream.Length ? baseMemoryStream[i] : (byte)0;
-                await pageBlob.WritePagesAsync(new MemoryStream(finalizingStream), Size * offset, null).NoContext();
+                await pageBlob.UploadPagesAsync(new MemoryStream(finalizingStream), Size * offset, null).NoContext();
             }
 #warning È sicuramente buggato, perchè scrive solo quando è in un if buggato
             return true;

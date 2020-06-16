@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
+﻿using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json;
 using Rystem.Const;
 using System;
@@ -10,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.NoSql
+namespace Rystem.NoSql
 {
     internal class TableStorageIntegration<TEntity> : INoSqlIntegration<TEntity>
     {

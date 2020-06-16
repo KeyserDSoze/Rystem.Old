@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.Data
+namespace Rystem.Data
 {
     public class AppendBlobBuilder
     {

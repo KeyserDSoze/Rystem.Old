@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using Rystem.Const;
 
 namespace Rystem.Cache
@@ -13,8 +16,8 @@ namespace Rystem.Cache
     {
         private readonly CacheConfiguration Properties;
         private static readonly object TrafficLight = new object();
-        private CloudBlobContainer context;
-        private protected CloudBlobContainer Context
+        private BlobContainerClient context;
+        private protected BlobContainerClient Context
         {
             get
             {
@@ -24,12 +27,11 @@ namespace Rystem.Cache
                 {
                     if (context != null)
                         return context;
-                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
-                    CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
-                    context = Client.GetContainerReference(ContainerName);
+                    var client = new BlobServiceClient(Configuration.ConnectionString);
+                    context = client.GetBlobContainerClient(ContainerName.ToLower());
                 }
-                if (!context.ExistsAsync().ToResult())
-                    context.CreateIfNotExistsAsync();
+                if (!context.Exists())
+                    context.CreateIfNotExistsAsync().ToResult();
                 return context;
             }
         }
@@ -45,16 +47,16 @@ namespace Rystem.Cache
         }
         public async Task<T> InstanceAsync(string key)
         {
-            ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
-            await cloudBlob.FetchAttributesAsync().NoContext();
-            if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
+            BlockBlobClient cloudBlob = Context.GetBlockBlobClient(CloudKeyToString(key));
+            Response<BlobProperties> properties = await cloudBlob.GetPropertiesAsync().NoContext();
+            if (!string.IsNullOrWhiteSpace(properties.Value.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(properties.Value.CacheControl)))
             {
                 await this.DeleteAsync(key).NoContext();
                 return default;
             }
             else
             {
-                using (StreamReader reader = new StreamReader(cloudBlob.OpenReadAsync(null, null, null).ToResult()))
+                using (StreamReader reader = new StreamReader((await cloudBlob.DownloadAsync().NoContext()).Value.Content))
                     return (await reader.ReadToEndAsync().NoContext()).FromDefaultJson<T>();
             }
         }
@@ -63,25 +65,25 @@ namespace Rystem.Cache
             long expiring = ExpireCache;
             if (expiringTime != default)
                 expiring = expiringTime.Ticks;
-            ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
+            BlockBlobClient cloudBlob = Context.GetBlockBlobClient(CloudKeyToString(key));
             if (expiring > 0)
-                cloudBlob.Properties.CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString();
+                await cloudBlob.SetHttpHeadersAsync(new BlobHttpHeaders() { CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString() });
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToDefaultJson())))
-                await cloudBlob.UploadFromStreamAsync(stream).NoContext();
+                await cloudBlob.UploadAsync(stream).NoContext();
             return true;
         }
 
         public async Task<bool> DeleteAsync(string key)
-            => await Context.GetBlockBlobReference(CloudKeyToString(key)).DeleteIfExistsAsync().NoContext();
+            => await Context.GetBlockBlobClient(CloudKeyToString(key)).DeleteIfExistsAsync().NoContext();
         public async Task<MultitonStatus<T>> ExistsAsync(string key)
         {
-            ICloudBlob cloudBlob = Context.GetBlockBlobReference(CloudKeyToString(key));
+            BlockBlobClient cloudBlob = Context.GetBlockBlobClient(CloudKeyToString(key));
             if (await cloudBlob.ExistsAsync().NoContext())
             {
                 if (ExpireCache > 0)
                 {
-                    cloudBlob.FetchAttributesAsync().ToResult();
-                    if (!string.IsNullOrWhiteSpace(cloudBlob.Properties.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(cloudBlob.Properties.CacheControl)))
+                    Response<BlobProperties> properties = await cloudBlob.GetPropertiesAsync().NoContext();
+                    if (!string.IsNullOrWhiteSpace(properties.Value.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(properties.Value.CacheControl)))
                     {
                         await this.DeleteAsync(key).NoContext();
                         return MultitonStatus<T>.NotOk();
@@ -94,19 +96,9 @@ namespace Rystem.Cache
 
         public async Task<IEnumerable<string>> ListAsync()
         {
-            List<string> items = new List<string>();
-            BlobContinuationToken token = null;
-            do
-            {
-                BlobResultSegment segment = await Context.ListBlobsSegmentedAsync(FullName, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { }).NoContext();
-                token = segment.ContinuationToken;
-                foreach (IListBlobItem blobItem in segment.Results)
-                {
-                    if (blobItem is CloudBlobDirectory)
-                        continue;
-                    items.Add(((ICloudBlob)blobItem).Name.Replace(FullName, ""));
-                }
-            } while (token != null);
+            IList<string> items = new List<string>();
+            await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, FullName))
+                items.Add(t.Name);
             return items;
         }
         public Task WarmUp()

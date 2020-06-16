@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.EventHubs;
 using Microsoft.Azure.ServiceBus;
-using Rystem.Azure.Queue;
+using Rystem.Queue;
 using System;
 using System.Collections.Generic;
 using System.Text;

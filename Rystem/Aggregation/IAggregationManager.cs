@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Rystem.Azure;
+using Rystem;
 using System;
 using System.Collections.Generic;
 using System.Text;

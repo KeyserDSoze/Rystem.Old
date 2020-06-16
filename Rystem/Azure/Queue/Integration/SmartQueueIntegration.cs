@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Queue
+namespace Rystem.Queue
 {
     internal partial class SmartQueueIntegration<TEntity> : IQueueIntegration<TEntity>
     {

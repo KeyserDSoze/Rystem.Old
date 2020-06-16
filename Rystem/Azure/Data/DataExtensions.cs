@@ -1,5 +1,5 @@
-﻿using Rystem.Azure;
-using Rystem.Azure.Data;
+﻿using Rystem;
+using Rystem.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;

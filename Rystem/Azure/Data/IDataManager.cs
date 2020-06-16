@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Data
+namespace Rystem.Data
 {
     internal interface IDataManager<TEntity> : IManager<TEntity>
         where TEntity : IData

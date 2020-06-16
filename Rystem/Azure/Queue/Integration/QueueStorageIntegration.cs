@@ -1,36 +1,35 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Queue;
+﻿using Azure.Storage.Queues;
+using Azure.Storage.Queues.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.Queue
+namespace Rystem.Queue
 {
     internal class QueueStorageIntegration<TEntity> : IQueueIntegration<TEntity>
     {
         private static readonly object TrafficLight = new object();
-        private CloudQueue client;
-        private CloudQueue Client
+        private QueueClient context;
+        private QueueClient Context
         {
             get
             {
-                if (client != null)
-                    return client;
+                if (context != null)
+                    return context;
                 lock (TrafficLight)
                 {
-                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(QueueConfiguration.ConnectionString);
-                    CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
-                    client = queueClient.GetQueueReference(QueueConfiguration.Name ?? typeof(TEntity).Name);
+                    var client = new QueueServiceClient(QueueConfiguration.ConnectionString);
+                    context = client.GetQueueClient(QueueConfiguration.Name ?? typeof(TEntity).Name);
                 }
-                if (!client.ExistsAsync().ToResult())
-                    client.CreateIfNotExistsAsync();
-                return client;
+                if (!context.ExistsAsync().ToResult())
+                    context.CreateIfNotExistsAsync();
+                return context;
             }
         }
         private readonly QueueConfiguration QueueConfiguration;
-        internal QueueStorageIntegration(QueueConfiguration property) 
+        internal QueueStorageIntegration(QueueConfiguration property)
             => this.QueueConfiguration = property;
 
         public Task<bool> CleanAsync()
@@ -40,18 +39,12 @@ namespace Rystem.Azure.Queue
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
 
         public async Task<IEnumerable<TEntity>> ReadAsync(int path, int organization)
-             => (await this.Client.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Select(x => x.AsString.ToMessage<TEntity>());
+             => (await this.Context.PeekMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Value.Select(x => x.MessageText.ToMessage<TEntity>());
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
-        {
-            await this.Client.AddMessageAsync(new CloudQueueMessage(message.ToDefaultJson())).NoContext();
-            return true;
-        }
+            => !string.IsNullOrWhiteSpace((await this.Context.SendMessageAsync(message.ToDefaultJson()).NoContext()).Value.MessageId);
 
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
-        {
-            await this.Client.AddMessageAsync(new CloudQueueMessage(messages.ToDefaultJson())).NoContext();
-            return true;
-        }
+        => !string.IsNullOrWhiteSpace((await this.Context.SendMessageAsync(messages.ToDefaultJson()).NoContext()).Value.MessageId);
 
         public Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");

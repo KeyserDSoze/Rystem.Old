@@ -1,4 +1,4 @@
-﻿using Rystem.Azure.NoSql;
+﻿using Rystem.NoSql;
 using Rystem.UnitTest;
 using Rystem.ZConsoleApp.Tester.Azure.NoSql;
 using System;

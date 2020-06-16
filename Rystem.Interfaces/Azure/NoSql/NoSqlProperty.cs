@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Rystem.Azure.NoSql
+namespace Rystem.NoSql
 {
     public class NoSqlProperty : Attribute { }
 }

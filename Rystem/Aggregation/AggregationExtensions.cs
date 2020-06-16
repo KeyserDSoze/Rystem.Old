@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Rystem.Aggregation;
-using Rystem.Azure;
+using Rystem;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

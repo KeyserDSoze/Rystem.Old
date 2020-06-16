@@ -1,23 +1,26 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Rystem.Utility;
+﻿using Rystem.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using System.Threading;
+using Azure;
+using System.Data.Common;
+using Azure.Storage.Blobs.Specialized;
 
-namespace Rystem.Azure.Data.Integration
+namespace Rystem.Data.Integration
 {
     internal abstract class BlobStorageBaseIntegration<TEntity>
         where TEntity : IData
     {
-        private protected BlobRequestOptions BlobRequestOptions = new BlobRequestOptions() { DisableContentMD5Validation = true };
         private protected abstract IDataReader<TEntity> DefaultReader { get; }
         private protected abstract IDataWriter<TEntity> DefaultWriter { get; }
         private static readonly object TrafficLight = new object();
-        private CloudBlobContainer context;
-        private protected CloudBlobContainer Context
+        private BlobContainerClient context;
+        private protected BlobContainerClient Context
         {
             get
             {
@@ -27,12 +30,11 @@ namespace Rystem.Azure.Data.Integration
                 {
                     if (context != null)
                         return context;
-                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
-                    CloudBlobClient Client = storageAccount.CreateCloudBlobClient();
-                    context = Client.GetContainerReference(Configuration.Name.ToLower());
+                    var client = new BlobServiceClient(Configuration.ConnectionString);
+                    context = client.GetBlobContainerClient(Configuration.Name.ToLower());
                 }
-                if (!context.ExistsAsync().ToResult())
-                    context.CreateIfNotExistsAsync();
+                if (!context.Exists())
+                    context.CreateIfNotExistsAsync().ToResult();
                 return context;
             }
         }
@@ -51,120 +53,93 @@ namespace Rystem.Azure.Data.Integration
             this.Reader = configuration.Reader as IDataReader<TEntity> ?? DefaultReader;
             this.Writer = configuration.Writer as IDataWriter<TEntity> ?? DefaultWriter;
         }
-        private protected async Task<bool> DeleteAsync(ICloudBlob cloudBlob)
-            => await cloudBlob.DeleteIfExistsAsync().NoContext();
-
-        private protected async Task<bool> ExistsAsync(ICloudBlob cloudBlob)
-            => await cloudBlob.ExistsAsync().NoContext();
-
-        private protected async Task<IList<string>> SearchAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
+        private protected async Task<bool> DeleteAsync(string name)
+            => await Context.GetBlobClient(name).DeleteIfExistsAsync().NoContext();
+        private protected async Task<bool> ExistsAsync(string name)
+            => await Context.GetBlobClient(name).ExistsAsync().NoContext();
+        private protected async Task<IList<string>> SearchAsync(string prefix = null, int? takeCount = null)
         {
             IList<string> items = new List<string>();
-            BlobContinuationToken token = null;
-            do
+            CancellationToken token = default;
+            int count = 0;
+            await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
-                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, takeCount, token, new BlobRequestOptions(), new OperationContext() { }).NoContext();
-                token = segment.ContinuationToken;
-                foreach (var blobItem in segment.Results)
-                    items.Add(blobItem.StorageUri.PrimaryUri.ToString());
+                items.Add(t.Name);
+                count++;
                 if (takeCount != null && items.Count >= takeCount)
                     break;
-            } while (token != null);
+            }
             return items;
         }
-        private protected async Task<IList<DataWrapper>> FetchPropertiesAsync(CloudBlobContainer context, string prefix = null, int? takeCount = null)
+        private protected async Task<IList<DataWrapper>> FetchPropertiesAsync(string prefix = null, int? takeCount = null)
         {
             IList<DataWrapper> items = new List<DataWrapper>();
-            BlobContinuationToken token = null;
-            do
+            CancellationToken token = default;
+            int count = 0;
+            await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
-                BlobResultSegment segment = await context.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.All, null, token, new BlobRequestOptions(), new OperationContext() { }).NoContext();
-                token = segment.ContinuationToken;
-                foreach (IListBlobItem blobItem in segment.Results)
-                {
-                    await (blobItem as ICloudBlob).FetchAttributesAsync().NoContext();
-                    items.Add(new DataWrapper() { Name = blobItem.Uri.AbsolutePath, Properties = GetDataProperties((blobItem as ICloudBlob).Properties) });
-                }
+                items.Add(new DataWrapper() { Name = t.Name, Properties = t.Properties.ToDataProperties(t.Metadata) });
+                count++;
                 if (takeCount != null && items.Count >= takeCount)
                     break;
-            } while (token != null);
+            }
             return items;
         }
-
-        private protected async Task<bool> SetBlobPropertyIfNecessaryAsync(IData entity, ICloudBlob cloudBlob, DataWrapper wrapper)
+        private protected async Task<bool> SetBlobProperty(IData entity, BlobBaseClient cloudBlob, DataWrapper wrapper)
         {
-            bool changeSomethingInProperty = false;
-            if (wrapper.Properties is BlobDataProperties blobDataProperties)
+            BlobHttpHeaders blobHttpHeaders = new BlobHttpHeaders()
             {
-                if (blobDataProperties.ContentType != cloudBlob.Properties.ContentType)
-                {
-                    cloudBlob.Properties.ContentType = blobDataProperties.ContentType ?? MimeMapping.GetMimeMapping(entity.Name);
-                    changeSomethingInProperty = true;
-                }
-                if (blobDataProperties.CacheControl != null && blobDataProperties.CacheControl != cloudBlob.Properties.CacheControl)
-                {
-                    cloudBlob.Properties.CacheControl = blobDataProperties.CacheControl;
-                    changeSomethingInProperty = true;
-                }
-                if (blobDataProperties.ContentDisposition != null && blobDataProperties.ContentDisposition != cloudBlob.Properties.ContentDisposition)
-                {
-                    cloudBlob.Properties.ContentDisposition = blobDataProperties.ContentDisposition;
-                    changeSomethingInProperty = true;
-                }
-                if (blobDataProperties.ContentEncoding != null && blobDataProperties.ContentEncoding != cloudBlob.Properties.ContentEncoding)
-                {
-                    cloudBlob.Properties.ContentEncoding = blobDataProperties.ContentEncoding;
-                    changeSomethingInProperty = true;
-                }
-                if (blobDataProperties.ContentLanguage != null && blobDataProperties.ContentLanguage != cloudBlob.Properties.ContentLanguage)
-                {
-                    cloudBlob.Properties.ContentLanguage = blobDataProperties.ContentLanguage;
-                    changeSomethingInProperty = true;
-                }
-                if (blobDataProperties.ContentMD5 != null && blobDataProperties.ContentMD5 != cloudBlob.Properties.ContentMD5)
-                {
-                    cloudBlob.Properties.ContentMD5 = blobDataProperties.ContentMD5;
-                    changeSomethingInProperty = true;
-                }
-            }
-            if (changeSomethingInProperty)
-                await cloudBlob.SetPropertiesAsync().NoContext();
-            return changeSomethingInProperty;
+                CacheControl = entity.Properties.CacheControl,
+                ContentDisposition = entity.Properties.ContentDisposition,
+                ContentEncoding = entity.Properties.ContentEncoding,
+                ContentHash = entity.Properties.ContentHash,
+                ContentLanguage = entity.Properties.ContentLanguage,
+                ContentType = entity.Properties.ContentType
+            };
+            await Context.GetBlobClient(cloudBlob.Name).SetHttpHeadersAsync(blobHttpHeaders).NoContext();
+            await Context.GetBlobClient(cloudBlob.Name).SetMetadataAsync(entity.Properties.Metadata).NoContext();
+            return true;
         }
-        private protected async Task<IList<TEntity>> ReadAsync(ICloudBlob cloudBlob)
+        private protected async Task<IList<TEntity>> ReadAsync(BlobItem blobItem)
+            => await this.ReadAsync(this.Context.GetBlobClient(blobItem.Name)).NoContext();
+        private protected async Task<IList<TEntity>> ReadAsync(BlobBaseClient client)
         {
-            return (await this.Reader.ReadAsync(new DataWrapper()
+            Response<BlobDownloadInfo> item = await client.DownloadAsync();
+            DataWrapper wrapper = new DataWrapper()
             {
-                Name = cloudBlob.Name,
-                Stream = await cloudBlob.OpenReadAsync(null, BlobRequestOptions, null).NoContext(),
-                Properties = this.GetDataProperties(cloudBlob.Properties)
-            }).NoContext()).Entities;
+                Name = client.Name,
+                Properties = item.Value.Details.ToDataProperties(item.Value.ContentType),
+                Stream = item.Value.Content
+            };
+            return (await this.Reader.ReadAsync(wrapper).NoContext()).Entities;
         }
-        private protected BlobDataProperties GetDataProperties(BlobProperties blobProperties)
+    }
+    public static class BlobExtesions
+    {
+        public static DataProperties ToDataProperties(this BlobItemProperties blobHttpHeaders, IDictionary<string, string> metadata)
         {
-            return new BlobDataProperties(blobProperties.BlobTierLastModifiedTime,
-                blobProperties.BlobTierInferred,
-                blobProperties.IsIncrementalCopy,
-                blobProperties.IsServerEncrypted,
-                blobProperties.AppendBlobCommittedBlockCount,
-                blobProperties.PageBlobSequenceNumber,
-                (int)blobProperties.LeaseDuration,
-                (int)blobProperties.LeaseState,
-                (int)blobProperties.LeaseStatus,
-                blobProperties.LastModified,
-                blobProperties.Created,
-                blobProperties.ETag,
-                blobProperties.DeletedTime,
-                blobProperties.Length,
-                blobProperties.RemainingDaysBeforePermanentDelete
-                )
+            return new DataProperties()
             {
-                CacheControl = blobProperties.CacheControl,
-                ContentDisposition = blobProperties.ContentDisposition,
-                ContentEncoding = blobProperties.ContentEncoding,
-                ContentLanguage = blobProperties.ContentLanguage,
-                ContentMD5 = blobProperties.ContentMD5,
-                ContentType = blobProperties.ContentType,
+                CacheControl = blobHttpHeaders.CacheControl,
+                ContentDisposition = blobHttpHeaders.ContentDisposition,
+                ContentEncoding = blobHttpHeaders.ContentEncoding,
+                ContentHash = blobHttpHeaders.ContentHash,
+                ContentLanguage = blobHttpHeaders.ContentLanguage,
+                ContentType = blobHttpHeaders.ContentType,
+                Metadata = metadata
+            };
+        }
+        public static DataProperties ToDataProperties(this BlobDownloadDetails blobDownloadDetails, string contentType)
+        {
+            return new DataProperties()
+            {
+                CacheControl = blobDownloadDetails.CacheControl,
+                ContentDisposition = blobDownloadDetails.ContentDisposition,
+                ContentEncoding = blobDownloadDetails.ContentEncoding,
+                ContentHash = blobDownloadDetails.BlobContentHash,
+                ContentLanguage = blobDownloadDetails.ContentLanguage,
+                ContentType = contentType,
+                Metadata = blobDownloadDetails.Metadata
             };
         }
     }

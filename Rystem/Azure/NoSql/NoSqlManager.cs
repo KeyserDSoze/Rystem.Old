@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rystem.Azure.NoSql
+namespace Rystem.NoSql
 {
     internal class NoSqlManager<TEntity> : INoSqlManager<TEntity>, IManager<TEntity>
     {

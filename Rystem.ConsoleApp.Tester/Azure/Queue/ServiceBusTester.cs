@@ -1,5 +1,5 @@
-﻿using Rystem.Azure;
-using Rystem.Azure.Queue;
+﻿using Rystem;
+using Rystem.Queue;
 using Rystem.Debug;
 using Rystem.UnitTest;
 using System;

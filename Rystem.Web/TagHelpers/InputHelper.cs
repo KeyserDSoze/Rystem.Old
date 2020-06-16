@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Localization;
-using Microsoft.WindowsAzure.Storage.Blob.Protocol;
 using Rystem.Web.Backoffice;
 using System;
 using System.Collections.Generic;

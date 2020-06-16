@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rystem.Azure.Data
+﻿namespace Rystem.Data
 {
     public interface IData : IConfigurator
     {
         string Name { get; set; }
-        IDataProperties Properties { get; set; }
+        DataProperties Properties { get; set; }
     }
 }

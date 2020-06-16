@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rystem.Azure.NoSql
+namespace Rystem.NoSql
 {
     public interface INoSql : IConfigurator
     {
