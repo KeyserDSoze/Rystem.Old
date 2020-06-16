@@ -66,10 +66,10 @@ namespace Rystem.Cache
             if (expiringTime != default)
                 expiring = expiringTime.Ticks;
             BlockBlobClient cloudBlob = Context.GetBlockBlobClient(CloudKeyToString(key));
-            if (expiring > 0)
-                await cloudBlob.SetHttpHeadersAsync(new BlobHttpHeaders() { CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString() });
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToDefaultJson())))
                 await cloudBlob.UploadAsync(stream).NoContext();
+            if (expiring > 0)
+                await cloudBlob.SetHttpHeadersAsync(new BlobHttpHeaders() { CacheControl = (expiring + DateTime.UtcNow.Ticks).ToString() });
             return true;
         }
 
@@ -98,7 +98,7 @@ namespace Rystem.Cache
         {
             IList<string> items = new List<string>();
             await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, FullName))
-                items.Add(t.Name);
+                items.Add(t.Name.Replace(FullName, string.Empty));
             return items;
         }
         public Task WarmUp()

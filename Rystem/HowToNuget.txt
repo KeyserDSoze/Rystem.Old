@@ -3,6 +3,6 @@ Install-Package NuGet.CommandLine (se non è installato il nuget.exe)
 cd .\Rystem (cd spazio e poi TAB e scegli il progetto)
 cd C:\Users\aless\source\repos\Rystem\Rystem
 nuget pack -IncludeReferencedProjects -Symbols -Properties Configuration=Release
-nuget push Rystem.6.0.12.symbols.nupkg -source "C:\Users\a.rapiti\OneDrive - Vetrya S.p.A\Repository\Nuget"
-nuget push Rystem.6.0.12.symbols.nupkg -source "TelcoNugetDevops" -ApiKey az
-nuget push Rystem.6.0.14.symbols.nupkg -source "E:\nugetrepository"
+nuget push Rystem.7.0.0.symbols.nupkg -source "C:\Users\a.rapiti\OneDrive - Vetrya S.p.A\Repository\Nuget"
+nuget push Rystem.7.0.0.symbols.nupkg -source "TelcoNugetDevops" -ApiKey az
+nuget push Rystem.7.0.0.symbols.nupkg -source "E:\nugetrepository"

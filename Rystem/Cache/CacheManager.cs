@@ -83,33 +83,39 @@ namespace Rystem.Cache
         }
         private async Task<TCache> InstanceWithConsistencyAsync(TCacheKey key, string keyString)
         {
-            TCache cache = default;
-            Promised.TryAdd(keyString,
-                new MyLazy<PromisedCache>(() => new PromisedCache(new Instancer(key, keyString, InCloud))));
-            Promised.TryGetValue(keyString, out MyLazy<PromisedCache> lazy);
-            if (lazy != null)
+            try
             {
-                PromisedCache promisedCache = lazy.Value;
-                PromisedState promisedState = default;
-                while (!(promisedState = promisedCache.Run()).IsCompleted())
-                    await Task.Delay(100).NoContext();
-                if (promisedState.HasThrownAnException())
-                    throw promisedState.Exception;
-                if (promisedState.HasEmptyResponse())
+                TCache cache = default;
+                Promised.TryAdd(keyString,
+                    new MyLazy<PromisedCache>(() => new PromisedCache(new Instancer(key, keyString, InCloud))));
+                Promised.TryGetValue(keyString, out MyLazy<PromisedCache> lazy);
+                if (lazy != null)
+                {
+                    PromisedCache promisedCache = lazy.Value;
+                    PromisedState promisedState = default;
+                    while (!(promisedState = promisedCache.Run()).IsCompleted())
+                        await Task.Delay(100).NoContext();
+                    if (promisedState.HasThrownAnException())
+                        throw promisedState.Exception;
+                    if (promisedState.HasEmptyResponse())
+                        return cache;
+                    cache = promisedCache.Cache;
+                    if (cache == null)
+                        return cache;
+                    if (MemoryIsActive)
+                        InMemory.Update(keyString, cache, default);
+                }
+                if (cache != null)
                     return cache;
-                cache = promisedCache.Cache;
-                if (cache == null)
-                    return cache;
-                if (MemoryIsActive)
-                    InMemory.Update(keyString, cache, default);
+                else if (MemoryIsActive)
+                    return InMemory.Instance(keyString);
+                else
+                    return await InCloud.InstanceAsync(keyString).NoContext();
+            }
+            finally
+            {
                 Promised.TryRemove(keyString, out _);
             }
-            if (cache != null)
-                return cache;
-            else if (MemoryIsActive)
-                return InMemory.Instance(keyString);
-            else
-                return await InCloud.InstanceAsync(keyString).NoContext();
         }
         public async Task<TCache> InstanceAsync(TCacheKey key)
         {

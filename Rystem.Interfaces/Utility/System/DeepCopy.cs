@@ -1,4 +1,4 @@
-﻿namespace System
+﻿namespace Rystem
 {
     public static class DeepCopyExtension
     {

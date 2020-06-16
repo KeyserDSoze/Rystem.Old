@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         {
             Meatball2 meatball = new Meatball2()
             {
-                Name = "Hello2.json",
+                Name = "Salam/Hello2.json",
                 Properties = new DataProperties()
                 {
                     ContentType = "text/json"
@@ -31,6 +31,10 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             await meatball.WriteAsync(installation:Installation.Inst01);
             if ((await meatball.FetchAsync(Installation.Inst01)).A != meatball.A)
                 return false;
+            foreach(string value in await meatball.SearchAsync("Salam/H", null, Installation.Inst01))
+            {
+                Console.WriteLine(value);
+            }
             IList<Meatball2> meatball2 = await meatball.ToListAsync(installation:Installation.Inst01);
             if (meatball2.Count != 1)
                 return false;

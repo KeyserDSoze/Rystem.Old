@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Rystem.Crypting;
 
-namespace System
+namespace Rystem
 {
     public static partial class CryptoExtensions
     {

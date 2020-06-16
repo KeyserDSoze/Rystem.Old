@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -11,6 +12,8 @@ namespace System.Net
 {
     public static class HttpWebRequestExtensions
     {
+        public static async Task<string> InvokeHttpAsync(this string uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+            => await new Uri(uri).InvokeHttpAsync(timeout, method, headers, contentType, body).NoContext();
         public static async Task<string> InvokeHttpAsync(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
         {
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
@@ -35,5 +38,7 @@ namespace System.Net
         }
         public static async Task<string> InvokeHttpPostAsync<TEntity>(this TEntity entity, Uri uri, int timeout = 30_000, HttpHeaders headers = null)
             => await uri.InvokeHttpAsync(timeout, HttpMethod.Post, headers, "application/json; charset=UTF-8", entity.ToDefaultJson()).NoContext();
+        public static async Task<string> InvokeHttpPostAsync<TEntity>(this TEntity entity, string uri, int timeout = 30_000, HttpHeaders headers = null)
+            => await entity.InvokeHttpPostAsync(new Uri(uri), timeout, headers).NoContext();
     }
 }

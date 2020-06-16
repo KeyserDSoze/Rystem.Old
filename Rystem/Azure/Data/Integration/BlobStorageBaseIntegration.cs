@@ -64,7 +64,7 @@ namespace Rystem.Data.Integration
             int count = 0;
             await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
-                items.Add(t.Name);
+                items.Add($"{this.Context.Uri}/{t.Name}");
                 count++;
                 if (takeCount != null && items.Count >= takeCount)
                     break;

@@ -13,11 +13,17 @@ namespace Rystem.ZConsoleApp.Tester.Utility
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
             Fagioli fagioli = new Fagioli();
-            await fagioli.UpdateAsync(Installation.Inst01);
-            return true;
+            if (await fagioli.UpdateAsync(Installation.Inst01))
+                return true;
+            else
+                return false;
         }
         public class Fagioli : INoSql
         {
+            public string PartitionKey { get; set; }
+            public string RowKey { get; set; }
+            public DateTime Timestamp { get; set; }
+            public string ETag { get; set; }
             public ConfigurationBuilder GetConfigurationBuilder()
             {
                 ConfigurationBuilder monthConfigurationBuilder = new ConfigurationBuilder();

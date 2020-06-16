@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         {
             Ricotta meatball = new Meatball()
             {
-                Name = "Hello2.csv",
+                Name = "Hello3.csv",
                 Properties = new DataProperties()
                 {
                     ContentType = "text/csv"

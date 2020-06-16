@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Rystem</id>
-    <version>6.0.14</version>
+    <version>7.0.0</version>
     <title>Rystem</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
@@ -23,19 +23,23 @@
       Crypting: Aes helper, Sha256 helper.
     </description>
     <releaseNotes>
-      - Sixth Release.
+      - Seventh Release.
     </releaseNotes>
     <copyright>Copyright 2019-2026</copyright>
     <tags>Rystem Cache Multiton Azure Utility Stream Analytics Crypting</tags>
     <dependencies>
-      <dependency id="Rystem.Interfaces" version="6.0.11" />
-      <dependency id="Newtonsoft.Json" version="10.0.3" />
+      <dependency id="Rystem.Interfaces" version="7.0.0" />
+      <dependency id="Azure.Storage.Blobs" version="12.4.4" />
+      <dependency id="Azure.Storage.Queues" version="12.3.2" />
+      <dependency id="Microsoft.Azure.Cosmos.Table" version="1.0.7" />
       <dependency id="Microsoft.Azure.EventHubs" version="4.2.0" />
       <dependency id="Microsoft.Azure.ServiceBus" version="4.1.3" />
-      <dependency id="StackExchange.Redis" version="2.1.30" />
-      <dependency id="WindowsAzure.Storage" version="9.3.3" />
+      <dependency id="Microsoft.Azure.Storage.Common" version="11.1.7" />
+      <dependency id="Microsoft.CSharp" version="4.7.0" />
+      <dependency id="Microsoft.Extensions.Logging.Abstractions" version="3.1.5" />
+      <dependency id="Newtonsoft.Json" version="12.0.3" />
+      <dependency id="StackExchange.Redis" version="2.1.55" />
       <dependency id="System.Data.SqlClient" version="4.8.1" />
-      <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.2.0" />
     </dependencies>
     <references>
       <reference file="Rystem.dll" />
@@ -46,13 +50,5 @@
     <file src="bin\Release\*.pdb" target="lib\Release" />
     <file src="bin\Debug\*.dll" target="lib\Debug" />
     <file src="bin\Debug\*.pdb" target="lib\Debug" />
-    <!-- RELEASE -->
-    <!--<file src="bin\Release\Multiton.dll" target="lib"></file>
-    <file src="..\Multiton\bin\Release\Multiton.dll" target="lib"></file>-->
-    <!-- .Net 4.6.2 specific folders -->
-    <!--<file src="bin\Release\Multiton.dll" target="lib\net462"></file>-->
-    <!--<file src="..\Multiton\bin\Release\Multiton.dll" target="lib\net462"></file>-->
-    <!--<file src="..\Multiton\bin\Release\Multiton.pdb" target="lib\net462"></file>-->
-
   </files>
 </package>
