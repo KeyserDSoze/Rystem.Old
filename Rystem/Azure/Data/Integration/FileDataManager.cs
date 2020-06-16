@@ -20,10 +20,11 @@ namespace Rystem.Azure.Data.Integration
             {
                 Properties = entity.Properties,
                 Name = entity.Name,
-                Stream = entity.Stream
             };
-            await entity.Stream.CopyToAsync(entity.Stream).NoContext();
-            entity.Stream.Position = 0;
+            MemoryStream ms = new MemoryStream();
+            await entity.Stream.CopyToAsync(ms).NoContext();
+            ms.Position = 0;
+            aggregatedDataDummy.Stream = ms;
             return aggregatedDataDummy;
         }
 
