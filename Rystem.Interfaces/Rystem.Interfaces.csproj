@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Version>7.0.1</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>You need to implement Rystem only when the rystem engine is needed.</Description>
+    <Copyright>2019-2030</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>rystem.png</PackageIcon>
+    <PackageTags>Rystem Interfaces</PackageTags>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +19,10 @@
     <EmbeddedResource Remove="Utility\Crypting\**" />
     <None Remove="Base\**" />
     <None Remove="Utility\Crypting\**" />
+    <None Include="..\Rystem.Web\wwwroot\images\rystem.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

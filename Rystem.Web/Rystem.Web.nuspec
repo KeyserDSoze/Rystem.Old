@@ -2,11 +2,11 @@
 <package>
   <metadata>
     <id>Rystem.Web</id>
-    <version>1.0.2</version>
+    <version>1.0.22</version>
     <title>Rystem.Web</title>
     <authors>Alessandro Rapiti</authors>
     <owners>Alessandro Rapiti</owners>
-    <licenseUrl>http://icon.com</licenseUrl>
+    <license type="expression">MIT</license>
     <projectUrl>http://icon.com</projectUrl>
     <iconUrl>http://wondaregistry.azurewebsites.net/Content/img/vetryaicon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -19,17 +19,11 @@
     <copyright>Copyright 2019-2026</copyright>
     <tags>Rystem Web Utility</tags>
     <dependencies>
-      <dependency id="Rystem.Interfaces" version="7.0.0" />
-      <dependency id="Rystem" version="7.0.0" />
+      <group targetFramework="netcoreapp3.1">
+        <dependency id="Rystem.Interfaces" version="7.0.0" />
+        <dependency id="Rystem" version="7.0.0" />
+        <dependency id="Microsoft.Extensions.Localization" version="3.1.5" />  
+      </group>
     </dependencies>
-    <references>
-      <reference file="Rystem.Web.dll" />
-    </references>
   </metadata>
-  <files>
-    <file src="bin\Release\*.dll" target="lib\Release" />
-    <file src="bin\Release\*.pdb" target="lib\Release" />
-    <file src="bin\Debug\*.dll" target="lib\Debug" />
-    <file src="bin\Debug\*.pdb" target="lib\Debug" />
-  </files>
 </package>

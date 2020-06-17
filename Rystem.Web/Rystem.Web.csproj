@@ -3,6 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Version>1.0.25</Version>
+    <Authors>Alessandro Rapiti</Authors>
+    <Company>Rystem</Company>
+    <Product>Rystem</Product>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>rystem.web.png</PackageIcon>
+    <Description>Html helpers and so on.</Description>
+    <Copyright>2019-2030</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rystem.Interfaces\Rystem.Interfaces.csproj" />
-    <ProjectReference Include="..\Rystem\Rystem.csproj" />
   </ItemGroup>
   
   <ItemGroup>
@@ -19,11 +28,21 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Remove="wwwroot\dropzone\basic.min.css" />
-    <Content Remove="wwwroot\dropzone\dropzone-amd-module.min.js" />
-    <Content Remove="wwwroot\dropzone\dropzone.min.css" />
-    <Content Remove="wwwroot\dropzone\dropzone.min.js" />
+    <Content Remove="wwwroot\images\rystem.jpg" />
+    <Content Remove="wwwroot\images\rystem.png" />
+    <Content Remove="wwwroot\images\rystem.web.jpg" />
+    <Content Remove="wwwroot\images\rystem.web.png" />
   </ItemGroup>
   
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="3.1.5" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="wwwroot\images\rystem.web.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
   
 </Project>
