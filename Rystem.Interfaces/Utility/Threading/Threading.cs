@@ -12,7 +12,11 @@ namespace Rystem.Utility
         public static void StartOrchestrator(int capture, int cooldown, int scale = 5, int scaleIOC = 1, int minDifferenceFromThreadInExecutionAndThreadInPool = 20, int minDifferenceFromThreadInExecutionAndThreadInPoolIOC = 5, int min = 20, int minIOC = 8)
         {
             ThreadOrchestrator threadOrchestrator = new ThreadOrchestrator(capture, cooldown, scale, scaleIOC, minDifferenceFromThreadInExecutionAndThreadInPool, minDifferenceFromThreadInExecutionAndThreadInPoolIOC, min, minIOC);
-            ThreadPool.UnsafeQueueUserWorkItem(threadOrchestrator.Execute, new ThreadMetric(threadOrchestrator.NumberOfEvents));
+            GhostThread.Instance.Add(() =>
+            {
+                threadOrchestrator.Execute(new ThreadMetric(threadOrchestrator.NumberOfEvents));
+                return Task.CompletedTask;
+            });
         }
         public static bool Configure(int minWorker, int minIOC)
             => ThreadPool.SetMinThreads(minWorker, minIOC);

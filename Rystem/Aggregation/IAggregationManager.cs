@@ -12,5 +12,10 @@ namespace Rystem.Aggregation
         Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default);
         Task<IList<T>> FlushAsync(ILogger log, Installation installation);
     }
-    internal interface IAggregationManager { }
+    internal interface IAggregationManager
+    {
+        Task AutoFlushAsync(Installation installation);
+        TimeSpan GetAggregationTime(Installation installation);
+        IEnumerable<Installation> GetInstallations();
+    }
 }

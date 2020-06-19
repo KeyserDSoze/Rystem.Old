@@ -11,6 +11,7 @@ namespace Rystem
         Data,
         Aggregation,
         Crypting,
-        Cache
+        Cache,
+        Lock
     }
 }

@@ -242,13 +242,10 @@ namespace Rystem.Cache
             public TCache Cache => Instance.GetCachedData();
             private readonly WaitCallback Executor;
             public PromisedState PromisedState { get; } = new PromisedState();
-            //private readonly Thread Thread;
             public PromisedCache(Instancer instance)
             {
                 this.Instance = instance;
                 this.Executor = state => instance.Execute(state).ToResult();
-                //this.Thread = new Thread(() => instance.Execute(this.PromisedState).ToResult());
-                //this.Thread.Priority = ThreadPriority.Highest;
             }
             private static readonly object TrafficLight = new object();
             public PromisedState Run()
@@ -260,7 +257,6 @@ namespace Rystem.Cache
                         {
                             this.PromisedState.Status = PromisedStatus.InExecution;
                             ThreadPool.UnsafeQueueUserWorkItem(this.Executor, this.PromisedState);
-                            //this.Thread.Start();
                         }
                 }
                 return this.PromisedState;

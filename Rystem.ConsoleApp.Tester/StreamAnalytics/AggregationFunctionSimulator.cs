@@ -54,9 +54,9 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
         public ConfigurationBuilder GetConfigurationBuilder()
         {
             return new ConfigurationBuilder()
-                .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 80, TimeSpan.FromMinutes(5)))
+                .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 80, TimeSpan.FromSeconds(30)))
                 .AddParser(new FunctionParser()).Build()
-                .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 100, TimeSpan.FromMinutes(5)))
+                .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 100, TimeSpan.FromSeconds(5)))
                 .AddParser(new FunctionParser()).Build(Installation.Inst00);
         }
     }

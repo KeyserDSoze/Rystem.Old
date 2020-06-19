@@ -9,7 +9,12 @@ namespace System
     public static class AggregationExtensions
     {
         private static IManager<T> GetAggregationManager<T>(IAggregation<T> entity)
-            => new AggregationManager<T>(entity.GetConfigurationBuilder());
+        {
+            var manager = new AggregationManager<T>(entity.GetConfigurationBuilder());
+            AggregationManagerFlusher.Instance.AddManager(manager);
+            return manager;
+        }
+
         private static IAggregationManager<T> Manager<T>(this IAggregation<T> entity)
             => entity.DefaultManager(GetAggregationManager) as IAggregationManager<T>;
 

@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Rystem.Aggregation
 {
-    public class AggregationManager<T> : IAggregationManager<T>
+    internal class AggregationManager<T> : IAggregationManager<T>
     {
         private readonly static Dictionary<Installation, object> TrafficLight = new Dictionary<Installation, object>();
         private readonly static Dictionary<Installation, BufferBearer> Buffer = new Dictionary<Installation, BufferBearer>();
@@ -18,11 +18,14 @@ namespace Rystem.Aggregation
         public InstallerType InstallerType => InstallerType.Aggregation;
         private string AggregationName(Installation installation)
             => this.AggregationProperties[installation].Name;
+        public TimeSpan GetAggregationTime(Installation installation)
+            => new TimeSpan(this.AggregationProperties[installation].MaximumTime);
+        public IEnumerable<Installation> GetInstallations() 
+            => this.AggregationProperties.Select(x => x.Key);
         public AggregationManager(ConfigurationBuilder configurationBuilder)
         {
             this.AggregationProperties = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as AggregationConfiguration<T>);
         }
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]
         public async Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default)
         {
@@ -53,9 +56,10 @@ namespace Rystem.Aggregation
             log?.LogInformation($"instance: {instance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
             return flusheds;
         }
-
+        public async Task AutoFlushAsync(Installation installation)
+            => await this.FlushAsync(null, installation).NoContext();
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's a logger that catch the exception")]
-        public async Task<IList<T>> FlushAsync(ILogger log, Installation installation)
+        public Task<IList<T>> FlushAsync(ILogger log, Installation installation)
         {
             IList<T> events = new List<T>();
             log?.LogWarning($"{this.AggregationName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
@@ -91,7 +95,7 @@ namespace Rystem.Aggregation
                     }
                 }, EmptyObject);
             }
-            return events;
+            return Task.FromResult(events);
         }
         private static readonly object EmptyObject = new object();
         private class BufferBearer

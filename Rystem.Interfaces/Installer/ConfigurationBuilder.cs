@@ -6,6 +6,7 @@ using Rystem.Cache;
 using Rystem.Crypting;
 using System;
 using System.Collections.Generic;
+using Rystem.DistributedLock;
 
 namespace Rystem
 {
@@ -62,6 +63,13 @@ namespace Rystem
         /// <returns>specific integration selector</returns>
         public DataSelector WithData(string connectionString)
             => new DataSelector(connectionString, this);
+        /// <summary>
+        /// Add a distributed lock
+        /// </summary>
+        /// <param name="connectionString">ConnectionString for your Lock</param>
+        /// <returns>specific integration selector</returns>
+        public LockSelector WithLock(string connectionString)
+            => new LockSelector(connectionString, this);
         /// <summary>
         /// Add a Crypting integration
         /// </summary>
