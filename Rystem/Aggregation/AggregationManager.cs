@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Rystem;
 using Rystem.Fast;
+using System.Threading;
 
 namespace Rystem.Aggregation
 {
@@ -29,7 +30,7 @@ namespace Rystem.Aggregation
             IList<Exception> exceptions = new List<Exception>();
             string instance = Guid.NewGuid().ToString("N");
             DateTime startTime = DateTime.UtcNow;
-            log.LogInformation($"instance: {instance} -> {startTime}.");
+            log?.LogInformation($"instance: {instance} -> {startTime}.");
             int totalCount = 0;
             foreach (T eventData in events)
             {
@@ -49,7 +50,7 @@ namespace Rystem.Aggregation
             }
             IList<T> flusheds = await this.FlushAsync(log, installation).NoContext();
             DateTime endTime = DateTime.UtcNow;
-            log.LogInformation($"instance: {instance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
+            log?.LogInformation($"instance: {instance} ends in {endTime} -> {endTime.Subtract(startTime).TotalSeconds} seconds. Number of events: {totalCount}. Number of errors: {exceptions.Count}. Example error:{exceptions.FirstOrDefault()}");
             return flusheds;
         }
 
@@ -57,7 +58,7 @@ namespace Rystem.Aggregation
         public async Task<IList<T>> FlushAsync(ILogger log, Installation installation)
         {
             IList<T> events = new List<T>();
-            log.LogWarning($"{this.AggregationName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
+            log?.LogWarning($"{this.AggregationName(installation)}: {Buffer[installation].Events.Count} and {new DateTime(Buffer[installation].LastBufferCreation)}");
             DateTime startTime = DateTime.UtcNow;
             if (Buffer[installation].Events.Count > this.AggregationProperties[installation].MaximumBuffer || (Buffer[installation].Events.Count > 0 && startTime.Ticks - Buffer[installation].LastBufferCreation > this.AggregationProperties[installation].MaximumTime))
             {
@@ -67,29 +68,32 @@ namespace Rystem.Aggregation
                     {
                         foreach (T x in Buffer[installation].Events)
                             events.Add(x);
-                        log.LogWarning($"Flushed {Buffer[installation].Events.Count} elements.");
+                        log?.LogWarning($"Flushed {Buffer[installation].Events.Count} elements.");
                         Buffer[installation] = new BufferBearer();
                     }
                 }
             }
             if (events.Count > 0)
             {
-                foreach (IAggregationParser<T> parser in this.AggregationProperties[installation].Parsers.Select(x => x))
+                ThreadPool.UnsafeQueueUserWorkItem(async (context) =>
                 {
-                    try
+                    foreach (IAggregationParser<T> parser in this.AggregationProperties[installation].Parsers.Select(x => x))
                     {
-                        await parser.ParseAsync(this.AggregationName(installation), events, log, installation).NoContext();
-                        log.LogWarning($"Parsed {parser.GetType().Name}.");
+                        try
+                        {
+                            await parser.ParseAsync(this.AggregationName(installation), events, log, installation).NoContext();
+                            log?.LogWarning($"Parsed {parser.GetType().Name}.");
+                        }
+                        catch (Exception er)
+                        {
+                            log?.LogError(er.ToString());
+                        }
                     }
-                    catch (Exception er)
-                    {
-                        log.LogError(er.ToString());
-                    }
-                }
+                }, EmptyObject);
             }
             return events;
         }
-
+        private static readonly object EmptyObject = new object();
         private class BufferBearer
         {
             public IList<T> Events { get; set; } = new List<T>();
