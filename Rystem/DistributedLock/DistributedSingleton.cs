@@ -16,7 +16,11 @@ namespace Rystem.DistributedLock
         {
             if (this.Acquire())
             {
-                await action.Invoke();
+                try
+                {
+                    await action.Invoke();
+                }
+                catch { }
                 this.Release();
             }
             while (this.IsAcquired())

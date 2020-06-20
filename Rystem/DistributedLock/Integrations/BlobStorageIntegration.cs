@@ -33,9 +33,7 @@ namespace Rystem.DistributedLock
                 }
                 if (!container.Exists())
                     container.CreateIfNotExists();
-                if (context.Exists())
-                    context.GetBlobLeaseClient().Break(new TimeSpan(0));
-                else
+                if (!context.Exists())
                     context.Upload(EmptyStream);
                 return context;
             }
