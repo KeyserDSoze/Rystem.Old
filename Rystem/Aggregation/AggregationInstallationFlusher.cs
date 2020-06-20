@@ -27,9 +27,6 @@ namespace Rystem.Aggregation
             {
                 await this.AggregationManager.AutoFlushAsync(this.Installation).NoContext();
                 this.NextEvent = DateTime.UtcNow.Add(this.WindowToNextEvent);
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Executing thread {this.Installation}");
-                Console.ResetColor();
             }
         }
     }

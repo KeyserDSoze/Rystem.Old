@@ -31,9 +31,6 @@ namespace Rystem.Aggregation
                     flushers.Add(aggregationInstallationFlusher.Execute());
                 }
                 await Task.WhenAll(flushers);
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Flushed");
-                Console.ResetColor();
             }
             catch { }
         }

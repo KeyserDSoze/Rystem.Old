@@ -6,12 +6,12 @@ namespace System
 {
     public class Retryable<T>
     {
-        private readonly Func<Task<T>> Action;
-        private Func<Exception, Task> OnError;
-        private IRetryIntegration RetryIntegration;
-        private readonly int MaxAttempts;
-        private bool OnLastAttemptLaunchException;
-        private IList<Exception> Exceptions;
+        private protected readonly Func<Task<T>> Action;
+        private protected Func<Exception, Task> OnError;
+        private protected IRetryIntegration RetryIntegration;
+        private protected readonly int MaxAttempts;
+        private protected bool OnLastAttemptLaunchException;
+        private protected IList<Exception> Exceptions;
         public Retryable(Func<Task<T>> action, int maxAttempts)
         {
             this.Action = action;
@@ -19,7 +19,7 @@ namespace System
         }
         public Retryable<T> WithCircuitBreak(string name = null)
             => this.WithCircuitBreak(100, TimeSpan.FromMinutes(5), name);
-        public Retryable<T> WithCircuitBreak(int maxErrors, TimeSpan refreshWindows, string name = null, Func<CircuitBreakerLock, Task> lockEvent = null)
+        public Retryable<T> WithCircuitBreak(int maxErrors, TimeSpan refreshWindows, string name = null, Func<CircuitBreakerEvent, Task> lockEvent = null)
         {
             this.RetryIntegration = new CircuitBreakerRetry(this.MaxAttempts, name ?? this.GetType().FullName, maxErrors, refreshWindows, lockEvent);
             return this;

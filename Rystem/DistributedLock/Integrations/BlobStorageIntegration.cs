@@ -45,7 +45,7 @@ namespace Rystem.DistributedLock
             this.Name = name;
         }
         private BlobLeaseClient TokenAcquired;
-        private static readonly System.RaceCondition AcquiringRaceCondition = new System.RaceCondition();
+        private static readonly RaceCondition AcquiringRaceCondition = new RaceCondition();
         public async Task<bool> AcquireAsync()
         {
             try
@@ -55,7 +55,7 @@ namespace Rystem.DistributedLock
                 {
                     RaceConditionResponse response = await AcquiringRaceCondition.ExecuteAsync(async () =>
                     {
-                        Response<BlobLease> response = await lease.AcquireAsync(new TimeSpan(-1));
+                        Response<BlobLease> response = await lease.AcquireAsync(new TimeSpan(0, 1, 0));
                         this.TokenAcquired = lease;
                     });
                     return response.IsExecuted && !response.InException;
@@ -75,7 +75,7 @@ namespace Rystem.DistributedLock
             Response<BlobProperties> properties = await this.Context.GetPropertiesAsync();
             return properties.Value.LeaseStatus == LeaseStatus.Locked;
         }
-        private static readonly System.RaceCondition ReleasingRaceCondition = new System.RaceCondition();
+        private static readonly RaceCondition ReleasingRaceCondition = new RaceCondition();
         public async Task<bool> ReleaseAsync()
         {
             if (TokenAcquired != null)

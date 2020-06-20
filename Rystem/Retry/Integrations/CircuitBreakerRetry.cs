@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace System
 {
-    public class CircuitBreakerLock
+    public class CircuitBreakerEvent
     {
         public bool Lock { get; }
         public IList<Exception> Exceptions { get; }
-        internal CircuitBreakerLock(bool @lock, IList<Exception> exceptions)
+        internal CircuitBreakerEvent(bool @lock, IList<Exception> exceptions)
         {
             this.Lock = @lock;
             this.Exceptions = exceptions;
@@ -26,12 +26,12 @@ namespace System
         private readonly string Name;
         private static readonly ConcurrentDictionary<string, CircuitBreakerAggregator> Aggregators = new ConcurrentDictionary<string, CircuitBreakerAggregator>();
         private readonly int MaxErrors;
-        public CircuitBreakerRetry(int maxAttempts, string name, int maxErrors, TimeSpan maximumTime, Func<CircuitBreakerLock, Task> lockEvent)
+        public CircuitBreakerRetry(int maxAttempts, string name, int maxErrors, TimeSpan maximumTime, Func<CircuitBreakerEvent, Task> circuitBreakerEvent)
         {
             this.MaxAttempts = maxAttempts;
             this.Name = name;
             if (!Aggregators.ContainsKey(this.Name))
-                Aggregators.TryAdd(this.Name, new CircuitBreakerAggregator(this, maximumTime, lockEvent));
+                Aggregators.TryAdd(this.Name, new CircuitBreakerAggregator(this, maximumTime, circuitBreakerEvent));
             this.MaxErrors = maxErrors;
         }
         public bool IsRetryable(Exception exception)
@@ -50,8 +50,8 @@ namespace System
             public CircuitBreakerRetry CircuitBreakerRetry { get; }
             private readonly TimeSpan MaximumTime;
             public bool IsLocked { get; internal set; }
-            public Func<CircuitBreakerLock, Task> LockEvent { get; }
-            public CircuitBreakerAggregator(CircuitBreakerRetry circuitBreakerRetry, TimeSpan maximumTime, Func<CircuitBreakerLock, Task> lockEvent)
+            public Func<CircuitBreakerEvent, Task> LockEvent { get; }
+            public CircuitBreakerAggregator(CircuitBreakerRetry circuitBreakerRetry, TimeSpan maximumTime, Func<CircuitBreakerEvent, Task> lockEvent)
             {
                 this.CircuitBreakerRetry = circuitBreakerRetry;
                 this.MaximumTime = maximumTime;
@@ -77,7 +77,7 @@ namespace System
                 else
                     this.Aggregator.IsLocked = false;
                 if (this.Aggregator.LockEvent != null)
-                    await this.Aggregator.LockEvent.Invoke(new CircuitBreakerLock(this.Aggregator.IsLocked, events));
+                    await this.Aggregator.LockEvent.Invoke(new CircuitBreakerEvent(this.Aggregator.IsLocked, events));
             }
         }
     }

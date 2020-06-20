@@ -38,7 +38,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             //Console.WriteLine(exception.ToString());
             return Task.CompletedTask;
         }
-        public static Task OnCircuitBreakerLock(CircuitBreakerLock circuitBreakerLock)
+        public static Task OnCircuitBreakerLock(CircuitBreakerEvent circuitBreakerLock)
         {
             Console.WriteLine(circuitBreakerLock.ToString());
             return Task.CompletedTask;
