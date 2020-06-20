@@ -39,13 +39,11 @@ namespace Rystem.DistributedLock
             LockConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as LockConfiguration);
             this.Entity = entity;
         }
-
-        public bool Acquire(Installation installation = Installation.Default)
-            => this.Integration(installation).Acquire();
-        public bool Release(Installation installation = Installation.Default)
-            => this.Integration(installation).Release();
-
-        public bool IsAcquired(Installation installation = Installation.Default)
-        => this.Integration(installation).IsAcquired();
+        public async Task<bool> AcquireAsync(Installation installation = Installation.Default)
+            => await this.Integration(installation).AcquireAsync().NoContext();
+        public async Task<bool> ReleaseAsync(Installation installation = Installation.Default)
+            => await this.Integration(installation).ReleaseAsync().NoContext();
+        public async Task<bool> IsAcquiredAsync(Installation installation = Installation.Default)
+        => await this.Integration(installation).IsAcquiredAsync().NoContext();
     }
 }

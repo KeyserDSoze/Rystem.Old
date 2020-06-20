@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Rystem
+namespace System
 {
     public class Retryable<T>
     {
@@ -12,6 +11,7 @@ namespace Rystem
         private IRetryIntegration RetryIntegration;
         private readonly int MaxAttempts;
         private bool OnLastAttemptLaunchException;
+        private IList<Exception> Exceptions;
         public Retryable(Func<Task<T>> action, int maxAttempts)
         {
             this.Action = action;
@@ -27,6 +27,11 @@ namespace Rystem
         public Retryable<T> CatchError(Func<Exception, Task> onError)
         {
             this.OnError = onError;
+            return this;
+        }
+        public Retryable<T> CatchError(IList<Exception> exceptions)
+        {
+            this.Exceptions = exceptions;
             return this;
         }
         public Retryable<T> LaunchExceptionAfterLastAttempt()
@@ -51,6 +56,8 @@ namespace Rystem
                 {
                     if (exceptions == null)
                         exceptions = new List<Exception>();
+                    if (Exceptions != null)
+                        Exceptions.Add(exception);
                     exceptions.Add(exception);
                     if (OnError != null)
                         await OnError.Invoke(exception).NoContext();

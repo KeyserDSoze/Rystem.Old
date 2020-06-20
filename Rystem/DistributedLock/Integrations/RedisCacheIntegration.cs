@@ -13,17 +13,17 @@ namespace Rystem.DistributedLock
             this.Name = name;
         }
 
-        public bool Acquire()
+        public Task<bool> AcquireAsync()
         {
             throw new NotImplementedException();
         }
 
-        public bool IsAcquired()
+        public Task<bool> IsAcquiredAsync()
         {
             throw new NotImplementedException();
         }
 
-        public bool Release()
+        public Task<bool> ReleaseAsync()
         {
             throw new NotImplementedException();
         }

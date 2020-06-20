@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using Rystem;
 using Rystem.Aggregation;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Rystem
+namespace System
 {
     public class CircuitBreakerLock
     {

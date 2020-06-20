@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.ZConsoleApp.Tester.DistributedLock
 {
-    public class DistributedSingletonTest : IUnitTest
+    public class DistributedRaceConditionTest : IUnitTest
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
@@ -22,8 +22,10 @@ namespace Rystem.ZConsoleApp.Tester.DistributedLock
         }
         public static async Task Go()
         {
-            await Task.Delay(20000);
+            Console.WriteLine("Past");
+            await Task.Delay(5000);
+            Console.WriteLine("Present");
         }
-        private static DistributedSingleton DistributedSingleton = new DistributedSingleton(TableStorageTester.ConnectionString, LockType.BlobStorage);
+        private static DistributedRaceCondition DistributedSingleton = new DistributedRaceCondition(TableStorageTester.ConnectionString, LockType.BlobStorage);
     }
 }

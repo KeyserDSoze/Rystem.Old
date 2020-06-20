@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rystem
+﻿namespace System
 {
     internal class SimpleRetry : IRetryIntegration
     {

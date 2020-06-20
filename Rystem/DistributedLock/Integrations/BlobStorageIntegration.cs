@@ -45,50 +45,45 @@ namespace Rystem.DistributedLock
             this.Name = name;
         }
         private BlobLeaseClient TokenAcquired;
-        private static readonly object AcquireTrafficLight = new object();
-        public bool Acquire()
+        private static readonly System.RaceCondition AcquiringRaceCondition = new System.RaceCondition();
+        public async Task<bool> AcquireAsync()
         {
             try
             {
                 var lease = this.Context.GetBlobLeaseClient(LeaseGuidId);
                 if (this.TokenAcquired == null)
-                    lock (AcquireTrafficLight)
+                {
+                    RaceConditionResponse response = await AcquiringRaceCondition.ExecuteAsync(async () =>
                     {
-                        if (this.TokenAcquired == null)
-                        {
-                            Response<BlobLease> response = lease.Acquire(new TimeSpan(-1));
-                            this.TokenAcquired = lease;
-                            return true;
-                        }
-                    }
-                return false;
+                        Response<BlobLease> response = await lease.AcquireAsync(new TimeSpan(-1));
+                        this.TokenAcquired = lease;
+                    });
+                    return response.IsExecuted && !response.InException;
+                }
+                else
+                    return false;
             }
             catch
             {
                 return false;
             }
         }
-        public bool IsAcquired()
+        public async Task<bool> IsAcquiredAsync()
         {
             if (this.TokenAcquired != null)
                 return true;
-            Response<BlobProperties> properties = this.Context.GetProperties();
+            Response<BlobProperties> properties = await this.Context.GetPropertiesAsync();
             return properties.Value.LeaseStatus == LeaseStatus.Locked;
         }
-        private static readonly object ReleaseTrafficLight = new object();
-        public bool Release()
+        private static readonly System.RaceCondition ReleasingRaceCondition = new System.RaceCondition();
+        public async Task<bool> ReleaseAsync()
         {
             if (TokenAcquired != null)
-            {
-                lock (ReleaseTrafficLight)
+                await ReleasingRaceCondition.ExecuteAsync(async () =>
                 {
-                    if (TokenAcquired != null)
-                    {
-                        _ = TokenAcquired.Release();
-                        TokenAcquired = null;
-                    }
-                }
-            }
+                    _ = await TokenAcquired.ReleaseAsync();
+                    TokenAcquired = null;
+                });
             return true;
         }
     }

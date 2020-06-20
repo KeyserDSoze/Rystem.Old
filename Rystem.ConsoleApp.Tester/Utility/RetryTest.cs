@@ -13,7 +13,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             List<Task<string>> warps = new List<Task<string>>();
             for (int i = 0; i < 300; i++)
             {
-                warps.Add(Retry.Create<string>(SetError, 2)
+                warps.Add(Retry.Create(SetError, 2)
                    .CatchError(OnError)
                        .WithCircuitBreak(100, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
                            .ExecuteAsync());
@@ -22,7 +22,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             await Task.Delay(30000);
             for (int i = 0; i < 1000; i++)
             {
-                string response = await Retry.Create<string>(MakeRequest, 2)
+                string response = await Retry.Create(MakeRequest, 2)
                     .CatchError(OnError)
                         .WithCircuitBreak(200, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
                             .ExecuteAsync();
