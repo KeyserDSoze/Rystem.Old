@@ -11,6 +11,7 @@ namespace Rystem.DistributedLock
 {
     internal class BlobStorageIntegration : ILockIntegration
     {
+        private static readonly string LeaseGuidId = Guid.NewGuid().ToString();
         private readonly LockConfiguration Configuration;
         private static readonly object TrafficLight = new object();
         private static readonly MemoryStream EmptyStream = new MemoryStream(new byte[0]);
@@ -28,11 +29,13 @@ namespace Rystem.DistributedLock
                         return context;
                     var client = new BlobServiceClient(Configuration.ConnectionString);
                     container = client.GetBlobContainerClient(Configuration.Name?.ToLower() ?? "lock");
-                    context = container.GetBlobClient(this.Name);
+                    context = container.GetBlobClient($"Lock_{this.Name}");
                 }
                 if (!container.Exists())
                     container.CreateIfNotExists();
-                if (!context.Exists())
+                if (context.Exists())
+                    context.GetBlobLeaseClient().Break(new TimeSpan(0));
+                else
                     context.Upload(EmptyStream);
                 return context;
             }
@@ -44,26 +47,49 @@ namespace Rystem.DistributedLock
             this.Name = name;
         }
         private BlobLeaseClient TokenAcquired;
-        public async Task<bool> AcquireAsync()
+        private static readonly object AcquireTrafficLight = new object();
+        public bool Acquire()
         {
             try
             {
-                var lease = this.Context.GetBlobLeaseClient();
-                Response<BlobLease> response = await lease.AcquireAsync(new TimeSpan(15)).NoContext();
-                this.TokenAcquired = lease;
-                return true;
+                var lease = this.Context.GetBlobLeaseClient(LeaseGuidId);
+                if (this.TokenAcquired == null)
+                    lock (AcquireTrafficLight)
+                    {
+                        if (this.TokenAcquired == null)
+                        {
+                            Response<BlobLease> response = lease.Acquire(new TimeSpan(-1));
+                            this.TokenAcquired = lease;
+                            return true;
+                        }
+                    }
+                return false;
             }
-            catch (Exception exception)
+            catch
             {
                 return false;
             }
         }
-        public async Task<bool> ReleaseAsync()
+        public bool IsAcquired()
+        {
+            if (this.TokenAcquired != null)
+                return true;
+            Response<BlobProperties> properties = this.Context.GetProperties();
+            return properties.Value.LeaseStatus == LeaseStatus.Locked;
+        }
+        private static readonly object ReleaseTrafficLight = new object();
+        public bool Release()
         {
             if (TokenAcquired != null)
             {
-                _ = await TokenAcquired.ReleaseAsync().NoContext();
-                TokenAcquired = null;
+                lock (ReleaseTrafficLight)
+                {
+                    if (TokenAcquired != null)
+                    {
+                        _ = TokenAcquired.Release();
+                        TokenAcquired = null;
+                    }
+                }
             }
             return true;
         }

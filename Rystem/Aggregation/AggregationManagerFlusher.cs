@@ -22,24 +22,20 @@ namespace Rystem.Aggregation
         }
         private async Task FlushAsync()
         {
-            while (true)
+            try
             {
-                try
+                List<Task> flushers = new List<Task>();
+                for (int i = 0; i < this.AggregationInstallationFlusher.Count; i++)
                 {
-                    List<Task> flushers = new List<Task>();
-                    for (int i = 0; i < this.AggregationInstallationFlusher.Count; i++)
-                    {
-                        var aggregationInstallationFlusher = this.AggregationInstallationFlusher[i];
-                        flushers.Add(aggregationInstallationFlusher.Execute());
-                    }
-                    await Task.WhenAll(flushers);
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Flushed");
-                    Console.ResetColor();
-                    await Task.Delay(120);
+                    var aggregationInstallationFlusher = this.AggregationInstallationFlusher[i];
+                    flushers.Add(aggregationInstallationFlusher.Execute());
                 }
-                catch { }
+                await Task.WhenAll(flushers);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Flushed");
+                Console.ResetColor();
             }
+            catch { }
         }
     }
 }
