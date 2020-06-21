@@ -5,8 +5,8 @@ namespace Rystem.DistributedLock
 {
     internal interface ILockManager<TEntity> : IManager<TEntity>
     {
-        Task<bool> AcquireAsync(Installation installation = Installation.Default);
-        Task<bool> IsAcquiredAsync(Installation installation = Installation.Default);
-        Task<bool> ReleaseAsync(Installation installation = Installation.Default);
+        Task<bool> AcquireAsync(string key, Installation installation = Installation.Default);
+        Task<bool> IsAcquiredAsync(string key, Installation installation = Installation.Default);
+        Task<bool> ReleaseAsync(string key, Installation installation = Installation.Default);
     }
 }

@@ -3,8 +3,10 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Rystem.DistributedLock
@@ -13,30 +15,60 @@ namespace Rystem.DistributedLock
     {
         private static readonly string LeaseGuidId = Guid.NewGuid().ToString();
         private readonly LockConfiguration Configuration;
-        private static readonly object TrafficLight = new object();
+        private static readonly object BlobTrafficLight = new object();
+        private static readonly object ContainerTrafficLight = new object();
         private static readonly MemoryStream EmptyStream = new MemoryStream(new byte[0]);
-        private BlobClient context;
-        private protected BlobClient Context
+        private BlobContainerClient container;
+        private BlobContainerClient Container
         {
             get
             {
-                if (context != null)
-                    return context;
-                BlobContainerClient container;
-                lock (TrafficLight)
+                if (container != null)
+                    return container;
+                lock (ContainerTrafficLight)
                 {
-                    if (context != null)
-                        return context;
+                    if (container != null)
+                        return container;
                     var client = new BlobServiceClient(Configuration.ConnectionString);
                     container = client.GetBlobContainerClient(Configuration.Name?.ToLower() ?? "lock");
-                    context = container.GetBlobClient($"Lock_{this.Name}");
                 }
-                if (!container.Exists())
-                    container.CreateIfNotExists();
-                if (!context.Exists())
-                    context.Upload(EmptyStream);
-                return context;
+                return container;
             }
+        }
+
+        private BlobClient blob;
+        private protected BlobClient Blob
+        {
+            get
+            {
+                if (blob != null)
+                    return blob;
+                lock (BlobTrafficLight)
+                {
+                    if (blob != null)
+                        return blob;
+                    blob = this.Container.GetBlobClient($"Lock_{Configuration.Key ?? this.Name}");
+                }
+                if (!this.Container.Exists())
+                    this.Container.CreateIfNotExists();
+                if (!blob.Exists())
+                    blob.Upload(EmptyStream);
+                return blob;
+            }
+        }
+        private bool ContainerExistsCheck = false;
+        private async Task<BlobClient> GetClientAsync(string key)
+        {
+            BlobClient keyBlob = this.Container.GetBlobClient($"Lock_{key}");
+            if (!this.ContainerExistsCheck)
+            {
+                if (!await this.Container.ExistsAsync().NoContext())
+                    await this.Container.CreateIfNotExistsAsync().NoContext();
+                this.ContainerExistsCheck = true;
+            }
+            if (!await keyBlob.ExistsAsync().NoContext())
+                await keyBlob.UploadAsync(EmptyStream).NoContext();
+            return keyBlob;
         }
         private readonly string Name;
         public BlobStorageIntegration(LockConfiguration lockConfiguration, string name)
@@ -44,20 +76,22 @@ namespace Rystem.DistributedLock
             this.Configuration = lockConfiguration;
             this.Name = name;
         }
-        private BlobLeaseClient TokenAcquired;
+        private ConcurrentDictionary<string, BlobLeaseClient> TokenAcquireds = new ConcurrentDictionary<string, BlobLeaseClient>();
         private static readonly RaceCondition AcquiringRaceCondition = new RaceCondition();
-        public async Task<bool> AcquireAsync()
+        public async Task<bool> AcquireAsync(string key)
         {
             try
             {
-                var lease = this.Context.GetBlobLeaseClient(LeaseGuidId);
-                if (this.TokenAcquired == null)
+                var blob = key == null ? this.Blob : await this.GetClientAsync(key).NoContext();
+                var lease = blob.GetBlobLeaseClient(LeaseGuidId);
+                string normalizedKey = key ?? string.Empty;
+                if (!this.TokenAcquireds.ContainsKey(normalizedKey))
                 {
                     RaceConditionResponse response = await AcquiringRaceCondition.ExecuteAsync(async () =>
                     {
                         Response<BlobLease> response = await lease.AcquireAsync(new TimeSpan(0, 1, 0));
-                        this.TokenAcquired = lease;
-                    });
+                        this.TokenAcquireds.TryAdd(normalizedKey, lease);
+                    }).NoContext();
                     return response.IsExecuted && !response.InException;
                 }
                 else
@@ -68,22 +102,25 @@ namespace Rystem.DistributedLock
                 return false;
             }
         }
-        public async Task<bool> IsAcquiredAsync()
+        public async Task<bool> IsAcquiredAsync(string key)
         {
-            if (this.TokenAcquired != null)
+            string normalizedKey = key ?? string.Empty;
+            if (this.TokenAcquireds.ContainsKey(normalizedKey))
                 return true;
-            Response<BlobProperties> properties = await this.Context.GetPropertiesAsync();
+            var blob = key == null ? this.Blob : await this.GetClientAsync(key).NoContext();
+            Response<BlobProperties> properties = await blob.GetPropertiesAsync().NoContext();
             return properties.Value.LeaseStatus == LeaseStatus.Locked;
         }
         private static readonly RaceCondition ReleasingRaceCondition = new RaceCondition();
-        public async Task<bool> ReleaseAsync()
+        public async Task<bool> ReleaseAsync(string key)
         {
-            if (TokenAcquired != null)
+            string normalizedKey = key ?? string.Empty;
+            if (TokenAcquireds.ContainsKey(normalizedKey))
                 await ReleasingRaceCondition.ExecuteAsync(async () =>
                 {
-                    _ = await TokenAcquired.ReleaseAsync();
-                    TokenAcquired = null;
-                });
+                    _ = await TokenAcquireds[normalizedKey].ReleaseAsync().NoContext();
+                    TokenAcquireds.TryRemove(normalizedKey, out _);
+                }).NoContext();
             return true;
         }
     }

@@ -14,24 +14,24 @@ namespace Rystem.DistributedLock
             where TEntity : ILock
             => entity.DefaultManager<TEntity>(GetLockManager) as ILockManager<TEntity>;
 
-        public static async Task<bool> AcquireAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+        public static async Task<bool> AcquireAsync<TEntity>(this TEntity entity, string key = null, Installation installation = Installation.Default)
             where TEntity : ILock
-            => await entity.Manager().AcquireAsync(installation).NoContext();
-        public static async Task<bool> ReleaseAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+            => await entity.Manager().AcquireAsync(key, installation).NoContext();
+        public static async Task<bool> ReleaseAsync<TEntity>(this TEntity entity, string key = null, Installation installation = Installation.Default)
             where TEntity : ILock
-            => await entity.Manager().ReleaseAsync(installation).NoContext();
-        public static async Task<bool> IsAcquiredAsync<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+            => await entity.Manager().ReleaseAsync(key, installation).NoContext();
+        public static async Task<bool> IsAcquiredAsync<TEntity>(this TEntity entity, string key = null, Installation installation = Installation.Default)
           where TEntity : ILock
-          => await entity.Manager().IsAcquiredAsync(installation).NoContext();
+          => await entity.Manager().IsAcquiredAsync(key, installation).NoContext();
 
-        public static bool Acquire<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+        public static bool Acquire<TEntity>(this TEntity entity, string key = null, Installation installation = Installation.Default)
             where TEntity : ILock
-            => entity.AcquireAsync(installation).ToResult();
-        public static bool Release<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+            => entity.AcquireAsync(key, installation).ToResult();
+        public static bool Release<TEntity>(this TEntity entity, string key = null, Installation installation = Installation.Default)
             where TEntity : ILock
-            => entity.ReleaseAsync(installation).ToResult();
-        public static bool IsAcquired<TEntity>(this TEntity entity, Installation installation = Installation.Default)
+            => entity.ReleaseAsync(key, installation).ToResult();
+        public static bool IsAcquired<TEntity>(this TEntity entity, string key = null, Installation installation = Installation.Default)
            where TEntity : ILock
-           => entity.IsAcquiredAsync(installation).ToResult();
+           => entity.IsAcquiredAsync(key, installation).ToResult();
     }
 }

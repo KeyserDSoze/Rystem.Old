@@ -4,8 +4,8 @@ namespace Rystem.DistributedLock
 {
     internal interface ILockIntegration
     {
-        Task<bool> AcquireAsync();
-        Task<bool> IsAcquiredAsync();
-        Task<bool> ReleaseAsync();
+        Task<bool> AcquireAsync(string key);
+        Task<bool> IsAcquiredAsync(string key);
+        Task<bool> ReleaseAsync(string key);
     }
 }

@@ -4,6 +4,7 @@
     {
         public string ConnectionString { get; set; }
         public string Name { get; set; }
+        public string Key { get; set; }
         public LockType Type { get; set; }
         internal LockConfiguration() { }
     }
