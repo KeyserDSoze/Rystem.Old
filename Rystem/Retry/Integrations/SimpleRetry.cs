@@ -3,7 +3,7 @@
     internal class SimpleRetry : IRetryIntegration
     {
         private readonly int MaxAttempts;
-        private int Attempts;
+        public int Attempts { get; private set; }
         public SimpleRetry(int maxAttempts)
             => this.MaxAttempts = maxAttempts;
         public bool IsRetryable(Exception exception)

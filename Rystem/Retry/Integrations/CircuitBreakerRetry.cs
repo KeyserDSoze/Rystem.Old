@@ -22,7 +22,7 @@ namespace System
     internal class CircuitBreakerRetry : IRetryIntegration
     {
         private readonly int MaxAttempts;
-        private int Attempts;
+        public int Attempts { get; private set; }
         private readonly string Name;
         private static readonly ConcurrentDictionary<string, CircuitBreakerAggregator> Aggregators = new ConcurrentDictionary<string, CircuitBreakerAggregator>();
         private readonly int MaxErrors;

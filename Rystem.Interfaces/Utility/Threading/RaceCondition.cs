@@ -21,12 +21,14 @@ namespace System
                         isTheFirst = true;
                     }
                 if (!isTheFirst)
-                    await WaitAsync();
+                    await WaitAsync().NoContext();
             }
             Exception exception = default;
             if (isTheFirst && !isWaited)
             {
-                exception = await action.TryCatch();
+                var result = await action.TryCatchAsync().NoContext();
+                if (result.InException)
+                    exception = result.Exception;
                 this.IsLocked = false;
             }
             return new RaceConditionResponse(isTheFirst && !isWaited, exception != default ? new List<Exception>() { exception } : null);
@@ -36,7 +38,7 @@ namespace System
                 while (IsLocked)
                 {
                     isWaited = true;
-                    await Task.Delay(120);
+                    await Task.Delay(120).NoContext();
                 }
             }
         }

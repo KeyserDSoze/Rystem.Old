@@ -10,12 +10,26 @@ namespace Rystem.ZConsoleApp.Tester.Utility
     {
         public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
         {
+            try
+            {
+                await Retry.Create(SetError, 2)
+                      .CatchError(OnError)
+                        .WithCircuitBreak(100, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
+                      .ExecuteAsync();
+                return false;
+            }
+            catch (Exception ex)
+            {
+                string olaf = ex.ToString();
+            }
+
             List<Task<string>> warps = new List<Task<string>>();
             for (int i = 0; i < 300; i++)
             {
                 warps.Add(Retry.Create(SetError, 2)
                    .CatchError(OnError)
                        .WithCircuitBreak(100, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
+                       .NotThrowExceptionAfterLastAttempt()
                            .ExecuteAsync());
             }
             await Task.WhenAll(warps);
@@ -25,6 +39,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
                 string response = await Retry.Create(MakeRequest, 2)
                     .CatchError(OnError)
                         .WithCircuitBreak(200, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
+                        .NotThrowExceptionAfterLastAttempt()
                             .ExecuteAsync();
             }
             return true;
