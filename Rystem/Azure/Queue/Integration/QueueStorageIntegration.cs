@@ -39,7 +39,17 @@ namespace Rystem.Queue
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
 
         public async Task<IEnumerable<TEntity>> ReadAsync(int path, int organization)
-             => (await this.Context.ReceiveMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Value.Select(x => x.MessageText.ToMessage<TEntity>());
+        {
+            var messages = (await this.Context.ReceiveMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Value;
+            List<TEntity> entities = new List<TEntity>();
+            foreach (var message in messages)
+            {
+                await this.Context.DeleteMessageAsync(message.MessageId, message.PopReceipt).NoContext();
+                entities.Add(message.MessageText.ToMessage<TEntity>());
+            }
+            return entities;
+        }
+
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
             => !string.IsNullOrWhiteSpace((await this.Context.SendMessageAsync(message.ToDefaultJson()).NoContext()).Value.MessageId);
 
