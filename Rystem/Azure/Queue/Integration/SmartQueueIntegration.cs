@@ -23,7 +23,7 @@ namespace Rystem.Queue
         private readonly QueueConfiguration QueueConfiguration;
         private SqlConnection NewConnection() => new SqlConnection(this.QueueConfiguration.ConnectionString);
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command. Only in insert I add the parameters pattern check.")]
         internal SmartQueueIntegration(QueueConfiguration property)
         {
             this.QueueConfiguration = property;
@@ -33,17 +33,17 @@ namespace Rystem.Queue
                 switch (property.CheckDuplication)
                 {
                     case QueueDuplication.Path:
-                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1}) ";
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Path = @Path and Organization = @Organization) ";
                         break;
                     case QueueDuplication.Message:
-                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Message = '{2}') ";
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Message = @Message) ";
                         break;
                     case QueueDuplication.PathAndMessage:
-                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Path = {0} and Organization = {1} and Message = '{2}') ";
+                        this.IfOnInsert = $"IF NOT EXISTS (SELECT TOP 1 * FROM SmartQueue_{property.Name} WHERE" + " Path = @Path and Organization = @Organization and Message = @Message) ";
                         break;
                 }
             }
-            this.InsertQuery = $"INSERT INTO SmartQueue_{property.Name} (Path, Organization, Message, TimeStamp, Ticks) OUTPUT Inserted.Id VALUES (";
+            this.InsertQuery = $"INSERT INTO SmartQueue_{property.Name} (Path, Organization, Message, TimeStamp, Ticks) OUTPUT Inserted.Id VALUES (@Path, @Organization, @Message, @TimeStamp, @Ticks)";
             this.ReadQuery = $"Select top {property.NumberOfMessages} Id, Message from SmartQueue_{property.Name} where Ticks <= ";
             this.DeleteQuery = $"Delete from SmartQueue_{property.Name} where Id = ";
             this.DeleteOnReadingQuery = $"Delete from SmartQueue_{property.Name} where Id in (";
@@ -101,7 +101,7 @@ namespace Rystem.Queue
         private static readonly SqlException SqlExceptionDefault = default;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "It's built-in query. Noone can inject command")]
-        private async Task<T> RetryAsync<T>(SqlConnection connection, string query, Func<SqlCommand, Task<T>> commandQuery)
+        private async Task<T> RetryAsync<T>(SqlConnection connection, string query, List<SqlParameter> parameters, Func<SqlCommand, Task<T>> commandQuery)
         {
             if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync().NoContext();
@@ -109,6 +109,8 @@ namespace Rystem.Queue
             SqlException sqlException = SqlExceptionDefault;
             using (SqlCommand command = new SqlCommand(query, connection))
             {
+                foreach (SqlParameter sqlParameter in parameters)
+                    command.Parameters.Add(sqlParameter);
                 while (QueueConfiguration.Retry > attempt)
                 {
                     try
@@ -135,22 +137,24 @@ namespace Rystem.Queue
                 throw sqlException;
             return default;
         }
+        private static readonly List<SqlParameter> EmptyParameters = new List<SqlParameter>();
         public async Task<bool> DeleteScheduledAsync(long messageId)
         {
-            using (SqlConnection connection = NewConnection())
-                return await RetryAsync(connection, $"{DeleteQuery}{messageId}", ExecuteNonQueryAsync).NoContext() > 0;
+            using SqlConnection connection = NewConnection();
+            return await RetryAsync(connection, $"{DeleteQuery}{messageId}", EmptyParameters, ExecuteNonQueryAsync).NoContext() > 0;
         }
         private async Task<long> SendingAsync(SqlConnection connection, TEntity message, int delayInSeconds, int path, int organization)
         {
             DateTime newDatetime = DateTime.UtcNow.AddSeconds(delayInSeconds);
             string messageToSend = GetNormalizedJson(message);
-            StringBuilder sb = new StringBuilder();
-            if (this.CheckDuplication)
-                sb.Append(string.Format(this.IfOnInsert, path, organization, messageToSend));
-            sb.Append(InsertQuery);
-            sb.Append($"{path},{organization},'{messageToSend}',");
-            sb.Append($"'{newDatetime:yyyy-MM-ddTHH:mm:ss}', {newDatetime.Ticks})");
-            return await RetryAsync(connection, sb.ToString(), ExecuteScalarAsync).NoContext();
+            string query = this.CheckDuplication ? this.IfOnInsert + this.InsertQuery : this.InsertQuery;
+            List<SqlParameter> parameters = new List<SqlParameter>();
+            parameters.Add(new SqlParameter("@Path", path));
+            parameters.Add(new SqlParameter("@Organization", organization));
+            parameters.Add(new SqlParameter("@Message", messageToSend));
+            parameters.Add(new SqlParameter("@TimeStamp", newDatetime));
+            parameters.Add(new SqlParameter("@Ticks", newDatetime.Ticks));
+            return await RetryAsync(connection, query, parameters, ExecuteScalarAsync).NoContext();
 
             async Task<long> ExecuteScalarAsync(SqlCommand command)
             {
@@ -168,16 +172,14 @@ namespace Rystem.Queue
                 IsOk = true,
                 IdMessages = new List<long>()
             };
-            using (SqlConnection connection = NewConnection())
+            using SqlConnection connection = NewConnection();
+            foreach (TEntity message in messages)
             {
-                foreach (TEntity message in messages)
-                {
-                    long id = await SendingAsync(connection, message, delayInSeconds, path, organization).NoContext();
-                    if (id == 0)
-                        queueResult.IsOk = false;
-                    else
-                        queueResult.IdMessages.Add(id);
-                }
+                long id = await SendingAsync(connection, message, delayInSeconds, path, organization).NoContext();
+                if (id == 0)
+                    queueResult.IsOk = false;
+                else
+                    queueResult.IdMessages.Add(id);
             }
             return queueResult;
         }
@@ -191,32 +193,30 @@ namespace Rystem.Queue
                 query.Append($" and Organization = {organization}");
             using (SqlConnection connection = NewConnection())
             {
-                ReadingWrapper readingWrapper = await RetryAsync(connection, query.ToString(), ExecuteReaderAsync).NoContext();
+                ReadingWrapper readingWrapper = await RetryAsync(connection, query.ToString(), EmptyParameters, ExecuteReaderAsync).NoContext();
                 if (readingWrapper.ToDeleteIds.Count > 0)
-                    await RetryAsync(connection, $"{this.DeleteOnReadingQuery}{string.Join(",", readingWrapper.ToDeleteIds)})", ExecuteNonQueryAsync).NoContext();
+                    await RetryAsync(connection, $"{this.DeleteOnReadingQuery}{string.Join(",", readingWrapper.ToDeleteIds)})", EmptyParameters, ExecuteNonQueryAsync).NoContext();
                 return readingWrapper.Messages;
             }
 
             async Task<ReadingWrapper> ExecuteReaderAsync(SqlCommand command)
             {
                 ReadingWrapper reading = new ReadingWrapper();
-                using (SqlDataReader myReader = await command.ExecuteReaderAsync().NoContext())
+                using SqlDataReader myReader = await command.ExecuteReaderAsync().NoContext();
+                while (await myReader.ReadAsync().NoContext())
                 {
-                    while (await myReader.ReadAsync().NoContext())
-                    {
-                        reading.Messages.Add(myReader["Message"].ToString().ToMessage<TEntity>());
-                        reading.ToDeleteIds.Add(int.Parse(myReader["Id"].ToString()));
-                    }
-                    return reading;
+                    reading.Messages.Add(myReader["Message"].ToString().ToMessage<TEntity>());
+                    reading.ToDeleteIds.Add(int.Parse(myReader["Id"].ToString()));
                 }
+                return reading;
             }
             async Task<long> ExecuteNonQueryAsync(SqlCommand command)
                         => await command.ExecuteNonQueryAsync().NoContext();
         }
         public async Task<bool> CleanAsync()
         {
-            using (SqlConnection connection = NewConnection())
-                return await RetryAsync(connection, CleanRetentionQuery, ExecuteNonQueryAsync).NoContext() > 0;
+            using SqlConnection connection = NewConnection();
+            return await RetryAsync(connection, CleanRetentionQuery, EmptyParameters, ExecuteNonQueryAsync).NoContext() > 0;
         }
         private static async Task<long> ExecuteNonQueryAsync(SqlCommand command)
             => await command.ExecuteNonQueryAsync().NoContext();
@@ -227,15 +227,15 @@ namespace Rystem.Queue
     {
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
         {
-            using (SqlConnection connection = NewConnection())
-                return await SendingAsync(connection, message, 0, path, organization).NoContext() > 0;
+            using SqlConnection connection = NewConnection();
+            return await SendingAsync(connection, message, 0, path, organization).NoContext() > 0;
         }
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
             => (await SendingBatchAsync(messages, 0, path, organization).NoContext()).IsOk;
         public async Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
         {
-            using (SqlConnection connection = NewConnection())
-                return await SendingAsync(connection, message, delayInSeconds, path, organization).NoContext();
+            using SqlConnection connection = NewConnection();
+            return await SendingAsync(connection, message, delayInSeconds, path, organization).NoContext();
         }
         public async Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization)
             => (await SendingBatchAsync(messages, delayInSeconds, path, organization).NoContext()).IdMessages;
