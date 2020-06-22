@@ -7,9 +7,9 @@ namespace Rystem
 {
     internal static class ManagerExtensions
     {
-        internal static IManager<TEntity> DefaultManager<TEntity>(this TEntity entity, Func<TEntity, IManager<TEntity>> managerCreator) 
+        internal static IRystemManager<TEntity> DefaultManager<TEntity>(this TEntity entity, Func<TEntity, IRystemManager<TEntity>> managerCreator) 
             => DefaultManager<TEntity, TEntity>(entity, managerCreator);
-        internal static IManager<TEntity> DefaultManager<TWrapper, TEntity>(this TWrapper entity, Func<TWrapper, IManager<TEntity>> managerCreator)
+        internal static IRystemManager<TEntity> DefaultManager<TWrapper, TEntity>(this TWrapper entity, Func<TWrapper, IRystemManager<TEntity>> managerCreator)
         {
             Type entityType = entity.GetType();
             if (!ManagerWrapper<TEntity>.Managers.ContainsKey(entityType.FullName))

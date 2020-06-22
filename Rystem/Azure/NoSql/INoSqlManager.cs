@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.NoSql
 {
-    internal interface INoSqlManager<TEntity> : IManager<TEntity>
+    internal interface INoSqlManager<TEntity> : IRystemManager<TEntity>
     {
         Task<bool> ExistsAsync(TEntity entity, Installation installation);
         Task<IList<TEntity>> GetAsync(TEntity entity, Installation installation, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null);

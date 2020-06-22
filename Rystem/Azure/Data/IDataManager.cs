@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Data
 {
-    internal interface IDataManager<TEntity> : IManager<TEntity>
+    internal interface IDataManager<TEntity> : IRystemManager<TEntity>
         where TEntity : IData
     {
         Task<bool> ExistsAsync(TEntity entity, Installation installation);

@@ -11,7 +11,7 @@ namespace System
 {
     public static class NoSqlExtensions
     {
-        private static IManager<TEntity> GetNoSqlManager<TEntity>(TEntity entity)
+        private static IRystemManager<TEntity> GetNoSqlManager<TEntity>(TEntity entity)
             where TEntity : INoSql 
             => new NoSqlManager<TEntity>(entity.GetConfigurationBuilder(), entity);
         private static INoSqlManager<TEntity> Manager<TEntity>(this TEntity entity)

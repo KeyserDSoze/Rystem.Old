@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.NoSql
 {
-    internal class NoSqlManager<TEntity> : INoSqlManager<TEntity>, IManager<TEntity>
+    internal class NoSqlManager<TEntity> : INoSqlManager<TEntity>, IRystemManager<TEntity>
     {
         private readonly IDictionary<Installation, INoSqlIntegration<TEntity>> Integrations = new Dictionary<Installation, INoSqlIntegration<TEntity>>();
         private readonly IDictionary<Installation, NoSqlConfiguration> NoSqlConfiguration;

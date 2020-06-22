@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem
 {
-    internal interface IManager<TEntity> : IManager
+    internal interface IRystemManager<TEntity> : IRystemManager
     {
     }
 }

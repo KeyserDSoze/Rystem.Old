@@ -11,7 +11,7 @@ namespace System
 {
     public static class DataExtensions
     {
-        private static IManager<TEntity> GetDataManager<TEntity>(TEntity entity)
+        private static IRystemManager<TEntity> GetDataManager<TEntity>(TEntity entity)
             where TEntity : IData
             => new DataManager<TEntity>(entity.GetConfigurationBuilder(), entity);
         private static IDataManager<TEntity> Manager<TEntity>(this TEntity entity)

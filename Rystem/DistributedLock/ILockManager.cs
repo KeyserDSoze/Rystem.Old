@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.DistributedLock
 {
-    internal interface ILockManager<TEntity> : IManager<TEntity>
+    internal interface ILockManager<TEntity> : IRystemManager<TEntity>
     {
         Task<bool> AcquireAsync(string key, Installation installation = Installation.Default);
         Task<bool> IsAcquiredAsync(string key, Installation installation = Installation.Default);

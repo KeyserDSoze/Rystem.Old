@@ -7,7 +7,7 @@ namespace Rystem.DistributedLock
 {
     public static class LockExtensions
     {
-        private static IManager<TEntity> GetLockManager<TEntity>(TEntity entity)
+        private static IRystemManager<TEntity> GetLockManager<TEntity>(TEntity entity)
             where TEntity : ILock
             => new LockManager<TEntity>(entity.GetConfigurationBuilder(), entity);
         private static ILockManager<TEntity> Manager<TEntity>(this TEntity entity)

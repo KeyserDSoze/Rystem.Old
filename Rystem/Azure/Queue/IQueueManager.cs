@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Queue
 {
-    internal interface IQueueManager<TQueue> : IManager<TQueue>
+    internal interface IQueueManager<TQueue> : IRystemManager<TQueue>
     {
         Task<bool> SendAsync(TQueue message, Installation installation, int path, int organization);
         Task<long> SendScheduledAsync(TQueue message, int delayInSeconds, Installation installation, int path, int organization);

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem
 {
-    public interface IManager
+    public interface IRystemManager
     {
         InstallerType InstallerType { get; }
     }

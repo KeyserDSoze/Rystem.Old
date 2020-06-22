@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Aggregation
 {
-    internal interface IAggregationManager<T> : IAggregationManager, IManager<T>
+    internal interface IAggregationManager<T> : IAggregationManager, IRystemManager<T>
     {
         Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default);
         Task<IList<T>> FlushAsync(ILogger log, Installation installation);

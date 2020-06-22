@@ -13,7 +13,7 @@ namespace System
 {
     public static partial class QueueExtensions
     {
-        private static IManager<TEntity> GetQueueManager<TEntity>(TEntity entity)
+        private static IRystemManager<TEntity> GetQueueManager<TEntity>(TEntity entity)
             where TEntity : IQueue
             => new QueueManager<TEntity>(entity.GetConfigurationBuilder(), entity);
         private static IQueueManager<TEntity> Manager<TEntity>(this TEntity entity)

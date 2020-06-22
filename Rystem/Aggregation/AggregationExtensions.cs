@@ -8,7 +8,7 @@ namespace System
 {
     public static class AggregationExtensions
     {
-        private static IManager<T> GetAggregationManager<T>(IAggregation<T> entity)
+        private static IRystemManager<T> GetAggregationManager<T>(IAggregation<T> entity)
         {
             var manager = new AggregationManager<T>(entity.GetConfigurationBuilder());
             AggregationManagerFlusher.Instance.AddManager(manager);

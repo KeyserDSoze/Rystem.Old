@@ -23,8 +23,8 @@ namespace Rystem.Queue
                     var client = new QueueServiceClient(QueueConfiguration.ConnectionString);
                     context = client.GetQueueClient(QueueConfiguration.Name ?? typeof(TEntity).Name);
                 }
-                if (!context.ExistsAsync().ToResult())
-                    context.CreateIfNotExistsAsync();
+                if (!context.Exists())
+                    context.CreateIfNotExists();
                 return context;
             }
         }
