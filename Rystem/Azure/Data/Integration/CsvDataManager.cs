@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Data.Integration
 {
-    internal class CsvDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
+    public class CsvDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
           where TEntity : IData
     {
         private readonly char SplittingChar;

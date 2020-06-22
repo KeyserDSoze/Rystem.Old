@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace Rystem.Data.Integration
 {
-    internal class AvroDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
+    public class JsonAvroDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
           where TEntity : IData
     {
-        public AvroDataManager()
+        public JsonAvroDataManager()
         {
         }
         public async Task<WrapperEntity<TEntity>> ReadAsync(DataWrapper dummy)
