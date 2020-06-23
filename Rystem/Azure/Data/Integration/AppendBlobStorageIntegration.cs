@@ -32,10 +32,11 @@ namespace Rystem.Data
 
         public async Task<IList<TEntity>> ListAsync(TEntity entity, string prefix, int? takeCount)
         {
+            var client = context ?? await GetContextAsync().NoContext();
             List<TEntity> items = new List<TEntity>();
             CancellationToken token = default;
             int count = 0;
-            await foreach (BlobItem blobItem in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
+            await foreach (BlobItem blobItem in client.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
                 items.AddRange(await this.ReadAsync(blobItem).NoContext());
                 count++;
@@ -51,8 +52,9 @@ namespace Rystem.Data
             => await this.FetchPropertiesAsync(prefix, takeCount).NoContext();
         public async Task<bool> WriteAsync(TEntity entity, long offset)
         {
+            var client = context ?? await GetContextAsync().NoContext();
             int attempt = 0;
-            AppendBlobClient appendBlob = this.Context.GetAppendBlobClient(entity.Name);
+            AppendBlobClient appendBlob = client.GetAppendBlobClient(entity.Name);
             DataWrapper dummy = await this.Writer.WriteAsync(entity).NoContext();
             do
             {

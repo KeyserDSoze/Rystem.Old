@@ -12,7 +12,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class MultitonInMemoryWithGarbageCollector : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
 
@@ -24,9 +24,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             }
             await Task.Delay(20000);
             int count = (await new Service2Key().KeysAsync().NoContext()).Count;
-            if (count > 0)
-                return false;
-            return true;
+            metrics.CheckIfNotOkExit(count > 0);
         }
         private class Service2Key : ICacheKey<Service2>
         {

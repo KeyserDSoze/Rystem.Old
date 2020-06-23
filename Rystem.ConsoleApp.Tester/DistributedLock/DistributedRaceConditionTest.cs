@@ -10,21 +10,25 @@ namespace Rystem.ZConsoleApp.Tester.DistributedLock
 {
     public class DistributedRaceConditionTest : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        private class MyNumber
         {
+            public int X { get; set; }
+        }
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
+        {
+            MyNumber myNum = new MyNumber();
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < 20; i++)
             {
-                tasks.Add(DistributedSingleton.ExecuteAsync(Go));
+                tasks.Add(DistributedSingleton.ExecuteAsync(() => Go(myNum)));
             }
             await Task.WhenAll(tasks);
-            return true;
+            metrics.CheckIfOkExit(metrics.Command.NumberOfThread > 1 ? myNum.X == 1 || myNum.X == 0 : myNum.X == 1, myNum.X);
         }
-        public static async Task Go()
+        private static async Task Go(MyNumber myNumber)
         {
-            Console.WriteLine("Past");
             await Task.Delay(5000);
-            Console.WriteLine("Present");
+            myNumber.X++;
         }
         private static DistributedRaceCondition DistributedSingleton = new DistributedRaceCondition(TableStorageTester.ConnectionString, LockType.BlobStorage, "MyPensylvania");
     }

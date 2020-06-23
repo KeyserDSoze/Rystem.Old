@@ -12,25 +12,18 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class FastCacheTest : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             var sv = new SaveTheLastDance() { Hola = "DD", Id = 4 };
             string key = "MyKey";
             await sv.SetCacheAsync(key).NoContext();
             var tv = await key.FromCacheAsync<SaveTheLastDance>().NoContext();
-            if (sv.Id != tv.Id)
-                return false;
-            if (!await key.ExistCacheAsync().NoContext())
-                return false;
-            if (!await key.RemoveCacheAsync().NoContext())
-                return false;
-            if (await key.ExistCacheAsync().NoContext())
-                return false;
+            metrics.CheckIfNotOkExit(sv.Id != tv.Id);
+            metrics.CheckIfNotOkExit(!await key.ExistCacheAsync().NoContext());
+            metrics.CheckIfNotOkExit(!await key.RemoveCacheAsync().NoContext());
+            metrics.CheckIfNotOkExit(await key.ExistCacheAsync().NoContext());
             tv = await key.FromCacheAsync<SaveTheLastDance>().NoContext();
-            if (tv != null)
-                return false;
-
-            return true;
+            metrics.CheckIfNotOkExit(tv != null);
         }
         private class SaveTheLastDance
         {

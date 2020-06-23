@@ -16,7 +16,7 @@ namespace Rystem.Cache
         private readonly IMultitonIntegration<TCache> InMemory;
         private bool MemoryIsActive 
             => this.Configuration.HasMemory;
-        private readonly IMultitonIntegrationAsync<TCache> InCloud;
+        private readonly ICacheIntegrationAsync<TCache> InCloud;
         private bool CloudIsActive 
             => this.Configuration.HasCloud;
 
@@ -185,11 +185,11 @@ namespace Rystem.Cache
             public ICacheKey<TCache> Key { get; }
             public string KeyString { get; }
             public bool CloudIsActive { get; }
-            public IMultitonIntegrationAsync<TCache> InCloud { get; }
+            public ICacheIntegrationAsync<TCache> InCloud { get; }
             private TCache CachedData;
             public TCache GetCachedData()
                 => this.CachedData;
-            public Instancer(ICacheKey<TCache> key, string keyString, IMultitonIntegrationAsync<TCache> inCloud)
+            public Instancer(ICacheKey<TCache> key, string keyString, ICacheIntegrationAsync<TCache> inCloud)
             {
                 this.Key = key;
                 this.KeyString = keyString;

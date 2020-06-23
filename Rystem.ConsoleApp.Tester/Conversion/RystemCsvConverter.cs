@@ -9,7 +9,7 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
 {
     public class RystemCsvConverter : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             Halo halo = new Halo()
@@ -52,9 +52,7 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
             string salo = halo.ToRystemCsv();
             Halo halo3 = salo.FromRystemCsv<Halo>();
             string salo2 = halo3.ToDefaultJson();
-            Console.WriteLine(salo.Length + " vs " + salo2.Length);
-            if (salo.Length > salo2.Length)
-                return false;
+            metrics.CheckIfOkExit(salo.Length < salo2.Length);
             Model1 model1 = new Model1()
             {
                 A = 4,
@@ -65,12 +63,9 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                 }
             };
             string salo3 = model1.ToRystemCsv();
-            if (!salo3.Contains("Fregene"))
-                return false;
+            metrics.CheckIfNotOkExit(!salo3.Contains("Fregene"));
             Model3 model3 = salo3.FromRystemCsv<Model3>();
-            if (model3.Model4.Fregene != "Darua")
-                return false;
-            return true;
+            metrics.CheckIfNotOkExit(model3.Model4.Fregene != "Darua");
         }
         private class Model1
         {

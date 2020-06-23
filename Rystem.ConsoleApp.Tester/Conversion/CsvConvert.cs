@@ -11,7 +11,7 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
 {
     public class CsvConvert : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             List<CsvModel> csvs = new List<CsvModel>();
@@ -36,16 +36,25 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                 });
             string firstCsv = csvs.ToCsv();
             string secondCsv = csvs2.ToCsv('|');
-            if (!firstCsv.Contains("Corto"))
-                return false;
+            metrics.CheckIfNotOkExit(!firstCsv.Contains("Corto"));
             List<CsvModel> csvsComparer = firstCsv.FromCsv<CsvModel>().ToList();
             List<CsvModel2> csvs2Comparer = secondCsv.FromCsv<CsvModel2>('|').ToList();
+            bool check = true;
             for (int i = 0; i < 100; i++)
-                if (csvs[i].Hotel != csvsComparer[i].Hotel)
-                    return false;
+            {
+                check = csvs[i].Hotel == csvsComparer[i].Hotel;
+                if (!check)
+                    break;
+            }
+            metrics.CheckIfOkExit(check);
+            check = true;
             for (int i = 0; i < 100; i++)
-                if (csvs2[i].Hotel != csvs2Comparer[i].Hotel)
-                    return false;
+            {
+                check = csvs2[i].Hotel == csvs2Comparer[i].Hotel;
+                if (!check)
+                    break;
+            }
+            metrics.CheckIfOkExit(check);
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 using (StreamWriter sw = new StreamWriter(memoryStream))
@@ -54,15 +63,18 @@ namespace Rystem.ZConsoleApp.Tester.Conversion
                     sw.Flush();
                     List<CsvModel> csvsComparer2 = (await memoryStream.FromCsvAsync<CsvModel>().NoContext()).ToList();
                     for (int i = 0; i < 100; i++)
-                        if (csvs[i].Hotel != csvsComparer2[i].Hotel)
-                            return false;
+                        metrics.CheckIfNotOkExit(csvs[i].Hotel != csvsComparer2[i].Hotel);
                 }
             }
             List<CsvModel2> csvs2Comparer2 = secondCsv.Split('\n').FromCsv<CsvModel2>('|').ToList();
+            check = true;
             for (int i = 0; i < 100; i++)
-                if (csvs2[i].Hotel != csvs2Comparer2[i].Hotel)
-                    return false;
-            return true;
+            {
+                check = csvs2[i].Hotel == csvs2Comparer2[i].Hotel;
+                if (!check)
+                    break;
+            }
+            metrics.CheckIfOkExit(check);
         }
         private class CsvModel
         {

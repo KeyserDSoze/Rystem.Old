@@ -8,30 +8,24 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 {
     public class DefaultCrypting : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).ConfigureAwait(false);
             SuperTest superTest = new SuperTest { A = "Hello", B = "Hello2" };
             string value = superTest.DefaultEncrypt();
             SuperTest superTest1 = value.DefaultDecrypt<SuperTest>();
-            if (superTest.A != superTest1.A)
-                return false;
+            metrics.CheckIfNotOkExit(superTest.A != superTest1.A);
             string value2 = superTest.DefaultEncrypt();
-            if (value == value2)
-                return false;
+            metrics.CheckIfNotOkExit(value == value2);
             value = superTest.DefaultHash();
             value2 = superTest.DefaultHash();
-            if (value != value2)
-                return false;
+            metrics.CheckIfNotOkExit(value != value2);
             string value3 = value.DefaultHash();
             string value4 = value.DefaultHash();
-            if (value3 != value4)
-                return false;
+            metrics.CheckIfNotOkExit(value3 != value4);
             string colo = value.DefaultEncrypt();
             string valu = colo.DefaultDecrypt<string>();
-            if (valu != value)
-                return false;
-            return true;
+            metrics.CheckIfNotOkExit(valu != value);
         }
         private class SuperTest
         {

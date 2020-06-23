@@ -30,10 +30,11 @@ namespace Rystem.Data
 
         public async Task<IList<TEntity>> ListAsync(TEntity entity, string prefix, int? takeCount)
         {
+            var client = context ?? await GetContextAsync().NoContext();
             List<TEntity> items = new List<TEntity>();
             CancellationToken token = default;
             int count = 0;
-            await foreach (BlobItem blobItem in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
+            await foreach (BlobItem blobItem in client.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
                 items.AddRange(await this.ReadAsync(blobItem).NoContext());
                 count++;
@@ -48,16 +49,14 @@ namespace Rystem.Data
         public async Task<IList<DataWrapper>> FetchPropertiesAsync(TEntity entity, string prefix, int? takeCount)
           => await this.FetchPropertiesAsync(prefix, takeCount).NoContext();
 
-        private readonly static object TrafficLight = new object();
         private const long Size = 512;
         public async Task<bool> WriteAsync(TEntity entity, long offset)
         {
-            var pageBlob = this.Context.GetPageBlobClient(entity.Name);
-            DataWrapper dummy = await this.Writer.WriteAsync((TEntity)entity).NoContext();
+            var client = context ?? await GetContextAsync().NoContext();
+            var pageBlob = client.GetPageBlobClient(entity.Name);
+            DataWrapper dummy = await this.Writer.WriteAsync(entity).NoContext();
             if (!await pageBlob.ExistsAsync().NoContext())
-                lock (TrafficLight)
-                    if (!pageBlob.ExistsAsync().ToResult())
-                        pageBlob.CreateAsync(Size).ToResult();
+                await pageBlob.CreateAsync(Size);
             long sized = Size - dummy.Stream.Length;
             if (sized != 0)
             {

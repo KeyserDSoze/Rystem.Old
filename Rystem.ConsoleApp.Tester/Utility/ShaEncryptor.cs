@@ -10,7 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
     public class ShaEncryptor : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             ShaHelper shaHelper = new ShaHelper()
@@ -19,18 +19,16 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             };
             string a = shaHelper.Encrypt(Installation.Inst00).CryptedMessage;
             string b = shaHelper.Encrypt(Installation.Inst00).CryptedMessage;
-            if (a != b)
-                return false;
+            metrics.CheckIfNotOkExit(a != b);
             try
             {
                 shaHelper.Decrypt();
-                return false;
+                metrics.AddNotOk();
             }
             catch
             {
 
             }
-            return true;
         }
     }
     public class ShaHelper : ICrypto

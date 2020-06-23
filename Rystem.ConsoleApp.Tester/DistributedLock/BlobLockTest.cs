@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.DistributedLock
 {
     public class BlobLockTest : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await new Duby().AcquireAsync();
             await new Duby().AcquireAsync();
@@ -24,7 +24,7 @@ namespace Rystem.ZConsoleApp.Tester.DistributedLock
             await new Duby().ReleaseAsync();
             await new Duby().AcquireAsync();
             await new Duby().ReleaseAsync();
-            return true;
+            metrics.CheckIfOkExit(true);
         }
         private class Duby : ILock
         {

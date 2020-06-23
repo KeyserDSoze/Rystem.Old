@@ -12,41 +12,29 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class MultitonInMemoryTest : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             Service2Key serviceKey = new Service2Key() { Id = 2 };
-            if (serviceKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(serviceKey.IsPresent());
             Service2 service = serviceKey.Instance() as Service2;
-            if (!serviceKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(!serviceKey.IsPresent());
             serviceKey.Restore(new Service2() { A = "4", C = 0 });
-            if ((serviceKey.Instance() as Service2).A != "4")
-                return false;
-            if (serviceKey.Keys().Count != 1)
-                return false;
-            if (!serviceKey.Remove())
-                return false;
-            if (serviceKey.IsPresent())
-                return false;
-            if (serviceKey.Keys().Count != 0)
-                return false;
+            metrics.CheckIfNotOkExit((serviceKey.Instance() as Service2).A != "4");
+            metrics.CheckIfNotOkExit(serviceKey.Keys().Count != 1);
+            metrics.CheckIfNotOkExit(!serviceKey.Remove());
+            metrics.CheckIfNotOkExit(serviceKey.IsPresent());
+            metrics.CheckIfNotOkExit(serviceKey.Keys().Count != 0);
             service = serviceKey.Instance() as Service2;
-            Thread.Sleep(200);
-            if (!serviceKey.IsPresent())
-                return false;
-            Thread.Sleep(800);
-            if (serviceKey.IsPresent())
-                return false;
+            await Task.Delay(200);
+            metrics.CheckIfNotOkExit(!serviceKey.IsPresent());
+            await Task.Delay(800);
+            metrics.CheckIfNotOkExit(serviceKey.IsPresent());
             serviceKey.Restore(expiringTime: new TimeSpan(0, 0, 5));
-            Thread.Sleep(2000);
-            if (!serviceKey.IsPresent())
-                return false;
-            Thread.Sleep(5000);
-            if (serviceKey.IsPresent())
-                return false;
-            return true;
+            await Task.Delay(2000);
+            metrics.CheckIfNotOkExit(!serviceKey.IsPresent());
+            await Task.Delay(5000);
+            metrics.CheckIfNotOkExit(serviceKey.IsPresent());
         }
     }
     public class Service2Key : ICacheKey<Service2>

@@ -10,10 +10,10 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 {
     public class AssemblerType : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0);
-            return Assembler.Types.Count > 0;
+            metrics.CheckIfNotOkExit(Assembler.Types.Count <= 0);
         }
     }
 }

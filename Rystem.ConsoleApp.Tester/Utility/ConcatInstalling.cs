@@ -10,13 +10,10 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 {
     public class ConcatInstalling : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             Fagioli fagioli = new Fagioli();
-            if (await fagioli.UpdateAsync(Installation.Inst01))
-                return true;
-            else
-                return false;
+            metrics.CheckIfNotOkExit(!await fagioli.UpdateAsync(Installation.Inst01));
         }
         public class Fagioli : INoSql
         {

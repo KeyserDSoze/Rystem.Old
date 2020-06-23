@@ -11,11 +11,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 {
     public class BlockBlobStorageTest : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
+            string name = $"Salam/Hello{metrics.ThreadId}.json";
             Meatball2 meatball = new Meatball2()
             {
-                Name = "Salam/Hello2.json",
+                Name = name,
                 Properties = new DataProperties()
                 {
                     ContentType = "text/json"
@@ -23,60 +24,37 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             };
             await meatball.DeleteAsync(Installation.Inst01);
             meatball.A = 3;
-            await meatball.WriteAsync(installation:Installation.Inst01);
-            if (!await meatball.ExistsAsync(Installation.Inst01))
-                return false;
+            await meatball.WriteAsync(installation: Installation.Inst01);
+            metrics.CheckIfNotOkExit(!await meatball.ExistsAsync(Installation.Inst01));
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            await meatball.WriteAsync(installation:Installation.Inst01);
-            if ((await meatball.FetchAsync(Installation.Inst01)).A != meatball.A)
-                return false;
-            foreach(string value in await meatball.SearchAsync("Salam/H", null, Installation.Inst01))
-            {
-                Console.WriteLine(value);
-            }
-            IList<Meatball2> meatball2 = await meatball.ToListAsync(installation:Installation.Inst01);
-            if (meatball2.Count != 1)
-                return false;
-            IList<DataWrapper> properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst01);
-            if (properties.Count != 1)
-                return false;
-            if (meatball2.FirstOrDefault().B != "dsadsadsa")
-                return false;
-            if (!await meatball.DeleteAsync(Installation.Inst01))
-                return false;
-            if (await meatball.ExistsAsync(Installation.Inst01))
-                return false;
-            meatball2 = await meatball.ToListAsync(installation:Installation.Inst01);
-            if (meatball2.Count != 0)
-                return false;
-
+            await meatball.WriteAsync(installation: Installation.Inst01);
+            metrics.CheckIfNotOkExit((await meatball.FetchAsync(Installation.Inst01)).A != meatball.A);
+            IList<Meatball2> meatball2 = await meatball.ToListAsync(name, installation: Installation.Inst01);
+            metrics.CheckIfNotOkExit(meatball2.Count != 1);
+            IList<DataWrapper> properties = await meatball.FetchPropertiesAsync(name, installation: Installation.Inst01);
+            metrics.CheckIfNotOkExit(properties.Count != 1);
+            metrics.CheckIfNotOkExit(meatball2.FirstOrDefault().B != "dsadsadsa");
+            metrics.CheckIfNotOkExit(!await meatball.DeleteAsync(Installation.Inst01));
+            metrics.CheckIfNotOkExit(await meatball.ExistsAsync(Installation.Inst01));
+            meatball2 = await meatball.ToListAsync(name, installation: Installation.Inst01);
+            metrics.CheckIfNotOkExit(meatball2.Count != 0);
             await meatball.DeleteAsync(Installation.Inst00);
             meatball.A = 3;
-            await meatball.WriteAsync(installation:Installation.Inst00);
-            if (!await meatball.ExistsAsync(Installation.Inst00))
-                return false;
+            await meatball.WriteAsync(installation: Installation.Inst00);
+            metrics.CheckIfNotOkExit(!await meatball.ExistsAsync(Installation.Inst00));
             meatball.A = 6;
             meatball.B = "dsadsadsa";
-            await meatball.WriteAsync(installation:Installation.Inst00);
-            if ((await meatball.FetchAsync(Installation.Inst00)).A != meatball.A)
-                return false;
-            meatball2 = await meatball.ToListAsync(installation:Installation.Inst00);
-            if (meatball2.Count != 1)
-                return false;
-            properties = await meatball.FetchPropertiesAsync(installation:Installation.Inst00);
-            if (properties.Count != 1)
-                return false;
-            if (meatball2.FirstOrDefault().B != "dsadsadsa")
-                return false;
-            if (!await meatball.DeleteAsync(Installation.Inst00))
-                return false;
-            if (await meatball.ExistsAsync(Installation.Inst00))
-                return false;
-            if (await meatball.CountAsync(installation: Installation.Inst00) != 0)
-                return false;
-
-            return true;
+            await meatball.WriteAsync(installation: Installation.Inst00);
+            metrics.CheckIfNotOkExit((await meatball.FetchAsync(Installation.Inst00)).A != meatball.A);
+            meatball2 = await meatball.ToListAsync(name, installation: Installation.Inst00);
+            metrics.CheckIfNotOkExit(meatball2.Count != 1);
+            properties = await meatball.FetchPropertiesAsync(name, installation: Installation.Inst00);
+            metrics.CheckIfNotOkExit(properties.Count != 1);
+            metrics.CheckIfNotOkExit(meatball2.FirstOrDefault().B != "dsadsadsa");
+            metrics.CheckIfNotOkExit(!await meatball.DeleteAsync(Installation.Inst00));
+            metrics.CheckIfNotOkExit(await meatball.ExistsAsync(Installation.Inst00));
+            metrics.CheckIfNotOkExit(await meatball.CountAsync(name, installation: Installation.Inst00) != 0);
         }
     }
 

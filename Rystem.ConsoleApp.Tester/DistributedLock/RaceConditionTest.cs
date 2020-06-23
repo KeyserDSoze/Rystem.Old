@@ -11,22 +11,26 @@ namespace Rystem.ZConsoleApp.Tester.DistributedLock
     public class RaceConditionTest : IUnitTest
     {
         static RaceCondition RaceCondition = new RaceCondition();
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        private class MyNum
         {
+            public int X { get; set; }
+        }
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
+        {
+            MyNum myNum = new MyNum();
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < 30; i++)
-                tasks.Add(Solitude());
+                tasks.Add(Solitude(myNum));
             await Task.WhenAll(tasks);
-            return true;
+            metrics.CheckIfOkExit(metrics.Command.NumberOfThread > 1 ? myNum.X == 1 || myNum.X == 0 : myNum.X == 1, myNum.X);
         }
-        private static async Task Solitude()
+        private static async Task Solitude(MyNum myNum)
         {
             await RaceCondition.ExecuteAsync(async () =>
             {
-                Console.WriteLine("Start to");
                 await Task.Delay(4000);
-                Console.WriteLine("End to");
-            });
+                myNum.X++;
+            }).NoContext();
         }
     }
 }

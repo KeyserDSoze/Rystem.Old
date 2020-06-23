@@ -11,42 +11,30 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class MultitonTableStorageTest : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             SmallTableKey smallTableKey = new SmallTableKey() { Id = 2 };
             smallTableKey.Remove();
-            if (smallTableKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(smallTableKey.IsPresent());
             SmallTable smallTable = smallTableKey.Instance() as SmallTable;
-            if (!smallTableKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(!smallTableKey.IsPresent());
             smallTableKey.Restore(new SmallTable() { Id = 4 });
-            if ((smallTableKey.Instance() as SmallTable).Id != 4)
-                return false;
-            if (smallTableKey.Keys().Count != 1)
-                return false;
-            if (!smallTableKey.Remove())
-                return false;
-            if (smallTableKey.IsPresent())
-                return false;
-            if (smallTableKey.Keys().Count != 0)
-                return false;
+            metrics.CheckIfNotOkExit((smallTableKey.Instance() as SmallTable).Id != 4);
+            metrics.CheckIfNotOkExit(smallTableKey.Keys().Count != 1);
+            metrics.CheckIfNotOkExit(!smallTableKey.Remove());
+            metrics.CheckIfNotOkExit(smallTableKey.IsPresent());
+            metrics.CheckIfNotOkExit(smallTableKey.Keys().Count != 0);
             smallTable = smallTableKey.Instance() as SmallTable;
-            Thread.Sleep(200);
-            if (!smallTableKey.IsPresent())
-                return false;
-            Thread.Sleep(4800);
-            if (smallTableKey.IsPresent())
-                return false;
+            await Task.Delay(200);
+            metrics.CheckIfNotOkExit(!smallTableKey.IsPresent());
+            await Task.Delay(4800);
+            metrics.CheckIfNotOkExit(smallTableKey.IsPresent());
             smallTableKey.Restore(expiringTime: new TimeSpan(0, 0, 10));
-            Thread.Sleep(7000);
-            if (!smallTableKey.IsPresent())
-                return false;
-            Thread.Sleep(5000);
-            if (smallTableKey.IsPresent())
-                return false;
-            return true;
+            await Task.Delay(7000);
+            metrics.CheckIfNotOkExit(!smallTableKey.IsPresent());
+            await Task.Delay(5000);
+            metrics.CheckIfNotOkExit(smallTableKey.IsPresent());
         }
     }
     public class SmallTableKey : ICacheKey<SmallTable>

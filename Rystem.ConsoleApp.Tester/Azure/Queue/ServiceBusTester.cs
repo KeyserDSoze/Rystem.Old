@@ -12,7 +12,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class ServiceBusTester : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             MyServiceBus myServiceBus = new MyServiceBus()
             {
@@ -28,57 +28,29 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 myServiceBus
             };
             long messageId = await myServiceBus.SendScheduledAsync(120);
-            if (messageId <= 0)
-                return false;
+            metrics.CheckIfNotOkExit(messageId <= 0);
             bool returned = await myServiceBus.DeleteScheduledAsync(messageId);
-            if (!returned)
-                return false;
+            metrics.CheckIfNotOkExit(!returned);
             messageId = (await myServiceBuses.SendScheduledBatchAsync(120)).FirstOrDefault();
-            if (messageId <= 0)
-                return false;
+            metrics.CheckIfNotOkExit(messageId <= 0);
             returned = await myServiceBus.DeleteScheduledAsync(messageId);
-            if (!returned)
-                return false;
+            metrics.CheckIfNotOkExit(!returned);
             DebugMessage debugMessage = await myServiceBus.DebugSendAsync(120);
-            if (!debugMessage.ServiceBusMessage.Contains("dsad"))
-                return false;
+            metrics.CheckIfNotOkExit(!debugMessage.ServiceBusMessage.Contains("dsad"));
             DebugMessage debugMessage2 = await myServiceBuses.DebugSendBatchAsync(120);
-            if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
-                return false;
-
+            metrics.CheckIfNotOkExit(!debugMessage2.ServiceBusMessage.Contains("dsad"));
             messageId = await myServiceBus.SendScheduledAsync(120, installation: Installation.Inst00);
-            if (messageId <= 0)
-                return false;
+            metrics.CheckIfNotOkExit(messageId <= 0);
             returned = await myServiceBus.DeleteScheduledAsync(messageId, installation: Installation.Inst00);
-            if (!returned)
-                return false;
+            metrics.CheckIfNotOkExit(!returned);
             messageId = (await myServiceBuses.SendScheduledBatchAsync(120, installation: Installation.Inst00)).FirstOrDefault();
-            if (messageId <= 0)
-                return false;
+            metrics.CheckIfNotOkExit(messageId <= 0);
             returned = await myServiceBus.DeleteScheduledAsync(messageId, installation: Installation.Inst00);
-            if (!returned)
-                return false;
+            metrics.CheckIfNotOkExit(!returned);
             debugMessage = await myServiceBus.DebugSendAsync(120, installation: Installation.Inst00);
-            if (!debugMessage.ServiceBusMessage.Contains("dsad"))
-                return false;
+            metrics.CheckIfNotOkExit(!debugMessage.ServiceBusMessage.Contains("dsad"));
             debugMessage2 = await myServiceBuses.DebugSendBatchAsync(120, installation: Installation.Inst00);
-            if (!debugMessage2.ServiceBusMessage.Contains("dsad"))
-                return false;
-
-            //ServiceBusMessage connectionMessage = new ServiceBusMessage()
-            //{
-            //    Attempt = 0,
-            //    Container = myServiceBus,
-            //    Flow =FlowType.Flow0,
-            //    Version =VersionType.V0,
-            //};
-            //myServiceBus = connectionMessage.ToObject<MyServiceBus>();
-            //string jsonSent = connectionMessage.ToJson();
-            //connectionMessage = jsonSent.ToServiceBusMessage();
-            //myServiceBus = connectionMessage.ToObject<MyServiceBus>();
-            //new MyServiceBus().Delete(4);
-            //long aa = connectionMessage.SendFurther(30);
-            return true;
+            metrics.CheckIfNotOkExit(!debugMessage2.ServiceBusMessage.Contains("dsad"));
         }
         private class MyServiceBus : IQueue
         {

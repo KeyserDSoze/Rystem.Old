@@ -8,15 +8,16 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 {
     public class RetryTest : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
+            List<CircuitBreakerEvent> events = new List<CircuitBreakerEvent>();
             try
             {
                 await Retry.Create(SetError, 2)
                       .CatchError(OnError)
-                        .WithCircuitBreak(100, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
+                        .WithCircuitBreak(100, TimeSpan.FromSeconds(30), "MyBigIdea", (x) => OnCircuitBreakerLock(x, events))
                       .ExecuteAsync();
-                return false;
+                metrics.AddNotOk();
             }
             catch (Exception ex)
             {
@@ -28,7 +29,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             {
                 warps.Add(Retry.Create(SetError, 2)
                    .CatchError(OnError)
-                       .WithCircuitBreak(100, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
+                       .WithCircuitBreak(100, TimeSpan.FromSeconds(30), "MyBigIdea", (x) => OnCircuitBreakerLock(x, events))
                        .NotThrowExceptionAfterLastAttempt()
                            .ExecuteAsync());
             }
@@ -38,11 +39,11 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             {
                 string response = await Retry.Create(MakeRequest, 2)
                     .CatchError(OnError)
-                        .WithCircuitBreak(200, TimeSpan.FromSeconds(30), "MyBigIdea", OnCircuitBreakerLock)
+                        .WithCircuitBreak(200, TimeSpan.FromSeconds(30), "MyBigIdea", (x) => OnCircuitBreakerLock(x, events))
                         .NotThrowExceptionAfterLastAttempt()
                             .ExecuteAsync();
             }
-            return true;
+            metrics.CheckIfOkExit(events.Count == 4, events.Count);
         }
         public static Task<string> SetError()
             => throw new NotImplementedException();
@@ -53,9 +54,9 @@ namespace Rystem.ZConsoleApp.Tester.Utility
             //Console.WriteLine(exception.ToString());
             return Task.CompletedTask;
         }
-        public static Task OnCircuitBreakerLock(CircuitBreakerEvent circuitBreakerLock)
+        public static Task OnCircuitBreakerLock(CircuitBreakerEvent circuitBreakerLock, List<CircuitBreakerEvent> events)
         {
-            Console.WriteLine(circuitBreakerLock.ToString());
+            events.Add(circuitBreakerLock);
             return Task.CompletedTask;
         }
     }

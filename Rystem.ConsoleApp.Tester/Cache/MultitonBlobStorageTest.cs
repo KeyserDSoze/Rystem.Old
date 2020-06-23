@@ -12,42 +12,31 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class MultitonBlobStorageTest : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             SmallBlobKey smallBlobKey = new SmallBlobKey() { Id = 2 };
             smallBlobKey.Remove();
-            if (smallBlobKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(smallBlobKey.IsPresent());
             SmallBlob smallBlob = smallBlobKey.Instance();
-            if (!smallBlobKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(!smallBlobKey.IsPresent());
             smallBlobKey.Restore(new SmallBlob() { Id = 4 });
-            if ((smallBlobKey.Instance() as SmallBlob).Id != 4)
-                return false;
-            if (smallBlobKey.Keys().Count != 1)
-                return false;
-            if (!smallBlobKey.Remove())
-                return false;
-            if (smallBlobKey.IsPresent())
-                return false;
-            if (smallBlobKey.Keys().Count != 0)
-                return false;
+            metrics.CheckIfNotOkExit((smallBlobKey.Instance() as SmallBlob).Id != 4);
+            metrics.CheckIfNotOkExit(smallBlobKey.Keys().Count != 1);
+            metrics.CheckIfNotOkExit(!smallBlobKey.Remove());
+            metrics.CheckIfNotOkExit(smallBlobKey.IsPresent());
+            metrics.CheckIfNotOkExit(smallBlobKey.Keys().Count != 0);
+
             smallBlob = smallBlobKey.Instance();
-            Thread.Sleep(200);
-            if (!smallBlobKey.IsPresent())
-                return false;
-            Thread.Sleep(4800);
-            if (smallBlobKey.IsPresent())
-                return false;
+            await Task.Delay(200);
+            metrics.CheckIfNotOkExit(!smallBlobKey.IsPresent());
+            await Task.Delay(4800);
+            metrics.CheckIfNotOkExit(smallBlobKey.IsPresent());
             smallBlobKey.Restore(expiringTime: new TimeSpan(0, 0, 10));
-            Thread.Sleep(7000);
-            if (!smallBlobKey.IsPresent())
-                return false;
-            Thread.Sleep(5000);
-            if (smallBlobKey.IsPresent())
-                return false;
-            return true;
+            await Task.Delay(7000);
+            metrics.CheckIfNotOkExit(!smallBlobKey.IsPresent());
+            await Task.Delay(5000);
+            metrics.CheckIfNotOkExit(smallBlobKey.IsPresent());
         }
     }
     public class SmallBlobKey : ICacheKey<SmallBlob>

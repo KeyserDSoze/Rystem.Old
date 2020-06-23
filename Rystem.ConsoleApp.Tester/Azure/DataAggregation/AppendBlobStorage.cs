@@ -11,37 +11,40 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 {
     public class AppendBlobStorageTest : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
+            string name = $"Hello{metrics.ThreadId}.csv";
             Ricotta meatball = new Meatball()
             {
-                Name = "Hello3.csv",
+                Name = name,
                 Properties = new DataProperties()
                 {
                     ContentType = "text/csv"
                 }
             };
+            metrics.AddOk(message: "start installing");
             await meatball.DeleteAsync();
+            metrics.AddOk(message: "delete");
             meatball.A = 3;
             await meatball.WriteAsync();
+            metrics.AddOk(message: "write");
             meatball.A = 5;
             await meatball.WriteAsync();
+            metrics.AddOk(message: "write");
             meatball.A = 6;
             meatball.B = "dsadsadsa";
             await meatball.WriteAsync();
-            IList<Ricotta> meatball2 = (await meatball.ListAsync()).ToList();
-            if (meatball2.Count != 3)
-                return false;
-            IList<DataWrapper> properties = await meatball.FetchPropertiesAsync();
-            if (properties.Count != 1)
-                return false;
-            if (!await meatball.DeleteAsync())
-                return false;
-            if (await meatball.ExistsAsync())
-                return false;
-            meatball2 = (await meatball.ListAsync()).ToList();
-            if (meatball2.Count != 0)
-                return false;
+            metrics.AddOk(message: "write");
+            IList<Ricotta> meatball2 = (await meatball.ListAsync(name)).ToList();
+            metrics.CheckIfNotOkExit(meatball2.Count != 3, meatball2.Count);
+
+            IList<DataWrapper> properties = await meatball.FetchPropertiesAsync(name);
+            metrics.CheckIfNotOkExit(properties.Count != 1);
+            metrics.CheckIfNotOkExit(!await meatball.DeleteAsync());
+            metrics.CheckIfNotOkExit(await meatball.ExistsAsync());
+
+            meatball2 = (await meatball.ListAsync(name)).ToList();
+            metrics.CheckIfNotOkExit(meatball2.Count != 0);
 
             await meatball.DeleteAsync(Installation.Inst00);
             meatball.A = 3;
@@ -51,24 +54,24 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             meatball.A = 6;
             meatball.B = "dsadsadsa";
             await meatball.WriteAsync(0, Installation.Inst00);
-            meatball2 = (await meatball.ListAsync(installation: Installation.Inst00)).ToList();
-            if (meatball2.Count != 3)
-                return false;
-            properties = await meatball.FetchPropertiesAsync(installation: Installation.Inst00);
-            if (properties.Count != 1)
-                return false;
-            if (!await meatball.DeleteAsync(Installation.Inst00))
-                return false;
-            if (await meatball.ExistsAsync(Installation.Inst00))
-                return false;
-            meatball2 = (await meatball.ListAsync(installation: Installation.Inst00)).ToList();
-            if (meatball2.Count != 0)
-                return false;
+            meatball2 = (await meatball.ListAsync(name, installation: Installation.Inst00)).ToList();
+            metrics.CheckIfNotOkExit(meatball2.Count != 3);
+
+            properties = await meatball.FetchPropertiesAsync(name, installation: Installation.Inst00);
+            metrics.CheckIfNotOkExit(properties.Count != 1);
+
+            metrics.CheckIfNotOkExit(!await meatball.DeleteAsync(Installation.Inst00));
+
+            metrics.CheckIfNotOkExit(await meatball.ExistsAsync(Installation.Inst00));
+
+            meatball2 = (await meatball.ListAsync(name, installation: Installation.Inst00)).ToList();
+            metrics.CheckIfNotOkExit(meatball2.Count != 0);
 
             try
             {
                 await new ForthBall().DeleteAsync(Installation.Inst01);
-                return false;
+                metrics.AddNotOk();
+                return;
             }
             catch
             {
@@ -76,13 +79,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
             try
             {
                 await new ZartBall().DeleteAsync(Installation.Inst02);
-                return false;
+                metrics.AddNotOk();
+                return;
             }
             catch
             {
             }
-
-            return true;
         }
     }
     public enum MeatballType

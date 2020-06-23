@@ -10,18 +10,16 @@ using System.Threading.Tasks;
 
 namespace Rystem.Cache
 {
-    internal class InRedisCache<T> : IMultitonIntegrationAsync<T>
+    internal class InRedisCache<T> : ICacheIntegrationAsync<T>
     {
         private int RoundRobin = -1;
-        private static readonly object TrafficLight = new object();
         private IDatabase Cache
         {
             get
             {
                 int value = 0;
                 if (this.Properties.NumberOfClients > 1)
-                    lock (TrafficLight)
-                        value = this.RoundRobin = (this.RoundRobin + 1) % this.Properties.NumberOfClients;
+                    value = this.RoundRobin = (this.RoundRobin + 1) % this.Properties.NumberOfClients;
                 return Connections[value].Value.GetDatabase();
             }
         }

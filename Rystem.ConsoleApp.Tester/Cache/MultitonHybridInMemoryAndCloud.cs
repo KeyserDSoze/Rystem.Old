@@ -10,7 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 {
     public class MultitonHybridInMemoryAndCloud : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             HybridTableKey hybridTableKey = new HybridTableKey() { Id = 2 };
@@ -20,9 +20,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             hybridTableKey.Restore(new HybridTable() { Id = 5 });
             hybridTableKey.Restore(new HybridTable() { Id = 7 });
             HybridTable secondHybridTable = new SecondHybridTableKey() { Id = 2 }.Instance();
-            if (hybridTable.Id == secondHybridTable.Id)
-                return false;
-            return true;
+            metrics.CheckIfNotOkExit(hybridTable.Id == secondHybridTable.Id);
         }
     }
     public class HybridTableKey : ICacheKey<HybridTable>

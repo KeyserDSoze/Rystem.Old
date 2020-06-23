@@ -15,17 +15,18 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
         public const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             FastInstaller.ConfigureTableStorage(ConnectionString);
+            string name = $"Alto{metrics.ThreadId}";
             Solute example = new Facezia()
             {
-                PartitionKey = "Alto",
+                PartitionKey = name,
                 RowKey = "aaaaa",
                 Alo = "ddd",
                 Lazlo = new Lazlo() { A = 2 }
             };
-            foreach(var t in await new Facezia().ToListAsync())
+            foreach (var t in await new Facezia().ToListAsync())
             {
                 await t.DeleteAsync();
             }
@@ -34,41 +35,28 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
                 await t.DeleteAsync();
             }
             await example.UpdateAsync();
-            IEnumerable<Solute> examples = await example.GetAsync(x => x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd");
-            if (examples.Count() != 1)
-                return false;
-            if (!await example.ExistsAsync())
-                return false;
-            if (!await example.DeleteAsync())
-                return false;
-            if (await example.ExistsAsync())
-                return false;
-            examples = await example.GetAsync(x => x.PartitionKey.GreaterThan("A") && x.Alo == "ddd");
-            if (examples.Count() != 0)
-                return false;
+            IEnumerable<Solute> examples = await example.GetAsync(x => x.PartitionKey == name && x.Timestamp >= new DateTime(1970, 1, 1) && x.Alo == "ddd");
+            metrics.CheckIfNotOkExit(examples.Count() != 1);
+            metrics.CheckIfNotOkExit(!await example.ExistsAsync());
+            metrics.CheckIfNotOkExit(!await example.DeleteAsync());
+            metrics.CheckIfNotOkExit(await example.ExistsAsync());
+            examples = await example.GetAsync(x => x.PartitionKey.GreaterThan("A") && x.PartitionKey == name && x.Alo == "ddd");
+            metrics.CheckIfNotOkExit(examples.Count() != 0);
 
             List<Solute> examplesForBatch = new List<Solute>();
             for (int i = 0; i < 200; i++)
-                examplesForBatch.Add(new Facezia() { PartitionKey = "A", RowKey = i.ToString() });
+                examplesForBatch.Add(new Facezia() { PartitionKey = $"A{metrics.ThreadId}", RowKey = i.ToString() });
             for (int i = 0; i < 105; i++)
-                examplesForBatch.Add(new Mondizia() { PartitionKey = "B", RowKey = i.ToString() });
+                examplesForBatch.Add(new Mondizia() { PartitionKey = $"B{metrics.ThreadId}", RowKey = i.ToString() });
             for (int i = 0; i < 100; i++)
-                examplesForBatch.Add(new Facezia() { PartitionKey = "B", RowKey = i.ToString() });
-            if (!examplesForBatch.UpdateBatch())
-                return false;
-            var tt = await new Facezia().ToListAsync();
-            if (tt.Count != 300)
-                return false;
-            if ((await new Mondizia().ToListAsync()).Count != 105)
-                return false;
-            if (!await examplesForBatch.DeleteBatchAsync())
-                return false;
-            if ((await new Facezia().ToListAsync()).Count != 0)
-                return false;
-            if ((await new Mondizia().ToListAsync()).Count != 0)
-                return false;
-
-            return true;
+                examplesForBatch.Add(new Facezia() { PartitionKey = $"B{metrics.ThreadId}", RowKey = i.ToString() });
+            metrics.CheckIfNotOkExit(!await examplesForBatch.UpdateBatchAsync());
+            var tt = await new Facezia().ToListAsync(x => x.PartitionKey == $"A{metrics.ThreadId}" || x.PartitionKey == $"B{metrics.ThreadId}");
+            metrics.CheckIfNotOkExit(tt.Count != 300);
+            metrics.CheckIfNotOkExit((await new Mondizia().ToListAsync(x => x.PartitionKey == $"B{metrics.ThreadId}")).Count != 105);
+            metrics.CheckIfNotOkExit(!await examplesForBatch.DeleteBatchAsync());
+            metrics.CheckIfNotOkExit((await new Facezia().ToListAsync(x => x.PartitionKey == $"A{metrics.ThreadId}")).Count != 0);
+            metrics.CheckIfNotOkExit((await new Mondizia().ToListAsync(x => x.PartitionKey == $"B{metrics.ThreadId}")).Count != 0);
         }
         private abstract class Solute : FastTableStorage
         {

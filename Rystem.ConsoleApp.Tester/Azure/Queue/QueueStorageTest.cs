@@ -10,7 +10,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class QueueStorageTest : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             var client = new QueueServiceClient(TableStorageTester.ConnectionString);
             var context = client.GetQueueClient("testone");
@@ -19,7 +19,6 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
             var t = await context.PeekMessagesAsync();
             var q = await context.ReceiveMessagesAsync();
             var z = await context.PeekMessagesAsync();
-            return true;
         }
     }
 }

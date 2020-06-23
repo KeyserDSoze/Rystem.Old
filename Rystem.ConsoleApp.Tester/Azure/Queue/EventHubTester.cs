@@ -9,7 +9,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
 {
     public class EventHubTester : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             MyEventHub myEventHub = new MyEventHub()
             {
@@ -24,17 +24,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
                 myEventHub,
                 myEventHub
             };
-            if (!await myEventHub.SendAsync())
-                return false;
-            if (!await myAbstractionEventHubs.SendBatchAsync())
-                return false;
+            metrics.CheckIfNotOkExit(!await myEventHub.SendAsync());
+            metrics.CheckIfNotOkExit(!await myAbstractionEventHubs.SendBatchAsync());
             await myEventHub.DebugSendAsync(0, installation: Installation.Inst00);
             await myAbstractionEventHubs.DebugSendBatchAsync(0, installation: Installation.Inst00);
-            if (!await myEventHub.SendAsync(installation: Installation.Inst00))
-                return false;
-            if (!await myAbstractionEventHubs.SendBatchAsync(installation: Installation.Inst00))
-                return false;
-            return true;
+            metrics.CheckIfNotOkExit(!await myEventHub.SendAsync(installation: Installation.Inst00));
+            metrics.CheckIfNotOkExit(!await myAbstractionEventHubs.SendBatchAsync(installation: Installation.Inst00));
         }
         private class MyEventHub : IQueue
         {

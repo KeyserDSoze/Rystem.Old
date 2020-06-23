@@ -13,9 +13,12 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
 {
     public class FunctionSimulator : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        private List<AbstractToParse> Things = new List<AbstractToParse>();
+        public List<Exception> Exceptions = new List<Exception>();
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
-            Aggregator aggregator = new Aggregator();
+            MyCounter myCounter = new MyCounter();
+            Aggregator aggregator = new Aggregator(myCounter);
             IList<AbstractToParse> messages = new List<AbstractToParse>();
             for (int i = 0; i < 50; i++)
                 messages.Add(
@@ -29,47 +32,57 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                                 {
                                     X = i
                                 });
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            IList<AbstractToParse> flusheds = await aggregator.RunAsync(messages, new ConsoleLogger(), async x => Console.WriteLine("action: " + x), async (x, _) => Console.WriteLine("Action on error: " + x));
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-            IList<AbstractToParse> flusheds2 = aggregator.Run(messages, new ConsoleLogger(), x => Console.WriteLine("action2: " + x), (x, _) => Console.WriteLine("Action on error2: " + x), Installation.Inst00);
-            return true;
+            IList<AbstractToParse> flusheds = await aggregator.RunAsync(messages, null, async x => Things.Add(x), async (x, _) => Exceptions.Add(x));
+            IList<AbstractToParse> flusheds2 = aggregator.Run(messages, null, x => Things.Add(x), (x, _) => Exceptions.Add(x), Installation.Inst00);
+            await Task.Delay(5000);
+            metrics.CheckIfOkExit(Things.Count == 220, Things.Count);
+            metrics.CheckIfOkExit(myCounter.X == 5995, myCounter.X);
         }
-    }
-    public abstract class AbstractToParse
-    {
-        public int X { get; set; }
-        public override string ToString() => "Sample: " + this.X.ToString();
-    }
-    public class ObjectToParse : AbstractToParse
-    {
-        
-    }
-    public class ObjectToParse2 : AbstractToParse
-    {
-
-    }
-    public class Aggregator : IAggregation<AbstractToParse>
-    {
-        public ConfigurationBuilder GetConfigurationBuilder()
+        private abstract class AbstractToParse
         {
-            return new ConfigurationBuilder()
-                .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 80, TimeSpan.FromSeconds(30)))
-                .AddParser(new FunctionParser()).Build()
-                .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 100, TimeSpan.FromSeconds(5)))
-                .AddParser(new FunctionParser()).Build(Installation.Inst00);
+            public int X { get; set; }
+            public override string ToString() => "Sample: " + this.X.ToString();
         }
-    }
-
-    public class FunctionParser : IAggregationParser<AbstractToParse>
-    {
-        public async Task ParseAsync(string queueName, IList<AbstractToParse> events, ILogger log, Installation installation)
+        private class ObjectToParse : AbstractToParse
         {
-            await Task.Delay(0).ConfigureAwait(false);
-            int count = 0;
-            foreach (AbstractToParse a in events)
-                count += a.X;
-            Console.WriteLine(count);
+
+        }
+        private class ObjectToParse2 : AbstractToParse
+        {
+
+        }
+        private class MyCounter
+        {
+            public int X { get; set; }
+        }
+        private class Aggregator : IAggregation<AbstractToParse>
+        {
+            private readonly MyCounter MyCounter;
+            public Aggregator(MyCounter myCounter)
+                => this.MyCounter = myCounter;
+            public ConfigurationBuilder GetConfigurationBuilder()
+            {
+                return new ConfigurationBuilder()
+                    .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 80, TimeSpan.FromSeconds(30)))
+                    .AddParser(new FunctionParser(this.MyCounter)).Build()
+                    .WithAggregation<AbstractToParse>().WithLinq(new LinqBuilder<AbstractToParse>("Alto", 100, TimeSpan.FromSeconds(5)))
+                    .AddParser(new FunctionParser(this.MyCounter)).Build(Installation.Inst00);
+            }
+        }
+
+        private class FunctionParser : IAggregationParser<AbstractToParse>
+        {
+            public MyCounter Counter { get; }
+            public FunctionParser(MyCounter myCounter)
+            {
+                this.Counter = myCounter;
+            }
+            public Task ParseAsync(string queueName, IList<AbstractToParse> events, ILogger log, Installation installation)
+            {
+                foreach (AbstractToParse a in events)
+                    Counter.X += a.X;
+                return Task.CompletedTask;
+            }
         }
     }
 }

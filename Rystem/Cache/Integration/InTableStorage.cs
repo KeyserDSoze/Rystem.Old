@@ -10,28 +10,26 @@ using Rystem.Const;
 
 namespace Rystem.Cache
 {
-    internal class InTableStorage<T> : IMultitonIntegrationAsync<T>
+    internal class InTableStorage<T> : ICacheIntegrationAsync<T>
     {
-        private static readonly object TrafficLight = new object();
         private CloudTable context;
-        private CloudTable Context
+        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private async Task<CloudTable> GetContextAsync()
         {
-            get
-            {
-                if (context != null)
-                    return context;
-                lock (TrafficLight)
+            if (context == null)
+                await RaceCondition.ExecuteAsync(async () =>
                 {
-                    if (context != null)
-                        return context;
-                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
-                    CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-                    context = tableClient.GetTableReference(TableName);
-                }
-                if (!context.ExistsAsync().ToResult())
-                    context.CreateIfNotExistsAsync();
-                return context;
-            }
+                    if (context == null)
+                    {
+                        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Configuration.ConnectionString);
+                        CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+                        var preContext = tableClient.GetTableReference(TableName);
+                        if (!await preContext.ExistsAsync().NoContext())
+                            await preContext.CreateIfNotExistsAsync().NoContext();
+                        context = preContext;
+                    }
+                }).NoContext();
+            return context;
         }
         private static long ExpireCache = 0;
         private const string TableName = "RystemCache";
@@ -47,12 +45,14 @@ namespace Rystem.Cache
         }
         public async Task<T> InstanceAsync(string key)
         {
+            var client = context ?? await GetContextAsync();
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = await Context.ExecuteAsync(operation).NoContext();
+            TableResult result = await client.ExecuteAsync(operation).NoContext();
             return result.Result != default ? ((RystemCache)result.Result).Data.FromDefaultJson<T>() : default;
         }
         public async Task<bool> UpdateAsync(string key, T value, TimeSpan expiringTime)
         {
+            var client = context ?? await GetContextAsync();
             long expiring = ExpireCache;
             if (expiringTime != default)
                 expiring = expiringTime.Ticks;
@@ -64,11 +64,12 @@ namespace Rystem.Cache
                 E = expiring > 0 ? expiring + DateTime.UtcNow.Ticks : DateTime.MaxValue.Ticks
             };
             TableOperation operation = TableOperation.InsertOrReplace(rystemCache);
-            TableResult result = await Context.ExecuteAsync(operation).NoContext();
+            TableResult result = await client.ExecuteAsync(operation).NoContext();
             return result.HttpStatusCode == 204;
         }
         public async Task<bool> DeleteAsync(string key)
         {
+            var client = context ?? await GetContextAsync();
             RystemCache rystemCache = new RystemCache()
             {
                 PartitionKey = FullName,
@@ -78,7 +79,7 @@ namespace Rystem.Cache
             TableOperation operation = TableOperation.Delete(rystemCache);
             try
             {
-                TableResult result = await Context.ExecuteAsync(operation).NoContext();
+                TableResult result = await client.ExecuteAsync(operation).NoContext();
                 return result.HttpStatusCode == 204;
             }
             catch (StorageException er)
@@ -90,8 +91,9 @@ namespace Rystem.Cache
         }
         public async Task<MultitonStatus<T>> ExistsAsync(string key)
         {
+            var client = context ?? await GetContextAsync();
             TableOperation operation = TableOperation.Retrieve<RystemCache>(FullName, key);
-            TableResult result = await Context.ExecuteAsync(operation).NoContext();
+            TableResult result = await client.ExecuteAsync(operation).NoContext();
             if (result.Result == null)
                 return MultitonStatus<T>.NotOk();
             RystemCache cached = (RystemCache)result.Result;
@@ -104,6 +106,7 @@ namespace Rystem.Cache
         }
         public async Task<IEnumerable<string>> ListAsync()
         {
+            var client = context ?? await GetContextAsync();
             TableQuery tableQuery = new TableQuery
             {
                 FilterString = $"PartitionKey eq '{FullName}'"
@@ -112,7 +115,7 @@ namespace Rystem.Cache
             List<string> keys = new List<string>();
             do
             {
-                TableQuerySegment<DynamicTableEntity> tableQuerySegment = await Context.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).NoContext();
+                TableQuerySegment<DynamicTableEntity> tableQuerySegment = await client.ExecuteQuerySegmentedAsync(tableQuery, tableContinuationToken).NoContext();
                 IEnumerable<string> keysFromQuery = tableQuerySegment.Results.Select(x => x.RowKey);
                 tableContinuationToken = tableQuerySegment.ContinuationToken;
                 keys.AddRange(keysFromQuery);

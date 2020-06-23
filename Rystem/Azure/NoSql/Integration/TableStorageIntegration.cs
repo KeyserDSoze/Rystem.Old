@@ -15,24 +15,23 @@ namespace Rystem.NoSql
     {
         private static readonly object TrafficLight = new object();
         private CloudTable context;
-        private CloudTable Context
+        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private async Task<CloudTable> GetContextAsync()
         {
-            get
-            {
-                if (context != null)
-                    return context;
-                lock (TrafficLight)
+            if (context == null)
+                await RaceCondition.ExecuteAsync(async () =>
                 {
-                    if (context != null)
-                        return context;
-                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(NoSqlConfiguration.ConnectionString);
-                    CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-                    context = tableClient.GetTableReference(NoSqlConfiguration.Name ?? EntityType.Name);
-                }
-                if (!context.ExistsAsync().ToResult())
-                    context.CreateIfNotExistsAsync();
-                return context;
-            }
+                    if (context == null)
+                    {
+                        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(NoSqlConfiguration.ConnectionString);
+                        CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+                        var preContext = tableClient.GetTableReference(NoSqlConfiguration.Name ?? EntityType.Name);
+                        if (!await preContext.ExistsAsync().NoContext())
+                            await preContext.CreateIfNotExistsAsync().NoContext();
+                        context = preContext;
+                    }
+                }).NoContext();
+            return context;
         }
         private readonly IDictionary<string, PropertyInfo> BaseProperties = new Dictionary<string, PropertyInfo>();
         private readonly IList<PropertyInfo> Properties = new List<PropertyInfo>();
@@ -76,26 +75,29 @@ namespace Rystem.NoSql
         }
         public async Task<bool> DeleteAsync(TEntity entity)
         {
+            var client = context ?? await GetContextAsync();
             TableOperation operation = TableOperation.Delete(this.GetBase(entity));
-            return (await this.Context.ExecuteAsync(operation).NoContext()).HttpStatusCode == 204;
+            return (await client.ExecuteAsync(operation).NoContext()).HttpStatusCode == 204;
         }
 
         public async Task<bool> ExistsAsync(TEntity entity)
         {
+            var client = context ?? await GetContextAsync();
             DynamicTableEntity tableStorage = this.GetBase(entity);
             TableOperation operation = TableOperation.Retrieve<DynamicTableEntity>(tableStorage.PartitionKey, tableStorage.RowKey);
-            TableResult result = await this.Context.ExecuteAsync(operation).NoContext();
+            TableResult result = await client.ExecuteAsync(operation).NoContext();
             return result.Result != null;
         }
 
         public async Task<IList<TEntity>> GetAsync(TEntity entity, Expression<Func<TEntity, bool>> expression = null, int? takeCount = null)
         {
+            var client = context ?? await GetContextAsync();
             List<TEntity> items = new List<TEntity>();
             TableContinuationToken token = null;
             string query = ToQuery(expression?.Body);
             do
             {
-                TableQuerySegment<DynamicTableEntity> seg = await this.Context.ExecuteQuerySegmentedAsync(new TableQuery<DynamicTableEntity>() { FilterString = query, TakeCount = takeCount }, token).NoContext();
+                TableQuerySegment<DynamicTableEntity> seg = await client.ExecuteQuerySegmentedAsync(new TableQuery<DynamicTableEntity>() { FilterString = query, TakeCount = takeCount }, token).NoContext();
                 token = seg.ContinuationToken;
                 items.AddRange(seg.Select(x => ReadEntity(x)));
                 if (takeCount != null && items.Count >= takeCount) break;
@@ -116,11 +118,13 @@ namespace Rystem.NoSql
 
         public async Task<bool> UpdateAsync(TEntity entity)
         {
+            var client = context ?? await GetContextAsync();
             TableOperation operation = TableOperation.InsertOrReplace(WriteEntity(entity));
-            return (await this.Context.ExecuteAsync(operation).NoContext()).HttpStatusCode == 204;
+            return (await client.ExecuteAsync(operation).NoContext()).HttpStatusCode == 204;
         }
         public async Task<bool> UpdateBatchAsync(IEnumerable<TEntity> entities)
         {
+            var client = context ?? await GetContextAsync();
             bool result = true;
             foreach (var groupedEntity in entities.Select(x => this.WriteEntity(x)).GroupBy(x => x.PartitionKey))
             {
@@ -130,18 +134,19 @@ namespace Rystem.NoSql
                     batch.InsertOrReplace(entity);
                     if (batch.Count == 100)
                     {
-                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch).NoContext();
+                        IList<TableResult> results = await client.ExecuteBatchAsync(batch).NoContext();
                         result &= results.All(x => x.HttpStatusCode == 204);
                         batch = new TableBatchOperation();
                     }
                 }
                 if (batch.Count > 0)
-                    result &= (await this.Context.ExecuteBatchAsync(batch).NoContext()).All(x => x.HttpStatusCode == 204);
+                    result &= (await client.ExecuteBatchAsync(batch).NoContext()).All(x => x.HttpStatusCode == 204);
             }
             return result;
         }
         public async Task<bool> DeleteBatchAsync(IEnumerable<TEntity> entities)
         {
+            var client = context ?? await GetContextAsync();
             bool result = true;
             foreach (var groupedEntity in entities.Select(x => this.GetBase(x)).GroupBy(x => x.PartitionKey))
             {
@@ -151,13 +156,13 @@ namespace Rystem.NoSql
                     batch.Delete(entity);
                     if (batch.Count == 100)
                     {
-                        IList<TableResult> results = await this.Context.ExecuteBatchAsync(batch).NoContext();
+                        IList<TableResult> results = await client.ExecuteBatchAsync(batch).NoContext();
                         result &= (results.All(x => x.HttpStatusCode == 204));
                         batch = new TableBatchOperation();
                     }
                 }
                 if (batch.Count > 0)
-                    result &= (await this.Context.ExecuteBatchAsync(batch).NoContext()).All(x => x.HttpStatusCode == 204);
+                    result &= (await client.ExecuteBatchAsync(batch).NoContext()).All(x => x.HttpStatusCode == 204);
             }
             return result;
         }

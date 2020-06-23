@@ -12,36 +12,26 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class MultitonComboCloudMemoryTest : IUnitTest
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
             Service3Key serviceKey = new Service3Key() { Id = 2 };
-            if (serviceKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(serviceKey.IsPresent());
             Service3 service = serviceKey.Instance() as Service3;
-            if (!serviceKey.IsPresent())
-                return false;
+            metrics.CheckIfNotOkExit(!serviceKey.IsPresent());
             serviceKey.Restore(new Service3() { A = "4", C = 0 });
-            if ((serviceKey.Instance() as Service3).A != "4")
-                return false;
-            if (serviceKey.Keys().Count != 1)
-                return false;
-            if (!serviceKey.Remove())
-                return false;
-            if (serviceKey.IsPresent())
-                return false;
-            if (serviceKey.Keys().Count != 0)
-                return false;
+            metrics.CheckIfNotOkExit((serviceKey.Instance() as Service3).A != "4");
+            metrics.CheckIfNotOkExit(serviceKey.Keys().Count != 1);
+            metrics.CheckIfNotOkExit(!serviceKey.Remove());
+            metrics.CheckIfNotOkExit(serviceKey.IsPresent());
+            metrics.CheckIfNotOkExit(serviceKey.Keys().Count != 0);
             service = serviceKey.Instance() as Service3;
-            Thread.Sleep(200);
-            if (!serviceKey.IsPresent())
-                return false;
-            Thread.Sleep(800);
-            if (!serviceKey.IsPresent())
-                return false;
-            Thread.Sleep(4800);
+            await Task.Delay(200);
+            metrics.CheckIfNotOkExit(!serviceKey.IsPresent());
+            await Task.Delay(800);
+            metrics.CheckIfNotOkExit(!serviceKey.IsPresent());
+            await Task.Delay(4800);
             service = serviceKey.Instance() as Service3;
-            return true;
         }
     }
     public class Service3Key : ICacheKey<Service3>

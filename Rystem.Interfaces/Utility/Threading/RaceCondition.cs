@@ -5,7 +5,7 @@ namespace System
 {
     public sealed class RaceCondition
     {
-        private static readonly object Semaphore = new object();
+        private readonly object Semaphore = new object();
         private bool IsLocked;
         public async Task<RaceConditionResponse> ExecuteAsync(Func<Task> action)
         {

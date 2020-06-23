@@ -7,7 +7,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 {
     public class DeepCopier : IUnitTest
     {
-        public async Task<bool> DoWorkAsync(Action<object> action, params string[] args)
+        public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0);
 
@@ -20,27 +20,18 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 
             };
             Test test2 = test.DeepCopy();
-            if (test.Bird.Tests == test2.Bird.Tests)
-                return false;
-            if (test.Bird.Tests != test.Bird.Tests)
-                return false;
-            if (test2.Bird.Tests != test2.Bird.Tests)
-                return false;
+            metrics.CheckIfNotOkExit(test.Bird.Tests == test2.Bird.Tests);
+            metrics.CheckIfNotOkExit(test.Bird.Tests != test.Bird.Tests);
+            metrics.CheckIfNotOkExit(test2.Bird.Tests != test2.Bird.Tests);
             Dafne dafne = new Dafne()
             {
                 Dictionary = new Dictionary<string, string>() { { "A", "B" } }
             };
             Dafne dafne2 = dafne.DeepCopy();
-            if (dafne.Ale != dafne2.Ale)
-                return false;
-            if (dafne.Dictionary == dafne2.Dictionary)
-                return false;
-            if (dafne.Dictionary != dafne.Dictionary)
-                return false;
-            if (dafne2.Dictionary != dafne2.Dictionary)
-                return false;
-
-            return true;
+            metrics.CheckIfNotOkExit(dafne.Ale != dafne2.Ale);
+            metrics.CheckIfNotOkExit(dafne.Dictionary == dafne2.Dictionary);
+            metrics.CheckIfNotOkExit(dafne.Dictionary != dafne.Dictionary);
+            metrics.CheckIfNotOkExit(dafne2.Dictionary != dafne2.Dictionary);
         }
     }
     public class Dafne

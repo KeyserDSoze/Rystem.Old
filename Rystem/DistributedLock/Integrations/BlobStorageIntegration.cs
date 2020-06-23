@@ -15,57 +15,47 @@ namespace Rystem.DistributedLock
     {
         private static readonly string LeaseGuidId = Guid.NewGuid().ToString();
         private readonly LockConfiguration Configuration;
-        private static readonly object BlobTrafficLight = new object();
-        private static readonly object ContainerTrafficLight = new object();
+        private static readonly RaceCondition BlobTrafficLight = new RaceCondition();
+        private static readonly RaceCondition ContainerTrafficLight = new RaceCondition();
         private static readonly MemoryStream EmptyStream = new MemoryStream(new byte[0]);
         private BlobContainerClient container;
-        private BlobContainerClient Container
+        private async Task<BlobContainerClient> GetContainerAsync()
         {
-            get
-            {
-                if (container != null)
-                    return container;
-                lock (ContainerTrafficLight)
+            if (container == null)
+                await ContainerTrafficLight.ExecuteAsync(async () =>
                 {
-                    if (container != null)
-                        return container;
-                    var client = new BlobServiceClient(Configuration.ConnectionString);
-                    container = client.GetBlobContainerClient(Configuration.Name?.ToLower() ?? "lock");
-                }
-                return container;
-            }
+                    if (container == null)
+                    {
+                        var client = new BlobServiceClient(Configuration.ConnectionString);
+                        var preContainer = client.GetBlobContainerClient(Configuration.Name?.ToLower() ?? "lock");
+                        if (!await preContainer.ExistsAsync().NoContext())
+                            await preContainer.CreateIfNotExistsAsync().NoContext();
+                        container = preContainer;
+                    }
+                }).NoContext();
+            return container;
         }
 
-        private BlobClient blob;
-        private protected BlobClient Blob
+        private BlobClient defaultBlob;
+        private protected async Task<BlobClient> GetDefaultBlobClientAsync()
         {
-            get
-            {
-                if (blob != null)
-                    return blob;
-                lock (BlobTrafficLight)
+            if (defaultBlob == null)
+                await BlobTrafficLight.ExecuteAsync(async () =>
                 {
-                    if (blob != null)
-                        return blob;
-                    blob = this.Container.GetBlobClient($"Lock_{Configuration.Key ?? this.Name}");
-                }
-                if (!this.Container.Exists())
-                    this.Container.CreateIfNotExists();
-                if (!blob.Exists())
-                    blob.Upload(EmptyStream);
-                return blob;
-            }
+                    if (defaultBlob == null)
+                    {
+                        var client = container ?? await this.GetContainerAsync().NoContext();
+                        var preBlob = client.GetBlobClient($"Lock_{Configuration.Key ?? this.Name}");
+                        if (!await preBlob.ExistsAsync().NoContext())
+                            await preBlob.UploadAsync(EmptyStream).NoContext();
+                        defaultBlob = preBlob;
+                    }
+                }).NoContext();
+            return defaultBlob;
         }
-        private bool ContainerExistsCheck = false;
         private async Task<BlobClient> GetClientAsync(string key)
         {
-            BlobClient keyBlob = this.Container.GetBlobClient($"Lock_{key}");
-            if (!this.ContainerExistsCheck)
-            {
-                if (!await this.Container.ExistsAsync().NoContext())
-                    await this.Container.CreateIfNotExistsAsync().NoContext();
-                this.ContainerExistsCheck = true;
-            }
+            BlobClient keyBlob = (container ?? await this.GetContainerAsync()).GetBlobClient($"Lock_{key}");
             if (!await keyBlob.ExistsAsync().NoContext())
                 await keyBlob.UploadAsync(EmptyStream).NoContext();
             return keyBlob;
@@ -82,14 +72,14 @@ namespace Rystem.DistributedLock
         {
             try
             {
-                var blob = key == null ? this.Blob : await this.GetClientAsync(key).NoContext();
+                var blob = key == null ? (defaultBlob ?? await this.GetDefaultBlobClientAsync().NoContext()) : await this.GetClientAsync(key).NoContext();
                 var lease = blob.GetBlobLeaseClient(LeaseGuidId);
                 string normalizedKey = key ?? string.Empty;
                 if (!this.TokenAcquireds.ContainsKey(normalizedKey))
                 {
                     RaceConditionResponse response = await AcquiringRaceCondition.ExecuteAsync(async () =>
                     {
-                        Response<BlobLease> response = await lease.AcquireAsync(new TimeSpan(0, 1, 0));
+                        Response<BlobLease> response = await lease.AcquireAsync(new TimeSpan(0, 1, 0)).NoContext();
                         this.TokenAcquireds.TryAdd(normalizedKey, lease);
                     }).NoContext();
                     return response.IsExecuted && !response.InException;
@@ -107,7 +97,7 @@ namespace Rystem.DistributedLock
             string normalizedKey = key ?? string.Empty;
             if (this.TokenAcquireds.ContainsKey(normalizedKey))
                 return true;
-            var blob = key == null ? this.Blob : await this.GetClientAsync(key).NoContext();
+            var blob = key == null ? (defaultBlob ?? await this.GetDefaultBlobClientAsync().NoContext()) : await this.GetClientAsync(key).NoContext();
             Response<BlobProperties> properties = await blob.GetPropertiesAsync().NoContext();
             return properties.Value.LeaseStatus == LeaseStatus.Locked;
         }

@@ -10,23 +10,23 @@ namespace Rystem.Queue
 {
     internal class QueueStorageIntegration<TEntity> : IQueueIntegration<TEntity>
     {
-        private static readonly object TrafficLight = new object();
+        private static readonly RaceCondition RaceCondition = new RaceCondition();
         private QueueClient context;
-        private QueueClient Context
+        private async Task<QueueClient> GetContextAsync()
         {
-            get
-            {
-                if (context != null)
-                    return context;
-                lock (TrafficLight)
+            if (context == null)
+                await RaceCondition.ExecuteAsync(async () =>
                 {
-                    var client = new QueueServiceClient(QueueConfiguration.ConnectionString);
-                    context = client.GetQueueClient(QueueConfiguration.Name ?? typeof(TEntity).Name);
-                }
-                if (!context.Exists())
-                    context.CreateIfNotExists();
-                return context;
-            }
+                    if (context == null)
+                    {
+                        var client = new QueueServiceClient(QueueConfiguration.ConnectionString);
+                        var preContext = client.GetQueueClient(QueueConfiguration.Name ?? typeof(TEntity).Name);
+                        if (!await preContext.ExistsAsync().NoContext())
+                            await preContext.CreateIfNotExistsAsync().NoContext();
+                        context = preContext;
+                    }
+                }).NoContext();
+            return context;
         }
         private readonly QueueConfiguration QueueConfiguration;
         internal QueueStorageIntegration(QueueConfiguration property)
@@ -40,21 +40,28 @@ namespace Rystem.Queue
 
         public async Task<IEnumerable<TEntity>> ReadAsync(int path, int organization)
         {
-            var messages = (await this.Context.ReceiveMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Value;
+            var client = context ?? await GetContextAsync();
+            var messages = (await client.ReceiveMessagesAsync(this.QueueConfiguration.NumberOfMessages).NoContext()).Value;
             List<TEntity> entities = new List<TEntity>();
             foreach (var message in messages)
             {
-                await this.Context.DeleteMessageAsync(message.MessageId, message.PopReceipt).NoContext();
+                await client.DeleteMessageAsync(message.MessageId, message.PopReceipt).NoContext();
                 entities.Add(message.MessageText.ToMessage<TEntity>());
             }
             return entities;
         }
 
         public async Task<bool> SendAsync(TEntity message, int path, int organization)
-            => !string.IsNullOrWhiteSpace((await this.Context.SendMessageAsync(message.ToDefaultJson()).NoContext()).Value.MessageId);
+        {
+            var client = context ?? await GetContextAsync();
+            return !string.IsNullOrWhiteSpace((await client.SendMessageAsync(message.ToDefaultJson()).NoContext()).Value.MessageId);
+        }
 
         public async Task<bool> SendBatchAsync(IEnumerable<TEntity> messages, int path, int organization)
-        => !string.IsNullOrWhiteSpace((await this.Context.SendMessageAsync(messages.ToDefaultJson()).NoContext()).Value.MessageId);
+        {
+            var client = context ?? await GetContextAsync();
+            return !string.IsNullOrWhiteSpace((await client.SendMessageAsync(messages.ToDefaultJson()).NoContext()).Value.MessageId);
+        }
 
         public Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");

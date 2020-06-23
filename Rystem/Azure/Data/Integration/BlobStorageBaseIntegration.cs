@@ -18,25 +18,23 @@ namespace Rystem.Data.Integration
     {
         private protected abstract IDataReader<TEntity> DefaultReader { get; }
         private protected abstract IDataWriter<TEntity> DefaultWriter { get; }
-        private static readonly object TrafficLight = new object();
-        private BlobContainerClient context;
-        private protected BlobContainerClient Context
+        private protected BlobContainerClient context;
+        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private protected async Task<BlobContainerClient> GetContextAsync()
         {
-            get
-            {
-                if (context != null)
-                    return context;
-                lock (TrafficLight)
+            if (context == null)
+                await RaceCondition.ExecuteAsync(async () =>
                 {
-                    if (context != null)
-                        return context;
-                    var client = new BlobServiceClient(Configuration.ConnectionString);
-                    context = client.GetBlobContainerClient(Configuration.Name.ToLower());
-                }
-                if (!context.Exists())
-                    context.CreateIfNotExistsAsync().ToResult();
-                return context;
-            }
+                    if (context == null)
+                    {
+                        var client = new BlobServiceClient(Configuration.ConnectionString);
+                        var preContext = client.GetBlobContainerClient(Configuration.Name.ToLower());
+                        if (!await preContext.ExistsAsync().NoContext())
+                            await preContext.CreateIfNotExistsAsync().NoContext();
+                        context = preContext;
+                    }
+                }).NoContext();
+            return context;
         }
         private protected IDataWriter<TEntity> Writer;
         private protected IDataReader<TEntity> Reader;
@@ -54,17 +52,26 @@ namespace Rystem.Data.Integration
             this.Writer = configuration.Writer as IDataWriter<TEntity> ?? DefaultWriter;
         }
         private protected async Task<bool> DeleteAsync(string name)
-            => await Context.GetBlobClient(name).DeleteIfExistsAsync().NoContext();
+        {
+            var client = context ?? await GetContextAsync().NoContext();
+            return await client.GetBlobClient(name).DeleteIfExistsAsync().NoContext();
+        }
+
         private protected async Task<bool> ExistsAsync(string name)
-            => await Context.GetBlobClient(name).ExistsAsync().NoContext();
+        {
+            var client = context ?? await GetContextAsync().NoContext();
+            return await client.GetBlobClient(name).ExistsAsync().NoContext();
+        }
+
         private protected async Task<IList<string>> SearchAsync(string prefix = null, int? takeCount = null)
         {
+            var client = context ?? await GetContextAsync().NoContext();
             IList<string> items = new List<string>();
             CancellationToken token = default;
             int count = 0;
-            await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
+            await foreach (var t in client.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
-                items.Add($"{this.Context.Uri}/{t.Name}");
+                items.Add($"{client.Uri}/{t.Name}");
                 count++;
                 if (takeCount != null && items.Count >= takeCount)
                     break;
@@ -73,10 +80,11 @@ namespace Rystem.Data.Integration
         }
         private protected async Task<IList<DataWrapper>> FetchPropertiesAsync(string prefix = null, int? takeCount = null)
         {
+            var client = context ?? await GetContextAsync().NoContext();
             IList<DataWrapper> items = new List<DataWrapper>();
             CancellationToken token = default;
             int count = 0;
-            await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
+            await foreach (var t in client.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
             {
                 items.Add(new DataWrapper() { Name = t.Name, Properties = t.Properties.ToDataProperties(t.Metadata) });
                 count++;
@@ -96,12 +104,17 @@ namespace Rystem.Data.Integration
                 ContentLanguage = entity.Properties.ContentLanguage,
                 ContentType = entity.Properties.ContentType
             };
-            await Context.GetBlobClient(cloudBlob.Name).SetHttpHeadersAsync(blobHttpHeaders).NoContext();
-            await Context.GetBlobClient(cloudBlob.Name).SetMetadataAsync(entity.Properties.Metadata).NoContext();
+            var client = context ?? await GetContextAsync().NoContext();
+            await client.GetBlobClient(cloudBlob.Name).SetHttpHeadersAsync(blobHttpHeaders).NoContext();
+            await client.GetBlobClient(cloudBlob.Name).SetMetadataAsync(entity.Properties.Metadata).NoContext();
             return true;
         }
         private protected async Task<IList<TEntity>> ReadAsync(BlobItem blobItem)
-            => await this.ReadAsync(this.Context.GetBlobClient(blobItem.Name)).NoContext();
+        {
+            var client = context ?? await GetContextAsync().NoContext();
+            return await this.ReadAsync(client.GetBlobClient(blobItem.Name)).NoContext();
+        }
+
         private protected async Task<IList<TEntity>> ReadAsync(BlobBaseClient client)
         {
             Response<BlobDownloadInfo> item = await client.DownloadAsync();

@@ -12,28 +12,26 @@ using Rystem.Const;
 
 namespace Rystem.Cache
 {
-    internal class InBlobStorage<T> : IMultitonIntegrationAsync<T>
+    internal class InBlobStorage<T> : ICacheIntegrationAsync<T>
     {
         private readonly CacheConfiguration Properties;
-        private static readonly object TrafficLight = new object();
-        private BlobContainerClient context;
-        private protected BlobContainerClient Context
+        private protected BlobContainerClient context;
+        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private protected async Task<BlobContainerClient> GetContextAsync()
         {
-            get
-            {
-                if (context != null)
-                    return context;
-                lock (TrafficLight)
+            if (context == null)
+                await RaceCondition.ExecuteAsync(async () =>
                 {
-                    if (context != null)
-                        return context;
-                    var client = new BlobServiceClient(Configuration.ConnectionString);
-                    context = client.GetBlobContainerClient(ContainerName.ToLower());
-                }
-                if (!context.Exists())
-                    context.CreateIfNotExistsAsync().ToResult();
-                return context;
-            }
+                    if (context == null)
+                    {
+                        var client = new BlobServiceClient(Configuration.ConnectionString);
+                        var preContext = client.GetBlobContainerClient(ContainerName.ToLower());
+                        if (!await preContext.ExistsAsync().NoContext())
+                            await preContext.CreateIfNotExistsAsync().NoContext();
+                        context = preContext;
+                    }
+                }).NoContext();
+            return context;
         }
         private static long ExpireCache = 0;
         private const string ContainerName = "rystemcache";
@@ -47,7 +45,8 @@ namespace Rystem.Cache
         }
         public async Task<T> InstanceAsync(string key)
         {
-            BlockBlobClient cloudBlob = Context.GetBlockBlobClient(CloudKeyToString(key));
+            var client = context ?? await GetContextAsync();
+            BlockBlobClient cloudBlob = client.GetBlockBlobClient(CloudKeyToString(key));
             Response<BlobProperties> properties = await cloudBlob.GetPropertiesAsync().NoContext();
             if (!string.IsNullOrWhiteSpace(properties.Value.CacheControl) && DateTime.UtcNow > new DateTime(long.Parse(properties.Value.CacheControl)))
             {
@@ -62,10 +61,11 @@ namespace Rystem.Cache
         }
         public async Task<bool> UpdateAsync(string key, T value, TimeSpan expiringTime)
         {
+            var client = context ?? await GetContextAsync();
             long expiring = ExpireCache;
             if (expiringTime != default)
                 expiring = expiringTime.Ticks;
-            BlockBlobClient cloudBlob = Context.GetBlockBlobClient(CloudKeyToString(key));
+            BlockBlobClient cloudBlob = client.GetBlockBlobClient(CloudKeyToString(key));
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(value.ToDefaultJson())))
                 await cloudBlob.UploadAsync(stream).NoContext();
             if (expiring > 0)
@@ -74,10 +74,15 @@ namespace Rystem.Cache
         }
 
         public async Task<bool> DeleteAsync(string key)
-            => await Context.GetBlockBlobClient(CloudKeyToString(key)).DeleteIfExistsAsync().NoContext();
+        {
+            var client = context ?? await GetContextAsync();
+            return await client.GetBlockBlobClient(CloudKeyToString(key)).DeleteIfExistsAsync().NoContext();
+        }
+
         public async Task<MultitonStatus<T>> ExistsAsync(string key)
         {
-            BlockBlobClient cloudBlob = Context.GetBlockBlobClient(CloudKeyToString(key));
+            var client = context ?? await GetContextAsync();
+            BlockBlobClient cloudBlob = client.GetBlockBlobClient(CloudKeyToString(key));
             if (await cloudBlob.ExistsAsync().NoContext())
             {
                 if (ExpireCache > 0)
@@ -96,8 +101,9 @@ namespace Rystem.Cache
 
         public async Task<IEnumerable<string>> ListAsync()
         {
+            var client = context ?? await GetContextAsync();
             IList<string> items = new List<string>();
-            await foreach (var t in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, FullName))
+            await foreach (var t in client.GetBlobsAsync(BlobTraits.All, BlobStates.All, FullName))
                 items.Add(t.Name.Replace(FullName, string.Empty));
             return items;
         }

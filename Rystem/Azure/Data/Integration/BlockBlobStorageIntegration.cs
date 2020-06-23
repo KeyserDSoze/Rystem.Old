@@ -27,7 +27,8 @@ namespace Rystem.Data
 
         public async Task<TEntity> FetchAsync(TEntity entity)
         {
-            BlockBlobClient cloudBlob = this.Context.GetBlockBlobClient(entity.Name);
+            var client = context ?? await GetContextAsync().NoContext();
+            BlockBlobClient cloudBlob = client.GetBlockBlobClient(entity.Name);
             if (await cloudBlob.ExistsAsync().NoContext())
                 return (await this.ReadAsync(cloudBlob).NoContext()).FirstOrDefault();
             return default;
@@ -35,9 +36,10 @@ namespace Rystem.Data
 
         public async Task<IList<TEntity>> ListAsync(TEntity entity, string prefix = null, int? takeCount = null)
         {
+            var client = context ?? await GetContextAsync().NoContext();
             List<TEntity> items = new List<TEntity>();
             int count = 0;
-            await foreach (BlobItem blobItem in Context.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix))
+            await foreach (BlobItem blobItem in client.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix))
             {
                 items.AddRange(await this.ReadAsync(blobItem).NoContext());
                 count++;
@@ -52,7 +54,8 @@ namespace Rystem.Data
           => await this.FetchPropertiesAsync(prefix, takeCount).NoContext();
         public async Task<bool> WriteAsync(TEntity entity, long offset)
         {
-            BlockBlobClient cloudBlob = this.Context.GetBlockBlobClient(entity.Name);
+            var client = context ?? await GetContextAsync().NoContext();
+            BlockBlobClient cloudBlob = client.GetBlockBlobClient(entity.Name);
             DataWrapper dummy = await this.Writer.WriteAsync(entity).NoContext();
             await cloudBlob.UploadAsync(dummy.Stream).NoContext();
             await this.SetBlobProperty(entity, cloudBlob, dummy).NoContext();
