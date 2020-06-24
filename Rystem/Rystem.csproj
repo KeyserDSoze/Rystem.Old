@@ -6,7 +6,7 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <LangVersion>8.0</LangVersion>
-    <Version>7.0.6</Version>
+    <Version>7.0.7</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>2019-2030</Copyright>
