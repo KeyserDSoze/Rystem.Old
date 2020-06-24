@@ -18,7 +18,8 @@ namespace Rystem.Data.Integration
             {
                 while (!sr.EndOfStream)
                 {
-                    TEntity aggregatedData = (await sr.ReadLineAsync().NoContext()).FromDefaultJson<TEntity>();
+                    string value = await sr.ReadLineAsync().NoContext();
+                    TEntity aggregatedData = value.FromDefaultJson<TEntity>();
                     aggregatedData.Properties = dummy.Properties;
                     aggregatedData.Name = dummy.Name;
                     aggregatedDatas.Add(aggregatedData);
@@ -34,7 +35,7 @@ namespace Rystem.Data.Integration
             {
                 Properties = entity.Properties ?? new DataProperties() { ContentType = "application/avro" },
                 Name = entity.Name,
-                Stream = new MemoryStream(Encoding.UTF8.GetBytes(entity.ToDefaultJson()))
+                Stream = new MemoryStream(Encoding.UTF8.GetBytes($"{entity.ToDefaultJson()}\n"))
             };
         }
     }

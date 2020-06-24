@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rystem.Data.Integration;
 
 namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
 {
@@ -22,17 +23,12 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
                     ContentType = "text/csv"
                 }
             };
-            metrics.AddOk(message: "start installing");
             await meatball.DeleteAsync();
-            metrics.AddOk(message: "delete");
             meatball.A = 3;
             await meatball.WriteAsync();
-            metrics.AddOk(message: "write");
             meatball.A = 5;
             await meatball.WriteAsync();
-            metrics.AddOk(message: "write");
             meatball.A = 6;
-            meatball.B = "dsadsadsa";
             await meatball.WriteAsync();
             metrics.AddOk(message: "write");
             IList<Ricotta> meatball2 = (await meatball.ListAsync(name)).ToList();
@@ -106,7 +102,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         {
             return new ConfigurationBuilder()
                 .WithData(StorageConnectionString)
-                .WithAppendBlobStorage(new AppendBlobBuilder("meatball"))
+                .WithAppendBlobStorage(new AppendBlobBuilder("meatball", new JsonAvroDataManager<Ricotta>(), new JsonAvroDataManager<Ricotta>()))
                 .Build(MeatballType.MyDefault.ToInstallation())
                 .WithData(StorageConnectionString)
                 .WithAppendBlobStorage(new AppendBlobBuilder("kollipop"))
