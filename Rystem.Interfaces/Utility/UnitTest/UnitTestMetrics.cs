@@ -12,8 +12,8 @@ namespace Rystem.UnitTest
         public static UnitTestMetrics DefaultOk { get; } = new UnitTestMetrics(true);
         public static UnitTestMetrics DefaultNotOk { get; } = new UnitTestMetrics(false);
         public int ThreadId { get; }
-        public Command Command { get; }
-        public UnitTestMetrics(int threadId, Command command)
+        public CommandRequest Command { get; }
+        public UnitTestMetrics(int threadId, CommandRequest command)
         {
             this.ThreadId = threadId;
             this.Command = command;

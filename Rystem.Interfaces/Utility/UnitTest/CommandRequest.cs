@@ -6,10 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace Rystem.UnitTest
 {
-    public class Command
+    public class CommandRequest
     {
         private static readonly Regex Numbers = new Regex("[0-9]*");
-        public static Command Create(IEnumerable<IUnitTest> tests, string @namespace)
+        public static CommandRequest Create(IEnumerable<IUnitTest> tests, string @namespace)
         {
             Console.WriteLine("Write -exit if you want to close this app.");
             Console.WriteLine($"To test everything use -All");
@@ -22,7 +22,7 @@ namespace Rystem.UnitTest
             int value = 0;
             foreach (IUnitTest test in tests)
                 Console.WriteLine($"For {ToName(test, @namespace)} use -Action {value++}");
-            return new Command(Console.ReadLine().ToLower());
+            return new CommandRequest(Console.ReadLine().ToLower());
         }
         private static string ToName(IUnitTest test, string @namespace)
             => test.GetType().FullName.Replace(@namespace, "").Trim('.');
@@ -41,7 +41,7 @@ namespace Rystem.UnitTest
             set => onError = value;
         }
         public bool IsVerbose { get; }
-        internal Command(string value)
+        public CommandRequest(string value)
         {
             value = value.ToLower();
             if (value.Contains("-exit"))

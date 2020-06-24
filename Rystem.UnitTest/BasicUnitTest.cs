@@ -1,4 +1,5 @@
 using Rystem.ZConsoleApp.Tester.Cache;
+using Rystem.ZUnitTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
