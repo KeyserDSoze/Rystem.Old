@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             var sv = new SaveTheLastDance() { Hola = "DD", Id = 4 };
-            string key = "MyKey";
+            string key = $"MyKey{metrics.ThreadId}";
             await sv.SetCacheAsync(key).NoContext();
             var tv = await key.FromCacheAsync<SaveTheLastDance>().NoContext();
             metrics.CheckIfNotOkExit(sv.Id != tv.Id);

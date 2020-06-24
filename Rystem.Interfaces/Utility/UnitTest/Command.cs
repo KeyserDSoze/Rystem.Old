@@ -41,7 +41,7 @@ namespace Rystem.UnitTest
             set => onError = value;
         }
         public bool IsVerbose { get; }
-        private Command(string value)
+        internal Command(string value)
         {
             value = value.ToLower();
             if (value.Contains("-exit"))

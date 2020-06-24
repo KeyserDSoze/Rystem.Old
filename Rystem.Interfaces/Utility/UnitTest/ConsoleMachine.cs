@@ -6,10 +6,70 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using static Rystem.UnitTest.UnitTestMetrics;
 
 namespace Rystem.UnitTest
 {
+    public class UnitTestMachine<T> : IUnitTestMachine
+    {
+        private readonly IList<IUnitTest> Tests = new List<IUnitTest>();
+        public List<TestResume> Resumes { get; } = new List<TestResume>();
+        public UnitTestMachine()
+        {
+            this.Tests = (Assembly.GetAssembly(typeof(T)) ?? Assembly.GetAssembly(this.GetType())).GetTypes()
+                .Where(x => typeof(IUnitTest).IsAssignableFrom(x) && !x.IsAbstract && !x.IsInterface)
+                .OrderBy(x => x.FullName)
+                .Select(x => Activator.CreateInstance(x) as IUnitTest)
+                .ToList();
+        }
+        public void Start(Action<object> action = null, params string[] args)
+            => this.StartAsync().ToResult();
+
+        public async Task StartAsync(Action<object> action = null, params string[] args)
+        {
+            for (int i = 0; i < this.Tests.Count; i++)
+            {
+                if (i == 21)
+                {
+                    Type type = this.Tests[i].GetType();
+                    Resumes.Add(await TestAsync(i, false, new Command("-All nosql")).NoContext());
+                }
+            }
+        }
+        private async Task<TestResume> TestAsync(int actionNumber, bool hasLabel, Command command, Action<object> action = null, params string[] args)
+        {
+            TestResume resume = new TestResume(this.Tests[actionNumber].GetType().Name, command.IsVerbose);
+            List<UnitTestMetrics> metricses = new List<UnitTestMetrics>();
+            List<Task> actions = new List<Task>();
+            for (int j = 0; j < command.NumberOfThread; j++)
+            {
+                var metrics = new UnitTestMetrics(j, command);
+                metricses.Add(metrics);
+                ThreadPool.UnsafeQueueUserWorkItem((x) =>
+                {
+                    actions.Add(ExecuteAsync(actionNumber, metrics));
+                }, new object());
+            }
+            await Task.Delay(2000);
+            await Task.WhenAll(actions);
+            resume.Add(metricses);
+            resume.Show(hasLabel);
+            return resume;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
+        private async Task ExecuteAsync(int index, UnitTestMetrics metrics)
+        {
+            try
+            {
+                await this.Tests[index].DoWorkAsync(null, metrics).NoContext();
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message != UnitTestMetrics.UnitTestMessageException)
+                    metrics.AddNotOk(ex.ToString());
+            }
+        }
+    }
     public class ConsoleMachine<T> : IUnitTestMachine
     {
         private readonly IList<IUnitTest> Tests = new List<IUnitTest>();
@@ -38,7 +98,15 @@ namespace Rystem.UnitTest
         }
         public void Start(Action<object> action = null, params string[] args)
             => StartAsync(action, args).ToResult();
-
+        public async Task DefaultTestAllAsync()
+        {
+            List<TestResume> resumes = new List<TestResume>();
+            for (int i = 0; i < this.Tests.Count; i++)
+            {
+                Type type = this.Tests[i].GetType();
+                resumes.Add(await TestAsync(i, false, new Command("-All")).NoContext());
+            }
+        }
         public async Task StartAsync(Action<object> action = null, params string[] args)
         {
             Command result;
@@ -59,7 +127,7 @@ namespace Rystem.UnitTest
                     {
                         Type type = this.Tests[i].GetType();
                         if (!result.HasPattern || type.FullName.ToLower().Contains(result.PatternForAll))
-                            resumes.Add(await TestAsync(i, false, result).NoContext());
+                            resumes.Add(await TestAsync(i, false, result, action, args).NoContext());
                     }
                     bool allIsOk = resumes.Any(x => x.IsOk);
                     Console.ForegroundColor = allIsOk ? ConsoleColor.DarkGreen : ConsoleColor.DarkRed;
@@ -68,7 +136,7 @@ namespace Rystem.UnitTest
                     Console.ReadLine();
                 }
                 else if (result.HasAction)
-                    await TestAsync(result.Action, true, result).NoContext();
+                    await TestAsync(result.Action, true, result, action, args).NoContext();
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -78,27 +146,26 @@ namespace Rystem.UnitTest
                     continue;
                 }
             }
-
-            async Task<TestResume> TestAsync(int actionNumber, bool hasLabel, Command command)
+        }
+        private async Task<TestResume> TestAsync(int actionNumber, bool hasLabel, Command command, Action<object> action = null, params string[] args)
+        {
+            TestResume resume = new TestResume(this.Tests[actionNumber].GetType().Name, command.IsVerbose);
+            List<UnitTestMetrics> metricses = new List<UnitTestMetrics>();
+            List<Task> actions = new List<Task>();
+            for (int j = 0; j < command.NumberOfThread; j++)
             {
-                TestResume resume = new TestResume(this.Tests[actionNumber].GetType().Name, result.IsVerbose);
-                List<UnitTestMetrics> metricses = new List<UnitTestMetrics>();
-                List<Task> actions = new List<Task>();
-                for (int j = 0; j < result.NumberOfThread; j++)
+                var metrics = new UnitTestMetrics(j, command);
+                metricses.Add(metrics);
+                ThreadPool.UnsafeQueueUserWorkItem((x) =>
                 {
-                    var metrics = new UnitTestMetrics(j, command);
-                    metricses.Add(metrics);
-                    ThreadPool.UnsafeQueueUserWorkItem((x) =>
-                    {
-                        actions.Add(ExecuteAsync(actionNumber, result.Value, metrics, action, args));
-                    }, new object());
-                }
-                await Task.Delay(2000);
-                await Task.WhenAll(actions);
-                resume.Add(metricses);
-                resume.Show(hasLabel);
-                return resume;
+                    actions.Add(ExecuteAsync(actionNumber, command.Value, metrics, action, args));
+                }, new object());
             }
+            await Task.Delay(2000);
+            await Task.WhenAll(actions);
+            resume.Add(metricses);
+            resume.Show(hasLabel);
+            return resume;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]

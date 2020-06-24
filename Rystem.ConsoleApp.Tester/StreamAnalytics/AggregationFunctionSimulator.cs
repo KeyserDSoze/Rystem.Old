@@ -34,7 +34,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                                 });
             IList<AbstractToParse> flusheds = await aggregator.RunAsync(messages, null, async x => Things.Add(x), async (x, _) => Exceptions.Add(x));
             IList<AbstractToParse> flusheds2 = aggregator.Run(messages, null, x => Things.Add(x), (x, _) => Exceptions.Add(x), Installation.Inst00);
-            await Task.Delay(5000);
+            await Task.Delay(10000);
             metrics.CheckIfOkExit(Things.Count == 220, Things.Count);
             metrics.CheckIfOkExit(myCounter.X == 5995, myCounter.X);
         }

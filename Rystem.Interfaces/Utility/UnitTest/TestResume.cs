@@ -15,7 +15,7 @@ namespace Rystem.UnitTest
             this.IsVerbose = isVerbose;
         }
         public bool IsOk => !this.Results.Any(x => !x.IsCorrect);
-        private readonly List<UnitTestEvent> Results = new List<UnitTestEvent>();
+        public List<UnitTestEvent> Results { get; } = new List<UnitTestEvent>();
         public void Add(IEnumerable<UnitTestMetrics> metrics)
         {
             if (this.IsVerbose)

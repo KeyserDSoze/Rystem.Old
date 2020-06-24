@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
-            SmallBlobKey smallBlobKey = new SmallBlobKey() { Id = 2 };
+            SmallBlobKey smallBlobKey = new SmallBlobKey() { Id = metrics.ThreadId };
             smallBlobKey.Remove();
             metrics.CheckIfNotOkExit(smallBlobKey.IsPresent());
             SmallBlob smallBlob = smallBlobKey.Instance();
@@ -47,7 +47,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         {
             return Task.FromResult(new SmallBlob()
             {
-                Id = this.Id
+                Id = 2
             });
         }
 

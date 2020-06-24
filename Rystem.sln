@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.Web", "Rystem.Web\Ry
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.WebApp.Backoffice", "Rystem.WebApp.Backoffice\Rystem.WebApp.Backoffice.csproj", "{73373C68-A374-4B7F-9AA8-A96CE09A3692}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.ZPushOnlineNuget", "Rystem.PushOnlineNuget\Rystem.ZPushOnlineNuget.csproj", "{38DCF2BE-FA6F-4B5E-8547-09FE8F74584E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.ZPushOnlineNuget", "Rystem.PushOnlineNuget\Rystem.ZPushOnlineNuget.csproj", "{38DCF2BE-FA6F-4B5E-8547-09FE8F74584E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.ZUnitTest", "Rystem.UnitTest\Rystem.ZUnitTest.csproj", "{5D33AF34-1AB6-41F6-BA3C-F54C701E1969}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{38DCF2BE-FA6F-4B5E-8547-09FE8F74584E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38DCF2BE-FA6F-4B5E-8547-09FE8F74584E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38DCF2BE-FA6F-4B5E-8547-09FE8F74584E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D33AF34-1AB6-41F6-BA3C-F54C701E1969}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D33AF34-1AB6-41F6-BA3C-F54C701E1969}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D33AF34-1AB6-41F6-BA3C-F54C701E1969}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D33AF34-1AB6-41F6-BA3C-F54C701E1969}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
