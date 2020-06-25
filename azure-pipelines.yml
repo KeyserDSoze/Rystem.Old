@@ -33,12 +33,13 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: NuGetCommand@2
+- task: MSBuild@1
   inputs:
-    command: 'pack'
-    packagesToPack: '**/Rystem.csproj'
-    versioningScheme: 'off'
-    includeReferencedProjects: true
+    solution: '**/*.sln'
+    msbuildArchitecture: 'x64'
+    msbuildArguments: '-t:pack'
+    clean: true
+    restoreNugetPackages: true
 
 - task: NuGetCommand@2
   inputs:
