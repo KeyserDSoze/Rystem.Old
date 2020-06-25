@@ -37,6 +37,7 @@ steps:
   inputs:
     solution: '**/*.sln'
     msbuildArchitecture: 'x64'
+    configuration: 'Release'
     msbuildArguments: '-t:pack'
     clean: true
     restoreNugetPackages: true
