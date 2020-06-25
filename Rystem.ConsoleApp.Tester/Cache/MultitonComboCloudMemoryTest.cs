@@ -37,7 +37,6 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class Service3Key : ICacheKey<Service3>
     {
         public int Id { get; set; }
-        private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         public Task<Service3> FetchAsync()
         {
             return Task.FromResult(new Service3()
@@ -52,7 +51,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             return new ConfigurationBuilder().WithCache(CacheConsistency.Always)
                 .WithMemory(new MemoryCacheProperties(ExpireTime.FiveSeconds))
                 .And()
-                 .WithCloud(ConnectionString)
+                 .WithCloud(KeyManager.Instance.Storage)
                     .WithBlobstorage(new BlobStorageCacheProperties(ExpireTime.Infinite))
                     .Build();
         }

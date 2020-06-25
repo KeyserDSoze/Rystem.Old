@@ -31,7 +31,7 @@ namespace Rystem.ZConsoleApp.Tester.Utility
 
             private static ConfigurationBuilder GetConfigurationBuilder(int month)
             {
-                return new ConfigurationBuilder().WithNoSql(TableStorageTester.ConnectionString)
+                return new ConfigurationBuilder().WithNoSql(KeyManager.Instance.Storage)
                     .WithTableStorage(new TableStorageBuilder($"LogBook{month}"))
                     .Build((Installation)month);
             }

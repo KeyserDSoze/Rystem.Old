@@ -12,7 +12,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
     {
         public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
-            var client = new QueueServiceClient(TableStorageTester.ConnectionString);
+            var client = new QueueServiceClient(KeyManager.Instance.Storage);
             var context = client.GetQueueClient("testone");
             await context.CreateIfNotExistsAsync();
             await context.SendMessageAsync("dsadsad");

@@ -40,7 +40,6 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class SmallTableKey : ICacheKey<SmallTable>
     {
         public int Id { get; set; }
-        private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
 
         public Task<SmallTable> FetchAsync()
         {
@@ -52,7 +51,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
 
         public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new ConfigurationBuilder().WithCache().WithCloud(ConnectionString)
+            return new ConfigurationBuilder().WithCache().WithCloud(KeyManager.Instance.Storage)
                 .WithTablestorage(new TableStorageCacheProperties(ExpireTime.FiveSeconds)).Build();
         }
     }

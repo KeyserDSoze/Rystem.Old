@@ -31,7 +31,7 @@ namespace Rystem.ZConsoleApp.Tester.DistributedLock
             public ConfigurationBuilder GetConfigurationBuilder()
             {
                 return new ConfigurationBuilder()
-                    .WithLock(TableStorageTester.ConnectionString)
+                    .WithLock(KeyManager.Instance.Storage)
                     .WithBlobStorage(new BlobBuilder())
                     .Build();
             }

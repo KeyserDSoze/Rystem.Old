@@ -11,8 +11,6 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
 {
     public class TableStorageTester : IUnitTest
     {
-        public const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
@@ -86,9 +84,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             public override ConfigurationBuilder GetConfigurationBuilder()
             {
                 return new ConfigurationBuilder()
-                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Example"))
+                    .WithNoSql(KeyManager.Instance.Storage).WithTableStorage(new TableStorageBuilder("Example"))
                     .Build(Installation.Default)
-                    .WithNoSql(TableStorageTester.ConnectionString)
+                    .WithNoSql(KeyManager.Instance.Storage)
                     .WithTableStorage(new TableStorageBuilder("Doppelganger")).Build(Installation.Inst00);
             }
         }
@@ -98,9 +96,9 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
             public override ConfigurationBuilder GetConfigurationBuilder()
             {
                 return new ConfigurationBuilder()
-                    .WithNoSql(TableStorageTester.ConnectionString).WithTableStorage(new TableStorageBuilder("Caruni"))
+                    .WithNoSql(KeyManager.Instance.Storage).WithTableStorage(new TableStorageBuilder("Caruni"))
                     .Build(Installation.Default)
-                    .WithNoSql(TableStorageTester.ConnectionString)
+                    .WithNoSql(KeyManager.Instance.Storage)
                     .WithTableStorage(new TableStorageBuilder("Doppelganger2"))
                     .Build(Installation.Inst00);
             }

@@ -101,14 +101,13 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
         public override ConfigurationBuilder GetConfigurationBuilder()
         {
             return new ConfigurationBuilder()
-                .WithData(StorageConnectionString)
+                .WithData(KeyManager.Instance.Storage)
                 .WithAppendBlobStorage(new AppendBlobBuilder("meatball", new JsonAvroDataManager<Ricotta>(), new JsonAvroDataManager<Ricotta>()))
                 .Build(MeatballType.MyDefault.ToInstallation())
-                .WithData(StorageConnectionString)
+                .WithData(KeyManager.Instance.Storage)
                 .WithAppendBlobStorage(new AppendBlobBuilder("kollipop"))
                 .Build(Installation.Inst00);
         }
-        public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
     }
     public sealed class ForthBall : Ricotta
     {

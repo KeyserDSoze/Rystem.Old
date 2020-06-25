@@ -62,12 +62,11 @@ namespace Rystem.ZConsoleApp.Tester.Azure.DataAggregation
     {
         public ConfigurationBuilder GetConfigurationBuilder()
         {
-            return new ConfigurationBuilder().WithData(StorageConnectionString)
+            return new ConfigurationBuilder().WithData(KeyManager.Instance.Storage)
                 .WithBlockBlobStorage(new BlockBlobBuilder("meatball2")).Build(Installation.Inst01)
-                .WithData(StorageConnectionString)
+                .WithData(KeyManager.Instance.Storage)
                 .WithBlockBlobStorage(new BlockBlobBuilder("akrundm")).Build(Installation.Inst00);
         }
-        public const string StorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         public int A { get; set; }
         public string B { get; set; }
         public string Name { get; set; }

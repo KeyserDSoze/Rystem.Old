@@ -30,6 +30,6 @@ namespace Rystem.ZConsoleApp.Tester.DistributedLock
             await Task.Delay(5000);
             myNumber.X++;
         }
-        private static DistributedRaceCondition DistributedSingleton = new DistributedRaceCondition(TableStorageTester.ConnectionString, LockType.BlobStorage, "MyPensylvania");
+        private static DistributedRaceCondition DistributedSingleton = new DistributedRaceCondition(KeyManager.Instance.Storage, LockType.BlobStorage, "MyPensylvania");
     }
 }

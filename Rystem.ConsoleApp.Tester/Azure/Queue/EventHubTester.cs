@@ -35,14 +35,13 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
         {
             public string A { get; set; }
             public MyObject B { get; set; }
-            private const string ConnectionString = "Endpoint=sb://testone2.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=KD7fVSnPLrPp6E+Q3iDDfiuCf1pgz9MjKHK805/Hdqw=";
             public ConfigurationBuilder GetConfigurationBuilder()
             {
                 return new ConfigurationBuilder()
-                    .WithQueue(ConnectionString)
+                    .WithQueue(KeyManager.Instance.EventHub)
                     .WithEventHub(new EventHubBuilder("queue"))
                         .Build(Installation.Default)
-                            .WithQueue(ConnectionString)
+                            .WithQueue(KeyManager.Instance.EventHub)
                             .WithEventHub(new EventHubBuilder("aloa"))
                                 .Build(Installation.Inst00);
             }

@@ -15,7 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             await Task.Delay(0).NoContext();
-            MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
+            MultitonUtility.ClearAllCacheAsync(KeyManager.Instance.Redis).ConfigureAwait(false).GetAwaiter().GetResult();
             ServiceKey serviceKey = new ServiceKey() { Id = 2 };
             metrics.CheckIfNotOkExit(serviceKey.IsPresent());
             Service service = serviceKey.Instance() as Service;
@@ -36,7 +36,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
             metrics.CheckIfNotOkExit(!serviceKey.IsPresent());
             await Task.Delay(5000);
             metrics.CheckIfNotOkExit(serviceKey.IsPresent());
-            MultitonUtility.ClearAllCacheAsync(ServiceKey.ConnectionString).ConfigureAwait(false).GetAwaiter().GetResult();
+            MultitonUtility.ClearAllCacheAsync(KeyManager.Instance.Redis).ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
     public class ServiceKey : ICacheKey<Service>
@@ -54,11 +54,9 @@ namespace Rystem.ZConsoleApp.Tester.Cache
         public ConfigurationBuilder GetConfigurationBuilder()
         {
             return new ConfigurationBuilder().WithCache(CacheConsistency.Always)
-                .WithCloud(ConnectionString)
+                .WithCloud(KeyManager.Instance.Redis)
                     .WithRedis(new RedisCacheProperties(ExpireTime.FiveSeconds)).Build();
         }
-
-        internal const string ConnectionString = "testredis23.redis.cache.windows.net:6380,password=6BSgF1XCFWDSmrlvm8Kn3whMZ3s2pOUH+TyUYfzarNk=,ssl=True,abortConnect=False";
     }
     public class Service
     {

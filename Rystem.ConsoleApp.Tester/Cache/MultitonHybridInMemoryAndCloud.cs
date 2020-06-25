@@ -26,7 +26,6 @@ namespace Rystem.ZConsoleApp.Tester.Cache
     public class HybridTableKey : ICacheKey<HybridTable>
     {
         public int Id { get; set; }
-        private const string ConnectionString = "DefaultEndpointsProtocol=https;AccountName=stayhungry;AccountKey=KzdZ0SXODAR+B6/dBU0iBafWnNthOwOvrR0TUipcyFUHEAawr8h+Tl10mFTg79JQ7u2vgETC52/HYzgIXgZZpw==;EndpointSuffix=core.windows.net";
         public Task<HybridTable> FetchAsync()
         {
             return Task.FromResult(new HybridTable()
@@ -40,7 +39,7 @@ namespace Rystem.ZConsoleApp.Tester.Cache
                 .WithCache()
                 .WithMemory(new MemoryCacheProperties(ExpireTime.FiveMinutes, true))
                 .And()
-                .WithCloud(ConnectionString)
+                .WithCloud(KeyManager.Instance.Storage)
                 .WithTablestorage(new TableStorageCacheProperties(ExpireTime.Infinite)).Build();
     }
     public class SecondHybridTableKey : ICacheKey<HybridTable>

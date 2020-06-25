@@ -86,23 +86,22 @@ namespace Rystem.ZConsoleApp.Tester.Azure.Queue
     }
     public class MySmartQueue : IQueue
     {
-        private const string ConnectionString = "Server=tcp:kynsextesting.database.windows.net,1433;Initial Catalog=Testing;Persist Security Info=False;User ID=kynsex;Password=Delorean2020;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         public string Al { get; set; }
         public MyManagerImporter MyManagerImporter { get; set; }
 
         public ConfigurationBuilder GetConfigurationBuilder()
         {
             return new ConfigurationBuilder()
-                .WithQueue(ConnectionString)
+                .WithQueue(KeyManager.Instance.Sql)
                 .WithSmartQueue(new SmartQueueBuilder("Billing", QueueDuplication.PathAndMessage, 100, 3, -1))
                 .Build(Installation.Inst01)
-                .WithQueue(ConnectionString)
+                .WithQueue(KeyManager.Instance.Sql)
                 .WithSmartQueue(new SmartQueueBuilder("Unsubscription", QueueDuplication.Message, 100, 3))
                 .Build(Installation.Inst00)
-                .WithQueue(ConnectionString)
+                .WithQueue(KeyManager.Instance.Sql)
                 .WithSmartQueue(new SmartQueueBuilder("Notification", QueueDuplication.Path, 100, 3, 30))
                 .Build(Installation.Default)
-                .WithQueue(ConnectionString)
+                .WithQueue(KeyManager.Instance.Sql)
                 .WithSmartQueue(new SmartQueueBuilder("Business", QueueDuplication.Allow, 100, 3, 30))
                 .Build(Installation.Inst05);
         }
