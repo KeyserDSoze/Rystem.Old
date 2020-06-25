@@ -28,23 +28,19 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
+- task: DotNetCoreCLI@2
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: MSBuild@1
-  inputs:
-    solution: '**/*.sln'
-    msbuildArchitecture: 'x64'
-    msbuildArguments: '-t:pack'
-    clean: true
-    restoreNugetPackages: true
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    configuration: $(buildConfiguration)
+    includesymbols: true
+    includesource: true
+    versioningScheme: 'off'
 
 - task: NuGetCommand@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
     nuGetFeedType: 'internal'
     publishVstsFeed: '9072218a-afc6-4668-aee7-e7769e98c15f'
     allowPackageConflicts: true
