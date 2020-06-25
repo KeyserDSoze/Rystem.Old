@@ -25,6 +25,7 @@ steps:
   inputs:
     solution: '**\*.sln'
     restoreNugetPackages: true
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
     msbuildArchitecture: 'x64'
 
 - task: DotNetCoreCLI@2
