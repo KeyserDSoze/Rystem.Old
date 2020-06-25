@@ -23,10 +23,17 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '-t:pack -p:IncludeSymbols=true'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    solution: '**\*.sln'
+    restoreNugetPackages: true
+    msbuildArchitecture: 'x64'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    includesymbols: true
+    includesource: true
+    versioningScheme: 'off'
 
 - task: NuGetCommand@2
   inputs:
