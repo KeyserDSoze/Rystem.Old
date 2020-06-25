@@ -29,6 +29,7 @@ steps:
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
+    configuration: $(buildConfiguration)
     includesymbols: true
     includesource: true
     versioningScheme: 'off'
