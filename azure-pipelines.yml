@@ -31,7 +31,7 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    workingDirectory: '$(Agent.ToolsDirectory)/dotnet'
+    workingDirectory: '$(solution)'
 
 - task: DotNetCoreCLI@2
   inputs:
