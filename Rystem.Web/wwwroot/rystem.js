@@ -199,6 +199,32 @@ class FormRystem extends Rystem {
     }
 }
 
+class AjaxButtonRystem extends Rystem {
+    constructor(id, request, ifInModalCloseAfterValidSubmit, toast, update) {
+        super(id);
+        this.request = request;
+        this.ifInModalCloseAfterValidSubmit = ifInModalCloseAfterValidSubmit;
+        this.toast = toast;
+        this.update = update;
+    }
+
+    submit(e, obj) {
+        e.preventDefault();
+        let button = this;
+        Rystem.httpRequest(button.request, true, Rystem.stringEmpty, e, obj, function (data) {
+            if (button.ifInModalCloseAfterValidSubmit)
+                ModalRystem.forceClose();
+            if (button.toast)
+                new ToastRystem("toast-" + button.id, button.toast).show(data);
+            if (button.update)
+                Rystem.httpRequest(button.update, false, Rystem.stringEmpty, e, obj);
+        }, function (data) {
+            if (button.toast)
+                new ToastRystem("toast-" + button.id, button.toast).show(data);
+        });
+    }
+}
+
 class ToastRystem extends Rystem {
     constructor(id, options) {
         super(id);

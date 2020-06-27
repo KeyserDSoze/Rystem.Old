@@ -63,6 +63,12 @@ namespace Rystem.WebApp.Controllers
                 });
             return View(items);
         }
+        [HttpPost]
+        public async Task<IActionResult> Contreau()
+        {
+            await Task.Delay(1000);
+            return Ok();
+        }
         public class MyFirstChart : IChart
         {
             public string X => "data";
