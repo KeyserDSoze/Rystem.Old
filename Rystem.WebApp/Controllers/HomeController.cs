@@ -97,8 +97,34 @@ namespace Rystem.WebApp.Controllers
             public Dictionary<string, DataModel> Datasets { get; }
         }
 
+        public class MySecondChar : IChart
+        {
+            public string X => "data";
+
+            public string Y => "numero congiure";
+
+            public string Title => "Bella zi";
+            public MySecondChar()
+            {
+                this.Datasets = new Dictionary<string, DataModel>();
+                for (int i = 0; i < 5; i++)
+                {
+                    this.Datasets.Add("Circo" + i, new DataModel()
+                    {
+                        Data = GetNumbers(i),
+                    });
+                }
+                static IEnumerable<decimal> GetNumbers(int start)
+                {
+                    for (int i = start + 10; i < start + 13; i++)
+                        yield return i;
+                }
+            }
+            public Dictionary<string, DataModel> Datasets { get; }
+        }
+
         public IActionResult Charting()
-            => View(new MyFirstChart().ToDataChart(ChartType.Line));
+            => View((new MyFirstChart().ToDataChart(ChartType.Line), new MySecondChar().ToDataChart(ChartType.Pie)));
 
         public async Task<IActionResult> Rexo()
         {

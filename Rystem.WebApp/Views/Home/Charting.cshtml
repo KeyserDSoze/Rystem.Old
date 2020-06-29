@@ -1,4 +1,4 @@
-﻿@model DataChart
+﻿@model (DataChart A, DataChart B)
 @{
     ViewData["Title"] = "Privacy Policy";
 }
@@ -6,5 +6,6 @@
 
 <p>Use this page to detail your site's privacy policy.</p>
 <div style="height:300px">
-    <rystem-chart rystem-data="Model"></rystem-chart>
+    <rystem-chart rystem-data="Model.A"></rystem-chart>
+    <rystem-chart rystem-data="Model.B"></rystem-chart>
 </div>
