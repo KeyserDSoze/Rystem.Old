@@ -26,7 +26,7 @@ namespace Rystem.WebApp.Controllers
 
         [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-        public IActionResult Index([FromForm]Alo alo) => Ok("A good update");
+        public IActionResult Index([FromForm] Alo alo) => Ok("A good update");
 
         static HomeController()
         {
@@ -125,6 +125,8 @@ namespace Rystem.WebApp.Controllers
 
         public IActionResult Charting()
             => View((new MyFirstChart().ToDataChart(ChartType.Line), new MySecondChar().ToDataChart(ChartType.Pie)));
+        public IActionResult RedirectButton()
+            => new RedirectResult("/Home/Charting");
 
         public async Task<IActionResult> Rexo()
         {
@@ -132,7 +134,7 @@ namespace Rystem.WebApp.Controllers
             return View();
         }
         static IEnumerable<string> Items;
-        public async Task<IActionResult> Cold([FromQuery]IEnumerable<string> selectedItems)
+        public async Task<IActionResult> Cold([FromQuery] IEnumerable<string> selectedItems)
         {
             Items = selectedItems;
             await Task.Delay(3000);
