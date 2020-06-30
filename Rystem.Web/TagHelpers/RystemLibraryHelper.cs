@@ -93,14 +93,14 @@ namespace Rystem.Web
                 if (this.OnTop)
                 {
                     stringBuilder.Append("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css' />");
-                    stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/bootstrap-select.css' />");
+                    stringBuilder.Append($"<link rel='stylesheet' href='https://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/bootstrap-select.css' />");
                 }
                 if (this.OnBottom)
                 {
                     stringBuilder.Append("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js'></script>");
-                    stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/bootstrap-select.js'></script>");
+                    stringBuilder.Append($"<script src='https://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/bootstrap-select.js'></script>");
                     if (Culture != CultureInfo.InvariantCulture)
-                        stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/i18n/defaults-{this.Culture.Name}.js'></script>");
+                        stringBuilder.Append($"<script src='https://{this.ViewContext.HttpContext.Request.Host}/rystem/bootstrap/i18n/defaults-{this.Culture.Name}.js'></script>");
                 }
             }
             if (this.UseSwiperCdn)
@@ -122,11 +122,11 @@ namespace Rystem.Web
             {
                 if (this.OnTop)
                 {
-                    stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/basic.min.css' />");
-                    stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/dropzone.min.css' />");
+                    stringBuilder.Append($"<link rel='stylesheet' href='https://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/basic.min.css' />");
+                    stringBuilder.Append($"<link rel='stylesheet' href='https://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/dropzone.min.css' />");
                 }
                 if (this.OnBottom)
-                    stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/dropzone.min.js'></script>");
+                    stringBuilder.Append($"<script src='https://{this.ViewContext.HttpContext.Request.Host}/rystem/dropzone/dropzone.min.js'></script>");
             }
             if (this.UseCharJsCdn)
             {
@@ -145,11 +145,11 @@ namespace Rystem.Web
             if (this.UseDataTable)
             {
                 if (this.OnTop)
-                    stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/datatables/dataTables.bootstrap4.min.css' />");
+                    stringBuilder.Append($"<link rel='stylesheet' href='https://{this.ViewContext.HttpContext.Request.Host}/rystem/datatables/dataTables.bootstrap4.min.css' />");
                 if (this.OnBottom)
                 {
-                    stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/datatables/jquery.dataTables.min.js'></script>");
-                    stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/datatables/dataTables.bootstrap4.min.js'></script>");
+                    stringBuilder.Append($"<script src='https://{this.ViewContext.HttpContext.Request.Host}/rystem/datatables/jquery.dataTables.min.js'></script>");
+                    stringBuilder.Append($"<script src='https://{this.ViewContext.HttpContext.Request.Host}/rystem/datatables/dataTables.bootstrap4.min.js'></script>");
                 }
             }
             if (this.DefaultUI != null)
@@ -157,15 +157,15 @@ namespace Rystem.Web
                 if (this.OnTop)
                 {
                     stringBuilder.Append(this.DefaultUI.ToCssVariables());
-                    stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/backoffice/sb-admin-2.min.css' />");
+                    stringBuilder.Append($"<link rel='stylesheet' href='https://{this.ViewContext.HttpContext.Request.Host}/rystem/backoffice/sb-admin-2.min.css' />");
                 }
                 if (this.OnBottom)
-                    stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/backoffice/sb-admin-2.min.js'></script>");
+                    stringBuilder.Append($"<script src='https://{this.ViewContext.HttpContext.Request.Host}/rystem/backoffice/sb-admin-2.min.js'></script>");
             }
             if (this.OnTop)
-                stringBuilder.Append($"<link rel='stylesheet' href='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.css' />");
+                stringBuilder.Append($"<link rel='stylesheet' href='https://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.css' />");
             if (this.OnBottom)
-                stringBuilder.Append($"<script src='{this.ViewContext.HttpContext.Request.Scheme}://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.js'></script>");
+                stringBuilder.Append($"<script src='https://{this.ViewContext.HttpContext.Request.Host}/rystem/rystem.js'></script>");
             string returnValue = stringBuilder.ToString();
             if (this.Cache)
                 JavascriptCssCache.Add(this.OnTop, returnValue);
