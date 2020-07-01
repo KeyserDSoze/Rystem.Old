@@ -27,3 +27,13 @@
 <rystem-ajax-button rystem-request-context='new RequestContext() { Action = "RedirectButton", Controller = "Home", RequestType = RequestType.Post }'>
     Go to charts
 </rystem-ajax-button>
+<rystem-ajax-file rystem-request-context='new RoutingContext() { Action = "Upload" }' rystem-options='new DropZone() { OnSuccess = "fileuploaded"}'>
+
+</rystem-ajax-file>
+<script>
+    function fileuploaded(a, b, c) {
+        console.log(a);
+        console.log(b);
+        console.log(c);
+    }
+</script>

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Rystem.Utility;
@@ -150,6 +151,10 @@ namespace Rystem.WebApp.Controllers
                     alo.Add(new Alo() { A = i.ToString(), Group = (i % 40), Val = i });
             }
             return PartialView("_Ciccia", alo);
+        }
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            return Ok(1);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

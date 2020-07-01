@@ -49,7 +49,10 @@ namespace Rystem.Web
                 output.Content.AppendHtml($"<div id='{this.Id}' class='dz-clickable'>{string.Format(RystemDropDownMessage, this.Message ?? DefaultMessage)}</div>");
             if (RequestContext != null)
                 this.Options.Url = RequestContext.GetUrl(this.ViewContext);
-            output.PostContent.AppendHtml(string.Format(RystemDropDownZoneScript, this.Id, this.Options.ToJsonNoNull()));
+            var options = this.Options.ToJsonNoNull();
+            if (this.Options.OnSuccess != null)
+                options = options.Replace($"\"{this.Options.OnSuccess}\"", this.Options.OnSuccess);
+            output.PostContent.AppendHtml(string.Format(RystemDropDownZoneScript, this.Id, options));
             return Task.CompletedTask;
         }
     }
