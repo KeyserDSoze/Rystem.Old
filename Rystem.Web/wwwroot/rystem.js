@@ -50,6 +50,7 @@
                 if (request.onFailure) {
                     request.onFailure = eval(request.onFailure);
                     request.onFailure(data, event, obj);
+                }
                 if (onFailure)
                     onFailure(data);
                 if (withLoader)
