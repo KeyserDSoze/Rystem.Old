@@ -36,7 +36,7 @@
                     request.onSuccess = eval(request.onSuccess);
                     request.onSuccess(data, event, obj);
                 }
-                else if (onSuccess)
+                if (onSuccess)
                     onSuccess(data);
                 if (request.selector && request.selector.length > 0)
                     $(request.selector).html(data);
@@ -50,7 +50,7 @@
                 if (request.onFailure) {
                     request.onFailure = eval(request.onFailure);
                     request.onFailure(data, event, obj);
-                } else if (onFailure)
+                if (onFailure)
                     onFailure(data);
                 if (withLoader)
                     Rystem.hideLoader();

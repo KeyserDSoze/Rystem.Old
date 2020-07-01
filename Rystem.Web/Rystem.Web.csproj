@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <Version>1.1.6</Version>
+    <Version>1.1.7</Version>
     <Authors>Alessandro Rapiti</Authors>
     <Company>Rystem</Company>
     <Product>Rystem</Product>
