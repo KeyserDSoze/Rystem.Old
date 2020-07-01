@@ -117,7 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Boldo" xml:space="preserve">
+    <value>Cald</value>
+  </data>
+  <data name="Coldo" xml:space="preserve">
+    <value>dsajkd</value>
+  </data>
   <data name="Moldo" xml:space="preserve">
-    <value>Calcutta</value>
+    <value>dajklsda</value>
   </data>
 </root>

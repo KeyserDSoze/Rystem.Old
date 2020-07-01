@@ -56,17 +56,14 @@ namespace Rystem.Web.Backoffice
             navigationValue.Key = string.Empty;
             foreach (Property property in GetAllProperties())
             {
-                var trueEntity = property.FromObject(entity);
-                string value = trueEntity.AsString;
-                if (property.Options.IsLocalized)
-                    value = this.Options.GetLocalizedString(value);
-                navigationValue.Elements.Add(new NavigationObject(value, property.Options, trueEntity.AsObject.Select(x => x.Value)));
+                var trueEntity = property.FromObject(entity, this.Options);
+                navigationValue.Elements.Add(new NavigationObject(trueEntity.AsString, property.Options, trueEntity.AsObject.Select(x => x.Value)));
                 if (property.Options.IsKey)
                 {
                     if (navigationValue.Key.Length == 0)
-                        navigationValue.Key = value;
+                        navigationValue.Key = trueEntity.AsString;
                     else
-                        navigationValue.Key += $"/{HttpUtility.UrlEncode(value)}";
+                        navigationValue.Key += $"/{HttpUtility.UrlEncode(trueEntity.AsString)}";
                 }
             }
             if (navigationValue.Key.Length == 0)

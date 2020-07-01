@@ -47,7 +47,7 @@ namespace Rystem.Web.Backoffice
                     foreach (Property pi in property.GetAllProperties())
                         yield return pi;
         }
-        public (string AsString, List<PropertyObjectWrapper> AsObject) FromObject(object entity)
+        public (string AsString, List<PropertyObjectWrapper> AsObject) FromObject(object entity, NavigationOptions navigationOptions)
         {
             List<PropertyObjectWrapper> result = new List<PropertyObjectWrapper>() { new PropertyObjectWrapper() { Value = entity } };
             foreach (Property property in this.Tree)
@@ -79,7 +79,7 @@ namespace Rystem.Web.Backoffice
                     }
                 }
             }
-            return (string.Join(",", result), result);
+            return (string.Join(",", result.Select(x => this.Options.IsLocalized ? navigationOptions.GetLocalizedString(x.ToString()) : x.ToString())), result);
         }
     }
 }

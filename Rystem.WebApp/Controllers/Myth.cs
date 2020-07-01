@@ -12,7 +12,7 @@ namespace Rystem.WebApp.Controllers
 {
     public class Soluto
     {
-        public FolieriType FolieriType { get; set; }
+        public FolieriType[] FolieriTypes { get; set; } = new FolieriType[3] { FolieriType.Boldo, FolieriType.Coldo, FolieriType.Moldo };
         public static IEnumerable<Soluto> Get()
         {
             return new List<Soluto>()
@@ -51,7 +51,7 @@ namespace Rystem.WebApp.Controllers
         {
             return INavigation<Soluto>
                 .Create(NavigationOptions.CanDoneAll("D", this.StringLocalizer))
-                .Include(x => x.FolieriType, new PropertyOptions() { IsLocalized = true });
+                .Include(x => x.FolieriTypes, new PropertyOptions() { IsLocalized = true });
         }
 
         public override Task<IEnumerable<Soluto>> GetList()
