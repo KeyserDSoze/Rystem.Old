@@ -8,7 +8,7 @@ namespace System
         private static readonly object Semaphore = new object();
         public TrafficLight() { }
         public async Task<TrafficLightLock> CreateAsync()
-        {
+        {            
             var isTheFirst = false;
             await WaitAsync();
             lock (Semaphore)

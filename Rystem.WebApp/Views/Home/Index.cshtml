@@ -12,7 +12,9 @@
     <div>Show my Rexo</div>
     <div id="flirt"></div>
 </rystem-ajax-modal>
-<rystem-dropdown rystem-data-multiple="true" rystem-data="Model.Select(x => new DropdownItem() { Group = x.Group.ToString(), Label = x.A, Selected = false, Value = x.Val.ToString()})" rystem-data-disabled='new List<string>() { "1", "2" }' rystem-request-context='new RequestContext() { Action = "Cold", Controller = "Home" }' rystem-update-context='new RequestContext() { Action = "More", Controller = "Home", Selector="#ciccia"}'>
+<rystem-dropdown name="Alo" rystem-data-multiple="true"  rystem-data="Model.Select(x => new DropdownItem() { Group = x.Group.ToString(), Label = x.A, Selected = false, Value = x.Val.ToString()})" rystem-data-disabled='new List<string>() { "1", "2" }' rystem-request-context='new RequestContext() { Action = "Cold", Controller = "Home" }' rystem-update-context='new RequestContext() { Action = "More", Controller = "Home", Selector="#ciccia"}'>
+</rystem-dropdown>
+<rystem-dropdown name="Alo2" rystem-data-multiple="false" rystem-data="Model.Select(x => new DropdownItem() { Group = x.Group.ToString(), Label = x.A, Selected = false, Value = x.Val.ToString()})" rystem-data-disabled='new List<string>() { "1", "2" }' rystem-request-context='new RequestContext() { Action = "Cold", Controller = "Home" }' rystem-update-context='new RequestContext() { Action = "More", Controller = "Home", Selector="#ciccia"}'>
 </rystem-dropdown>
 <div id="ciccia">
     <partial name="_Ciccia" model="Model" />

@@ -69,6 +69,8 @@ namespace Rystem.Web
                 group = group.OrderBy(x => x.Key);
             else if (Sorting == SortType.Descending)
                 group = group.OrderByDescending(x => x.Key);
+            if (!IsMultiple)
+                output.Content.AppendHtml($"<option value=''></option>");
             foreach (var list in group)
             {
                 if (!string.IsNullOrWhiteSpace(list.Key))
