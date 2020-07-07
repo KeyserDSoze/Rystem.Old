@@ -8,9 +8,6 @@ namespace Rystem.Data.Integration
     public class JsonAvroDataManager<TEntity> : IDataReader<TEntity>, IDataWriter<TEntity>
           where TEntity : IData
     {
-        public JsonAvroDataManager()
-        {
-        }
         public async Task<WrapperEntity<TEntity>> ReadAsync(DataWrapper dummy)
         {
             List<TEntity> aggregatedDatas = new List<TEntity>();

@@ -83,6 +83,12 @@ namespace Rystem
         public AggregationSelector<T> WithAggregation<T>()
             => new AggregationSelector<T>(this);
         /// <summary>
+        /// Add a Telemetry integration
+        /// </summary>
+        /// <returns>specific integration selector</returns>
+        public TelemetrySelector WithTelemetry(string connectionString)
+            => new TelemetrySelector(connectionString, this);
+        /// <summary>
         /// Add a Cache integration
         /// </summary>
         /// <returns>specific integration selector</returns>

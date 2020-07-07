@@ -12,6 +12,7 @@ namespace Rystem
         Aggregation,
         Crypting,
         Cache,
-        Lock
+        Lock,
+        Telemetry
     }
 }

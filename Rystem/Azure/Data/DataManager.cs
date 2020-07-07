@@ -18,6 +18,8 @@ namespace Rystem.Data
                     if (!Integrations.ContainsKey(installation))
                     {
                         DataConfiguration configuration = AggregatedDataConfiguration[installation];
+                        if (configuration.Name == null)
+                            configuration.Name = this.DefaultEntity?.GetType().Name ?? typeof(TEntity).Name;
                         switch (configuration.Type)
                         {
                             case DataType.BlockBlob:

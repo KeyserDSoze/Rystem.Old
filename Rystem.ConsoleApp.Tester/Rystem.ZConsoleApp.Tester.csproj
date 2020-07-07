@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rystem.Web\Rystem.Web.csproj" />
     <ProjectReference Include="..\Rystem\Rystem.csproj" />
   </ItemGroup>
 
