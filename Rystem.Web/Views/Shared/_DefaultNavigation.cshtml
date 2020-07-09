@@ -22,7 +22,7 @@
             <li class="nav-item">
                 @if (group.Url != null)
                 {
-                    <a class="nav-link" asp-area="@group.Url.Area" asp-controller="@group.Url.Controller" asp-action="@group.Url.Action">
+                    <a class="nav-link" asp-area="@group.Url.Area" asp-controller="@group.Url.Controller" asp-action="@group.Url.Action" asp-all-route-data="@group.Url.Parameters">
                         <i class="fas fa-fw @group.FontAwesomeIconClass"></i>
                         <span>@group.Title</span>
                     </a>
