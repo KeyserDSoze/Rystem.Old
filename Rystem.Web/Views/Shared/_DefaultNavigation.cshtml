@@ -39,7 +39,7 @@
                             <div class="bg-white py-2 collapse-inner rounded">
                                 @foreach (var item in group.Items.Where(x => x.IsVisible()))
                                 {
-                                    <a class="collapse-item" asp-area="@item.Url.Area" asp-controller="@item.Url.Controller" asp-action="@item.Url.Action">@item.Title</a>
+                                    <a class="collapse-item" asp-area="@item.Url.Area" asp-controller="@item.Url.Controller" asp-action="@item.Url.Action" asp-all-route-data="@item.Url.Parameters">@item.Title</a>
                                 }
                             </div>
                         </div>
