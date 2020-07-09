@@ -6,7 +6,7 @@ namespace Rystem.Web.Backoffice
 {
     public sealed class NavigationValue
     {
-        public List<NavigationObject> Elements { get; } = new List<NavigationObject>();
+        public List<NavigationObject> Elements { get; set; } = new List<NavigationObject>();
         public string Key { get; internal set; }
     }
     public class NavigationObject
