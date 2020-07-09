@@ -12,7 +12,7 @@ namespace Rystem
         public string Key { get; set; }
         public DateTime Start { get; set; } = DateTime.UtcNow;
         public DateTime End { get; set; }
-        public TimeSpan Duration => End.Subtract(Start);
+        public TimeSpan ElapsedTime => End.Subtract(Start);
         public List<ITelemetryEvent> Events { get; } = new List<ITelemetryEvent>();
         public abstract ConfigurationBuilder GetConfigurationBuilder();
         public static T CreateNew<T>() where T : Telemetry, new()

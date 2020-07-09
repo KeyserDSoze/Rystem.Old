@@ -19,6 +19,7 @@ namespace Rystem
         public Stopwatch Timer { get; set; } = Stopwatch.StartNew();
         [JsonIgnore]
         public Action<DependencyTelemetry> StopAction { get; set; }
+
         public void Stop()
         {
             this.Timer.Stop();

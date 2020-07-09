@@ -11,9 +11,9 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
     {
         public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 120; i++)
             {
-                var myTelemetry = Telemetry.CreateNew<MyTelemetry>(i <= 6 ? (i % 2).ToString() : null);
+                var myTelemetry = Telemetry.CreateNew<MyTelemetry>(i <= 60 ? (i % 2).ToString() : null);
                 var dependency = myTelemetry.TrackDependency("call to something");
                 try
                 {
@@ -48,7 +48,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
             {
                 return new ConfigurationBuilder()
                     .WithTelemetry(KeyManager.Instance.Storage)
-                    .WithAppendBlob(new AppendBlobTelemetryBuilder("supertelemetry", 5, TimeSpan.FromMinutes(1)))
+                    .WithAppendBlob(new AppendBlobTelemetryBuilder("supertelemetry", 50, TimeSpan.FromMinutes(1)))
                     .Build();
             }
         }
