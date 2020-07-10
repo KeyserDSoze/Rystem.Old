@@ -298,7 +298,7 @@ class CarouselRystem extends Rystem {
             if (element.link && element.link.length > 0)
                 elementList += "<a href='" + element.link + "'>";
             if (element.content.indexOf("http") == 0)
-                elementList += "<img class='swiper-image' src='" + element.content + "' />";
+                elementList += "<img class='swiper-slide' src='" + element.content + "' />";
             else
                 elementList += element.content;
             if (element.link && element.link.length > 0)
