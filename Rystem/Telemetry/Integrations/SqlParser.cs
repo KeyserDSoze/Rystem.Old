@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rystem.Aggregation;
+using Rystem.Utility;
 using Rystem.Utility.SqlReflection;
 using System;
 using System.Collections.Generic;
@@ -90,6 +91,7 @@ namespace Rystem
         {
 #warning Da risistemare per farlo diventare più veloce
             Dictionary<string, object> value = new Dictionary<string, object>();
+            value.Add("Id", Alea.GetTimedKey());
             foreach (var property in telemetryEvent.GetType().GetProperties())
             {
                 if (property.GetCustomAttribute(typeof(JsonIgnoreAttribute)) != null)
