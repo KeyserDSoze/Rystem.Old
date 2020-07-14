@@ -8,7 +8,7 @@ namespace Rystem
     public class SqlTelemetryBuilder
     {
         public TelemetryConfiguration TelemetryConfiguration { get; }
-        public SqlTelemetryBuilder(string aggregationName, string tableName = null, string tableObjectName = null)
+        public SqlTelemetryBuilder(string tableName, string tableObjectName = null)
             => this.TelemetryConfiguration = new TelemetryConfiguration()
             {
                 Name = tableName,
@@ -16,10 +16,10 @@ namespace Rystem
                 Type = TelemetryType.Sql,
                 AggregationConfiguration = new AggregationConfiguration<Telemetry>()
                 {
-                    Name = aggregationName,
+                    Name = tableName,
                 }
             };
-        public SqlTelemetryBuilder(string name, int maximumBuffer, TimeSpan maximumTime, string tableName = null, string tableObjectName = null)
+        public SqlTelemetryBuilder(string tableName, int maximumBuffer, TimeSpan maximumTime, string tableObjectName = null)
             => this.TelemetryConfiguration = new TelemetryConfiguration()
             {
                 Name = tableName,
@@ -27,7 +27,7 @@ namespace Rystem
                 Type = TelemetryType.Sql,
                 AggregationConfiguration = new AggregationConfiguration<Telemetry>()
                 {
-                    Name = name,
+                    Name = tableName,
                     MaximumBuffer = maximumBuffer,
                     MaximumTime = maximumTime.Ticks
                 }

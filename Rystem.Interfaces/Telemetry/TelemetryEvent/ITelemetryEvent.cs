@@ -8,4 +8,8 @@ namespace Rystem
     {
         DateTime Timestamp { get; set; }
     }
+    public interface IRystemTelemetryEvent
+    {
+
+    }
 }

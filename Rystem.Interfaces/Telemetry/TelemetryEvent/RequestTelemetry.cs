@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Rystem
 {
-    public class TelemetryRequest : ITelemetryEvent
+    public class RequestTelemetry : ITelemetryEvent, IRystemTelemetryEvent
     {
         public DateTime Timestamp { get; set; }
         public string Content { get; set; }

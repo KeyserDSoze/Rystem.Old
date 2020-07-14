@@ -27,7 +27,7 @@ namespace Rystem
                 using StreamReader streamReader = new StreamReader(memoryStream);
                 body = await streamReader.ReadToEndAsync();
             }
-            telemetry.Track(new TelemetryRequest()
+            telemetry.Track(new RequestTelemetry()
             {
                 Headers = telemetry.HttpContenxtAccessor.HttpContext.Request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 BodyLength = telemetry.HttpContenxtAccessor.HttpContext.Request.ContentLength ?? 0,
@@ -40,7 +40,7 @@ namespace Rystem
         public static void TrackRequest<TTelemetry>(this TTelemetry telemetry, Installation installation = Installation.Default)
            where TTelemetry : WebTelemetry
         {
-            telemetry.Track(new TelemetryRequest()
+            telemetry.Track(new RequestTelemetry()
             {
                 Headers = telemetry.HttpContenxtAccessor.HttpContext.Request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
                 BodyLength = telemetry.HttpContenxtAccessor.HttpContext.Request.Body.Length,

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,5 +47,78 @@ namespace Rystem.Utility.SqlReflection
         public static SqlTablePrameterType VarChar(int value = 100) => new SqlTablePrameterType($"{nameof(VarChar).ToLower()}({value})");
         public static SqlTablePrameterType Decimal(int max = 18, int maxDecimal = 0) => new SqlTablePrameterType($"{nameof(Decimal).ToLower()}({max},{maxDecimal})");
         public static SqlTablePrameterType Numeric(int max = 18, int maxDecimal = 0) => new SqlTablePrameterType($"{nameof(Numeric).ToLower()}({max},{maxDecimal})");
+        public static SqlTablePrameterType ByType(Type type)
+        {
+            if (type == typeof(int))
+                return Int;
+            if (type == typeof(bool))
+                return Bit;
+            if (type == typeof(char))
+                return Text;
+            if (type == typeof(decimal))
+                return Decimal();
+            if (type == typeof(double))
+                return Numeric();
+            if (type == typeof(long))
+                return BigInt;
+            if (type == typeof(byte))
+                return Int;
+            if (type == typeof(sbyte))
+                return SmallInt;
+            if (type == typeof(float))
+                return Float;
+            if (type == typeof(uint))
+                return Int;
+            if (type == typeof(ulong))
+                return BigInt;
+            if (type == typeof(short))
+                return Int;
+            if (type == typeof(ushort))
+                return Int;
+            if (type == typeof(string))
+                return Text;
+            if (type == typeof(DateTime))
+                return Datetime;
+            if (type == typeof(TimeSpan))
+                return BigInt;
+
+            if (type == typeof(int?))
+                return Int;
+            if (type == typeof(bool?))
+                return Bit;
+            if (type == typeof(char?))
+                return Text;
+            if (type == typeof(decimal?))
+                return Decimal();
+            if (type == typeof(double?))
+                return Numeric();
+            if (type == typeof(long?))
+                return BigInt;
+            if (type == typeof(byte?))
+                return Int;
+            if (type == typeof(sbyte?))
+                return SmallInt;
+            if (type == typeof(float?))
+                return Float;
+            if (type == typeof(uint?))
+                return Int;
+            if (type == typeof(ulong?))
+                return BigInt;
+            if (type == typeof(short?))
+                return Int;
+            if (type == typeof(ushort?))
+                return Int;
+            if (type == typeof(DateTime?))
+                return Datetime;
+            if (type == typeof(TimeSpan?))
+                return BigInt;
+
+            if (type == typeof(Guid))
+                return Char(36);
+            if (type == typeof(Guid?))
+                return Char(36);
+
+            return Text;
+        }
     }
 }

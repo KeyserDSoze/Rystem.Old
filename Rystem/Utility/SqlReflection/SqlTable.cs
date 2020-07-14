@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,9 +35,9 @@ namespace Rystem.Utility.SqlReflection
             this.Parameters.Add(SqlTableParameter.CreatePrimaryKey(name, type));
             return this;
         }
-        public SqlTable WithForeignKey(string name, SqlTablePrameterType type)
+        public SqlTable WithNullableForeignKey(string name, SqlTablePrameterType type, string table, string column)
         {
-            this.Parameters.Add(SqlTableParameter.CreatePrimaryKey(name, type));
+            this.Parameters.Add(SqlTableParameter.CreateNullable(name, type, $"{table}({column})"));
             return this;
         }
         public SqlTable WithPrimaryKeyAndIdentity(string name, SqlTablePrameterType type)
@@ -46,7 +47,7 @@ namespace Rystem.Utility.SqlReflection
         }
         public async Task CreateIfNotExistsAsync(SqlConnection connection)
         {
-            if (connection.State != System.Data.ConnectionState.Open)
+            if (connection.State != ConnectionState.Open)
                 await connection.OpenAsync().NoContext();
             StringBuilder sb = new StringBuilder();
             sb.Append($"IF NOT EXISTS (SELECT TOP 1 * FROM sysobjects WHERE name='{Name}' and xtype='U')");
@@ -55,16 +56,33 @@ namespace Rystem.Utility.SqlReflection
             sb.Append(");");
             using SqlCommand command = new SqlCommand(sb.ToString(), connection);
             await command.ExecuteNonQueryAsync().NoContext();
+            if (this.Columns == null)
+            {
+                this.Columns = new List<string>();
+                using SqlDataReader reader = await new SqlCommand($"select COLUMN_NAME from information_schema.columns where table_name = '{this.Name}'", connection).ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    Columns.Add(reader[0].ToString());
+                }
+            }
         }
-        public async Task InsertBulkAsync(SqlConnection connection, List<Dictionary<string, object>> allParameters)
+        private List<string> Columns;
+        public async Task InsertBulkAsync(SqlConnection connection, List<Dictionary<string, object>> allParameters, IEnumerable<PropertyInfo> properties)
         {
             if (allParameters.Any())
             {
-                if (connection.State != System.Data.ConnectionState.Open)
+                if (connection.State != ConnectionState.Open)
                     await connection.OpenAsync().NoContext();
-                using SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(connection);
-                sqlBulkCopy.DestinationTableName = this.Name;
-                await sqlBulkCopy.WriteToServerAsync(allParameters.ToDataTable());
+                try
+                {
+                    using SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(connection);
+                    sqlBulkCopy.DestinationTableName = this.Name;
+                    await sqlBulkCopy.WriteToServerAsync(allParameters.ToDataTable(properties, this.Columns));
+                }
+                catch (Exception ex)
+                {
+                    string olaf = ex.ToString();
+                }
             }
         }
     }

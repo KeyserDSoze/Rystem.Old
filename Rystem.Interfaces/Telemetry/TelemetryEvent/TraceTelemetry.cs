@@ -3,7 +3,7 @@ using System;
 
 namespace Rystem
 {
-    public class TraceTelemetry : ITelemetryEvent
+    public class TraceTelemetry : ITelemetryEvent, IRystemTelemetryEvent
     {
         public DateTime Timestamp { get; set; }
         public string Message { get; set; }

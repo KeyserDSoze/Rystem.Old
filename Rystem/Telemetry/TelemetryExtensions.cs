@@ -39,7 +39,8 @@ namespace Rystem
             [CallerFilePath] string pathCaller = "",
             [CallerLineNumber] int lineNumberCaller = 0)
             where TTelemetry : Telemetry
-            => new DependencyTelemetry()
+        {
+            var dependencyTelemetry = new DependencyTelemetry()
             {
                 Name = name,
                 Caller = caller,
@@ -47,6 +48,10 @@ namespace Rystem
                 LineNumberCaller = lineNumberCaller,
                 StopAction = (dependency) => telemetry.Track(dependency, installation),
             };
+            telemetry.Events.Add(dependencyTelemetry);
+            return dependencyTelemetry;
+        }
+
         public static async Task StopAsync<TTelemetry>(this TTelemetry telemetry, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
         {

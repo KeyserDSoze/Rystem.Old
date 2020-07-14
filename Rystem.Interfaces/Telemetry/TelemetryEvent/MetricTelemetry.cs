@@ -2,7 +2,7 @@
 
 namespace Rystem
 {
-    public class MetricTelemetry : ITelemetryEvent
+    public class MetricTelemetry : ITelemetryEvent, IRystemTelemetryEvent
     {
         public DateTime Timestamp { get; set; }
         public string Name { get; set; }

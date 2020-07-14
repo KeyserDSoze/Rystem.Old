@@ -41,6 +41,6 @@ namespace Rystem.Utility.SqlReflection
         private const string PrimaryKey = "PRIMARY KEY";
         private const string ForeignKey = "FOREIGN KEY REFERENCES";
         public override string ToString()
-            => $"{Name} {Type.Value} {(IsNullable ? string.Empty : NotNull)} {(IsIdentity ? Identity : string.Empty)} {(IsPrimaryKey ? PrimaryKey : string.Empty)} {(Foreign != null ? $"{ForeignKey} {Foreign}" : string.Empty)}";
+            => $"[{Name}] {Type.Value} {(IsNullable ? string.Empty : NotNull)} {(IsIdentity ? Identity : string.Empty)} {(IsPrimaryKey ? PrimaryKey : string.Empty)} {(Foreign != null ? $"{ForeignKey} {Foreign}" : string.Empty)}";
     }
 }
