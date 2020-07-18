@@ -6,17 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Rystem
 {
-    internal class AppendBlobParser : IAggregationParser<Telemetry>
+    internal class AppendBlobTelemetry : IAggregationParser<Telemetry>, ITelemetryIntegration
     {
         private readonly TelemetryConfiguration TelemetryConfiguration;
         private readonly ConfigurationBuilder BaseConfigurationForData;
         private readonly ConfigurationBuilder BaseConfigurationForEventData;
-        public AppendBlobParser(TelemetryConfiguration telemetryConfiguration, Installation installation)
+        public AppendBlobTelemetry(TelemetryConfiguration telemetryConfiguration, Installation installation)
         {
             this.TelemetryConfiguration = telemetryConfiguration;
             if (this.TelemetryConfiguration.ObjectName == null)
@@ -29,6 +30,11 @@ namespace Rystem
             .WithData(telemetryConfiguration.ConnectionString)
             .WithAppendBlobStorage(new Data.AppendBlobBuilder(telemetryConfiguration.Name, new StringBlobManager<TelemetryEventData, ITelemetryEvent>(), new StringBlobManager<TelemetryEventData, ITelemetryEvent>()))
             .Build(installation);
+        }
+
+        public Task<IEnumerable<Telemetry>> GetEventsAsync(Expression<Func<Telemetry, bool>> expression)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task ParseAsync(string queueName, IList<Telemetry> events, ILogger log, Installation installation)

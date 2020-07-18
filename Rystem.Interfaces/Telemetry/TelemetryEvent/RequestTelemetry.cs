@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Rystem
 {
-    public class RequestTelemetry : ITelemetryEvent, IRystemTelemetryEvent
+    public class RequestTelemetry : ITelemetryEvent
     {
+        [JsonIgnore]
+        public Telemetry Telemetry { get; set; }
         public DateTime Timestamp { get; set; }
         public string Content { get; set; }
         public long BodyLength { get; set; }

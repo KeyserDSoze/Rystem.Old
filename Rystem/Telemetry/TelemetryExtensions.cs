@@ -2,6 +2,7 @@
 using Rystem.Utility;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -22,6 +23,7 @@ namespace Rystem
         {
             if (telemetryEvent.Timestamp == default)
                 telemetryEvent.Timestamp = DateTime.UtcNow;
+            telemetryEvent.Telemetry = telemetry;
             telemetry.Events.Add(telemetryEvent);
         }
         public static void TrackMetric<TTelemetry>(this TTelemetry telemetry, MetricTelemetry metric, Installation installation = Installation.Default)
@@ -39,27 +41,27 @@ namespace Rystem
             [CallerFilePath] string pathCaller = "",
             [CallerLineNumber] int lineNumberCaller = 0)
             where TTelemetry : Telemetry
-        {
-            var dependencyTelemetry = new DependencyTelemetry()
+            => new DependencyTelemetry
             {
                 Name = name,
                 Caller = caller,
                 PathCaller = pathCaller,
                 LineNumberCaller = lineNumberCaller,
                 StopAction = (dependency) => telemetry.Track(dependency, installation),
+                Telemetry = telemetry
             };
-            telemetry.Events.Add(dependencyTelemetry);
-            return dependencyTelemetry;
-        }
 
         public static async Task StopAsync<TTelemetry>(this TTelemetry telemetry, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
         {
             telemetry.End = DateTime.UtcNow;
-            await telemetry.Manager().TrackEvent(telemetry, installation).NoContext();
+            await telemetry.Manager().TrackEventAsync(telemetry, installation).NoContext();
         }
         public static void Stop<TTelemetry>(this TTelemetry telemetry, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
             => telemetry.StopAsync().ToResult();
+        public static async Task<IEnumerable<Telemetry>> GetEventsAsync<TTelemetry>(this TTelemetry telemetry, Expression<Func<Telemetry, bool>> expression, Installation installation = Installation.Default)
+            where TTelemetry : Telemetry
+            => await telemetry.Manager().GetEventsAsync(expression, installation).NoContext();
     }
 }

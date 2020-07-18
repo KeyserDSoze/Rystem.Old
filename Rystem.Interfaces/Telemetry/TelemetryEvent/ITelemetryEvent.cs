@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem.Utility.SqlReflection;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,10 +7,7 @@ namespace Rystem
 {
     public interface ITelemetryEvent
     {
+        Telemetry Telemetry { get; set; }
         DateTime Timestamp { get; set; }
-    }
-    public interface IRystemTelemetryEvent
-    {
-
     }
 }

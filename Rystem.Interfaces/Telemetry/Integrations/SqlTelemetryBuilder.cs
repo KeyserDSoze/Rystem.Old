@@ -7,9 +7,9 @@ namespace Rystem
 {
     public class SqlTelemetryBuilder
     {
-        public TelemetryConfiguration TelemetryConfiguration { get; }
+        public SqlTelemetryConfiguration TelemetryConfiguration { get; }
         public SqlTelemetryBuilder(string tableName, string tableObjectName = null)
-            => this.TelemetryConfiguration = new TelemetryConfiguration()
+            => this.TelemetryConfiguration = new SqlTelemetryConfiguration()
             {
                 Name = tableName,
                 ObjectName = tableObjectName,
@@ -20,7 +20,7 @@ namespace Rystem
                 }
             };
         public SqlTelemetryBuilder(string tableName, int maximumBuffer, TimeSpan maximumTime, string tableObjectName = null)
-            => this.TelemetryConfiguration = new TelemetryConfiguration()
+            => this.TelemetryConfiguration = new SqlTelemetryConfiguration()
             {
                 Name = tableName,
                 ObjectName = tableObjectName,

@@ -20,16 +20,17 @@ namespace Rystem.Aggregation
             => this.AggregationProperties[installation].Name;
         public TimeSpan GetAggregationTime(Installation installation)
             => new TimeSpan(this.AggregationProperties[installation].MaximumTime);
-        public IEnumerable<Installation> GetInstallations() 
+        public IEnumerable<Installation> GetInstallations()
             => this.AggregationProperties.Select(x => x.Key);
         public AggregationManager(ConfigurationBuilder configurationBuilder)
         {
             this.AggregationProperties = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as AggregationConfiguration<T>);
+            foreach (var installation in AggregationProperties.Keys)
+                this.CreateTrafficLight(installation);
         }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]
         public async Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default)
         {
-            this.CreateTrafficLight(installation);
             IList<Exception> exceptions = new List<Exception>();
             string instance = Guid.NewGuid().ToString("N");
             DateTime startTime = DateTime.UtcNow;

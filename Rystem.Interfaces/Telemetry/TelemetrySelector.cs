@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rystem.Utility.SqlReflection;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,10 +20,10 @@ namespace Rystem
             return new TelemetryBuilder(appendBlobBuilder.TelemetryConfiguration, this);
         }
 
-        public TelemetryBuilder WithSql(SqlTelemetryBuilder sqlBuilder)
+        public SqlCustomEvent WithSql(SqlTelemetryBuilder sqlBuilder)
         {
             sqlBuilder.TelemetryConfiguration.ConnectionString = this.ConnectionString;
-            return new TelemetryBuilder(sqlBuilder.TelemetryConfiguration, this);
+            return new SqlCustomEvent(new TelemetryBuilder(sqlBuilder.TelemetryConfiguration, this));
         }
     }
 }

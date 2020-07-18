@@ -33,15 +33,15 @@ namespace Rystem.Cache
         }
         private static long ExpireCache = 0;
         private const string TableName = "RystemCache";
-        private readonly static string FullName = typeof(T).FullName;
+        private readonly string FullName;
         private readonly CacheConfiguration Properties;
         private readonly RystemCacheConfiguration Configuration;
         internal InTableStorage(RystemCacheConfiguration configuration)
         {
+            this.FullName = configuration.CloudProperties.Namespace;
             Configuration = configuration;
             Properties = configuration.CloudProperties;
             ExpireCache = Properties.ExpireTimeSpan.Ticks;
-
         }
         public async Task<T> InstanceAsync(string key)
         {

@@ -14,10 +14,10 @@ namespace Rystem.Cache
         where TCacheKey : ICacheKey<TCache>
     {
         private readonly IMultitonIntegration<TCache> InMemory;
-        private bool MemoryIsActive 
+        private bool MemoryIsActive
             => this.Configuration.HasMemory;
         private readonly ICacheIntegrationAsync<TCache> InCloud;
-        private bool CloudIsActive 
+        private bool CloudIsActive
             => this.Configuration.HasCloud;
 
         public InstallerType InstallerType => InstallerType.Cache;
@@ -26,6 +26,10 @@ namespace Rystem.Cache
         public CacheManager(ConfigurationBuilder builder)
         {
             this.Configuration = builder.GetConfigurations(this.InstallerType)[Installation.Default] as RystemCacheConfiguration;
+            if (this.Configuration.HasCloud && this.Configuration.CloudProperties.Namespace == null)
+                this.Configuration.CloudProperties.Namespace = typeof(TCache).FullName;
+            if (this.Configuration.HasMemory && this.Configuration.MemoryProperties.Namespace == null)
+                this.Configuration.MemoryProperties.Namespace = typeof(TCache).FullName;
             if (this.MemoryIsActive)
                 InMemory = new InMemory<TCache>(this.Configuration);
             if (this.CloudIsActive)

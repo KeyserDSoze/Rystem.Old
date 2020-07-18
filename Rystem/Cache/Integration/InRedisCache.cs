@@ -32,10 +32,11 @@ namespace Rystem.Cache
 
         private readonly List<Lazy<ConnectionMultiplexer>> Connections;
         private readonly TimeSpan ExpireCache;
-        private readonly string FullName = typeof(T).FullName;
+        private readonly string FullName;
         private readonly CacheConfiguration Properties;
         internal InRedisCache(RystemCacheConfiguration configuration)
         {
+            this.FullName = configuration.CloudProperties.Namespace;
             Properties = configuration.CloudProperties;
             ExpireCache = Properties.ExpireTimeSpan;
             Connections = new List<Lazy<ConnectionMultiplexer>>();

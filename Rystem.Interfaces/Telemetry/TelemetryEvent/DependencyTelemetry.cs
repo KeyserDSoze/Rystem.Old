@@ -1,11 +1,13 @@
 ﻿using Newtonsoft.Json;
+using Rystem.Utility;
+using Rystem.Utility.SqlReflection;
 using System;
 using System.Diagnostics;
 using System.Threading;
 
 namespace Rystem
 {
-    public class DependencyTelemetry : ITelemetryEvent, IRystemTelemetryEvent
+    public class DependencyTelemetry : ITelemetryEvent
     {
         public string Name { get; set; }
         public string Caller { get; set; }
@@ -17,8 +19,9 @@ namespace Rystem
         public long Elapsed { get; set; }
         [JsonIgnore]
         public Stopwatch Timer { get; set; } = Stopwatch.StartNew();
+        public Action<DependencyTelemetry> StopAction;
         [JsonIgnore]
-        public Action<DependencyTelemetry> StopAction { get; set; }
+        public Telemetry Telemetry { get; set; }
 
         public void Stop()
         {

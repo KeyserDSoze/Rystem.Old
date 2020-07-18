@@ -3,8 +3,10 @@ using System;
 
 namespace Rystem
 {
-    public class ExceptionTelemetry : ITelemetryEvent, IRystemTelemetryEvent
+    public class ExceptionTelemetry : ITelemetryEvent
     {
+        [JsonIgnore]
+        public Telemetry Telemetry { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         private Exception exception;
         [JsonIgnore]

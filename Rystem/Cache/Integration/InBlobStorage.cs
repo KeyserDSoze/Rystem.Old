@@ -35,10 +35,11 @@ namespace Rystem.Cache
         }
         private static long ExpireCache = 0;
         private const string ContainerName = "rystemcache";
-        private readonly static string FullName = typeof(T).FullName + "/";
+        private readonly string FullName;
         private readonly RystemCacheConfiguration Configuration;
         internal InBlobStorage(RystemCacheConfiguration configuration)
         {
+            this.FullName = configuration.CloudProperties.Namespace + "/";
             Configuration = configuration;
             Properties = configuration.CloudProperties;
             ExpireCache = Properties.ExpireTimeSpan.Ticks;
@@ -109,7 +110,7 @@ namespace Rystem.Cache
         }
         public Task WarmUp()
            => Task.CompletedTask;
-        private static string CloudKeyToString(string keyString)
+        private string CloudKeyToString(string keyString)
            => $"{FullName}{keyString}";
     }
 }

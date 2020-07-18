@@ -36,6 +36,7 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
             public DateTime Timestamp { get; set; }
             public string Value { get; set; }
             public long Saturday { get; set; }
+            public Telemetry Telemetry { get; set; }
         }
 
         public class MyTelemetry : WebTelemetry

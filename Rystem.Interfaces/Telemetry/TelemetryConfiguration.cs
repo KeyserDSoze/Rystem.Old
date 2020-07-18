@@ -1,9 +1,14 @@
 ﻿using Rystem.Aggregation;
+using Rystem.Utility.SqlReflection;
 using System;
 using System.Collections.Generic;
 
 namespace Rystem
 {
+    public class SqlTelemetryConfiguration : TelemetryConfiguration
+    {
+        public Dictionary<string, SqlTable> CustomTables { get; set; } = new Dictionary<string, SqlTable>();
+    }
     public class TelemetryConfiguration : IConfiguration
     {
         public string ConnectionString { get; set; }
