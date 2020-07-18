@@ -121,14 +121,21 @@ namespace Rystem.NoSql
         }
         internal static string ValueToString(object value)
         {
-            if (value is string) return $"'{value}'";
-            if (value is DateTime) return $"datetime'{(DateTime)value:yyyy-MM-dd}T{(DateTime)value:HH:mm:ss}Z'";
-            if (value is DateTimeOffset) return $"datetime'{(DateTimeOffset)value:yyyy-MM-dd}T{(DateTimeOffset)value:HH:mm:ss}Z'";
-            if (value is Guid) return $"guid'{value}'";
-            if (value is double) return ((double)value).ToString(new System.Globalization.CultureInfo("en"));
-            if (value is float) return ((float)value).ToString(new System.Globalization.CultureInfo("en"));
-            if (value is decimal) return ((decimal)value).ToString(new System.Globalization.CultureInfo("en"));
-            return value.ToString();
+            if (value is string)
+                return $"'{value}'";
+            if (value is DateTime)
+                return $"datetime'{(DateTime)value:yyyy-MM-dd}T{(DateTime)value:HH:mm:ss}Z'";
+            if (value is DateTimeOffset)
+                return $"datetime'{(DateTimeOffset)value:yyyy-MM-dd}T{(DateTimeOffset)value:HH:mm:ss}Z'";
+            if (value is Guid)
+                return $"guid'{value}'";
+            if (value is double)
+                return ((double)value).ToString(new System.Globalization.CultureInfo("en"));
+            if (value is float)
+                return ((float)value).ToString(new System.Globalization.CultureInfo("en"));
+            if (value is decimal)
+                return ((decimal)value).ToString(new System.Globalization.CultureInfo("en"));
+            return $"'{value.ToDefaultJson()}'";
         }
     }
     internal interface IExpressionStrategy

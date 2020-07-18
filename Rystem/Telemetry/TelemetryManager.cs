@@ -49,8 +49,8 @@ namespace Rystem
 
         public InstallerType InstallerType => InstallerType.Telemetry;
 
-        public async Task<IEnumerable<Telemetry>> GetEventsAsync(Expression<Func<Telemetry, bool>> expression, Installation installation) 
-            => await this.Integrations[installation].GetEventsAsync(expression).NoContext();
+        public async Task<IEnumerable<Telemetry>> GetEventsAsync(DateTime from, DateTime to, string key = null, Installation installation = Installation.Default)
+            => await this.Integrations[installation].GetEventsAsync(from, to, key).NoContext();
 
         public async Task TrackEventAsync(Telemetry telemetry, Installation installation)
             => await this.Aggregator.RunAsync(telemetry, installation: installation);

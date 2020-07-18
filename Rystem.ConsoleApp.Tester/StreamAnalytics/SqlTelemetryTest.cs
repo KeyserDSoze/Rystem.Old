@@ -2,6 +2,7 @@
 using Microsoft.OData.Edm;
 using Rystem.UnitTest;
 using Rystem.Utility.SqlReflection;
+using Rystem.ZConsoleApp.Tester.DummyHttpContextAccessor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,11 +30,13 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
             //    myTelemetry.TrackMetric(new MetricTelemetry { Name = "solid", Value = 550.ToString() });
             //    myTelemetry.TrackTrace(new TraceTelemetry { LogLevel = Microsoft.Extensions.Logging.LogLevel.Information, Message = "Good is good" });
             //    myTelemetry.Track(new MyCustomEvent { Saturday2 = 44, Value = "aaaaaa", Fortunes = new List<Fortune> { new Fortune { Molecule = 3 }, new Fortune { Molecule = i } } });
+            //    myTelemetry.TrackRequest(MyHttpContext.SimulateRequest(new byte[0], "text/plain", System.Net.IPAddress.Parse("125.25.26.23"), 45, System.Net.IPAddress.Parse("125.25.26.23")));
             //    await Task.Delay(100);
             //    dependency.Stop();
             //    await myTelemetry.StopAsync();
             //}
-            IEnumerable<Telemetry> telemetries = await Telemetry.CreateNew<MyTelemetry>().GetEventsAsync(x => x.Start >= DateTime.UtcNow.AddDays(-1) && x.End < DateTime.UtcNow.AddDays(1)).NoContext();
+            IEnumerable<Telemetry> telemetries = await Telemetry.CreateNew<MyTelemetry>()
+                .GetEventsAsync(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1)).NoContext();
             int value = telemetries.Count();
             metrics.AddOk(value, "Count");
         }
@@ -51,12 +54,8 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
             public int Molecule { get; set; }
         }
 
-        public class MyTelemetry : WebTelemetry
+        public class MyTelemetry : Telemetry
         {
-            public MyTelemetry() : base(null) { }
-            public MyTelemetry(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
-            {
-            }
             public override ConfigurationBuilder GetConfigurationBuilder()
             {
                 return new ConfigurationBuilder()

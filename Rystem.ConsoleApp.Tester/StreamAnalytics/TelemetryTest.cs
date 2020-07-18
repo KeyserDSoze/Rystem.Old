@@ -39,12 +39,8 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
             public Telemetry Telemetry { get; set; }
         }
 
-        public class MyTelemetry : WebTelemetry
+        public class MyTelemetry : Telemetry
         {
-            public MyTelemetry() : base(null) { }
-            public MyTelemetry(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
-            {
-            }
             public override ConfigurationBuilder GetConfigurationBuilder()
             {
                 return new ConfigurationBuilder()

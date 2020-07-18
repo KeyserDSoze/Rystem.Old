@@ -26,7 +26,7 @@ namespace Rystem.Utility.SqlReflection
                         await sqlBulkCopy.WriteToServerAsync(ToDataTable(values));
                     });
                     await action.Retry(3)
-                        .WithCircuitBreak(3, TimeSpan.FromMinutes(10), nameof(SqlBulkCopy))
+                        .WithCircuitBreak(3, TimeSpan.FromMinutes(5), nameof(SqlBulkCopy))
                         .CatchError(async x =>
                         {
                             if (connection.State != ConnectionState.Open)
@@ -48,7 +48,7 @@ namespace Rystem.Utility.SqlReflection
                 foreach (var item in data)
                 {
                     DataRow row = table.NewRow();
-                    foreach (var prop in sqlTable.GetValues(item))
+                    foreach (var prop in sqlTable.SetValues(item))
                         row[prop.Key] = prop.Value ?? DBNull.Value;
                     table.Rows.Add(row);
                 }

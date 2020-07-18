@@ -8,6 +8,6 @@ namespace Rystem
 {
     public interface ITelemetryIntegration
     {
-        Task<IEnumerable<Telemetry>> GetEventsAsync(Expression<Func<Telemetry, bool>> expression);
+        Task<IEnumerable<Telemetry>> GetEventsAsync(DateTime from, DateTime to, string key);
     }
 }

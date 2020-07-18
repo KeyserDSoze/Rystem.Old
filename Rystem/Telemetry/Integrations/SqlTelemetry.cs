@@ -36,11 +36,13 @@ namespace Rystem
         //        sqlTable.WithNullable(property.Name, SqlTablePrameterType.ByType(type));
         //    return sqlTable;
         //}
-
+        private readonly string Query;
+        private readonly string QueryWithKey;
         public SqlTelemetry(SqlTelemetryConfiguration telemetryConfiguration)
         {
             this.TelemetryConfiguration = telemetryConfiguration;
             this.PrincipalTableName = $"Telemetry_{this.TelemetryConfiguration.Name}";
+            StringBuilder query = new StringBuilder();
 
             Tables.Add(nameof(Telemetry), new SqlTable(PrincipalTableName)
                 .With(LabelId, SqlTablePrameterType.VarChar(64))
@@ -57,6 +59,7 @@ namespace Rystem
                 .With("ElapsedTime", SqlTablePrameterType.BigInt)
                     .AsNotNullable()
                         .Compose<Telemetry>(x => x.Elapsed.Ticks));
+            query.Append($"select * from {PrincipalTableName} T");
 
             Tables.Add(nameof(DependencyTelemetry), CreateWithForeign<DependencyTelemetry>($"{PrincipalTableName}_Dependency")
                .With("Name", SqlTablePrameterType.VarChar(128))
@@ -73,24 +76,28 @@ namespace Rystem
                     .Compose<DependencyTelemetry>(x => x.Response)
                 .With("Elapsed", SqlTablePrameterType.BigInt)
                     .Compose<DependencyTelemetry>(x => x.Elapsed));
+            query.Append($" inner join {PrincipalTableName}_Dependency D on T.{LabelId} = D.{LabelForeignKey}");
 
             Tables.Add(nameof(ExceptionTelemetry), CreateWithForeign<ExceptionTelemetry>($"{PrincipalTableName}_Exception")
                 .With("StackTrace", SqlTablePrameterType.Text)
                     .Compose<ExceptionTelemetry>(x => x.StackTrace)
                 .With("HResult", SqlTablePrameterType.Int)
                     .Compose<ExceptionTelemetry>(x => x.HResult));
+            query.Append($" inner join {PrincipalTableName}_Exception E on T.{LabelId} = E.{LabelForeignKey}");
 
             Tables.Add(nameof(MetricTelemetry), CreateWithForeign<MetricTelemetry>($"{PrincipalTableName}_Metric")
                .With("Name", SqlTablePrameterType.VarChar(64))
                     .Compose<MetricTelemetry>(x => x.Name)
                .With("Value", SqlTablePrameterType.VarChar(128))
                     .Compose<MetricTelemetry>(x => x.Value));
+            query.Append($" inner join {PrincipalTableName}_Metric M on T.{LabelId} = M.{LabelForeignKey}");
 
             Tables.Add(nameof(TraceTelemetry), CreateWithForeign<TraceTelemetry>($"{PrincipalTableName}_Trace")
                .With("Message", SqlTablePrameterType.VarChar(256))
                     .Compose<TraceTelemetry>(x => x.Message)
                .With("LogLevel", SqlTablePrameterType.SmallInt)
                     .Compose<TraceTelemetry>(x => (int)x.LogLevel));
+            query.Append($" inner join {PrincipalTableName}_Trace C on T.{LabelId} = C.{LabelForeignKey}");
 
             Tables.Add(nameof(RequestTelemetry), CreateWithForeign<RequestTelemetry>($"{PrincipalTableName}_Request")
                .With("Content", SqlTablePrameterType.Text)
@@ -103,6 +110,7 @@ namespace Rystem
                     .Compose<RequestTelemetry>(x => x.RequestUri)
                .With("Version", SqlTablePrameterType.VarChar(20))
                     .Compose<RequestTelemetry>(x => x.Version));
+            query.Append($" inner join {PrincipalTableName}_Request R on T.{LabelId} = R.{LabelForeignKey}");
 
             foreach (var table in telemetryConfiguration.CustomTables)
             {
@@ -110,7 +118,13 @@ namespace Rystem
                 foreach (var column in table.Value.Columns)
                     customTable.AddColumn(column);
                 Tables.Add(table.Key, customTable);
+                query.Append($" inner join {PrincipalTableName}_Custom_{table.Value.Name} on T.{LabelId} = {PrincipalTableName}_Custom_{table.Value.Name}.{LabelForeignKey}");
             }
+            query.Append(" where T.Start >= @Start");
+            query.Append(" and T.Start <= @End");
+            this.Query = query.ToString();
+            query.Append(" and T.Key = @Key");
+            this.QueryWithKey = query.ToString();
 
             SqlTable CreateWithForeign<TEntity>(string name)
                 where TEntity : ITelemetryEvent
@@ -180,9 +194,26 @@ namespace Rystem
             }
         }
 
-        public async Task<IEnumerable<Telemetry>> GetEventsAsync(Expression<Func<Telemetry, bool>> expression)
+        public async Task<IEnumerable<Telemetry>> GetEventsAsync(DateTime from, DateTime to, string key)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<SqlParameter> parameters = new List<SqlParameter>();
+                parameters.Add(new SqlParameter("@Start", from));
+                parameters.Add(new SqlParameter("@End", to));
+                if (key != null)
+                    parameters.Add(new SqlParameter("@Key", key));
+                using SqlConnection sqlConnection = this.NewConnection();
+                await foreach (var reader in this.Tables.First().Value.GetAsync(sqlConnection, key != null ? this.QueryWithKey : this.Query, parameters))
+                {
+                    var t = reader;
+                }
+            }
+            catch (Exception ex)
+            {
+                string sol = ex.ToString();
+            }
+            return null;
         }
     }
 }

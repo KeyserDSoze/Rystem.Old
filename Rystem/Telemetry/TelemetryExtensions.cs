@@ -60,8 +60,8 @@ namespace Rystem
         public static void Stop<TTelemetry>(this TTelemetry telemetry, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
             => telemetry.StopAsync().ToResult();
-        public static async Task<IEnumerable<Telemetry>> GetEventsAsync<TTelemetry>(this TTelemetry telemetry, Expression<Func<Telemetry, bool>> expression, Installation installation = Installation.Default)
+        public static async Task<IEnumerable<Telemetry>> GetEventsAsync<TTelemetry>(this TTelemetry telemetry, DateTime from, DateTime to, string key = null, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
-            => await telemetry.Manager().GetEventsAsync(expression, installation).NoContext();
+            => await telemetry.Manager().GetEventsAsync(from, to, key, installation).NoContext();
     }
 }

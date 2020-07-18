@@ -31,13 +31,21 @@ namespace Rystem.Utility.SqlReflection
             Columns.Add(column);
             return this;
         }
-
-        public Dictionary<string, object> GetValues(object telemetryEvent)
+        public Dictionary<string, object> SetValues(object telemetryEvent)
         {
             Dictionary<string, object> values = new Dictionary<string, object>();
             foreach (var column in this.Columns)
                 values.Add(column.Name, column.GetValue(telemetryEvent));
             return values;
+        }
+        public TEntity GetValues<TEntity>(SqlDataReader reader)
+            where TEntity : new()
+        {
+            TEntity entity = new TEntity();
+            foreach (var column in this.Columns)
+                if (column.SetValue != null)
+                    entity = (TEntity)column.SetValue(reader[column.Name], entity);
+            return entity;
         }
         private const string AddColumnAlteringTable = "ALTER TABLE {0} ADD {1};";
         private const string DropColumnAlteringTable = "ALTER TABLE {0} DROP COLUMN {1};";
@@ -84,6 +92,26 @@ namespace Rystem.Utility.SqlReflection
                         NamedColumns.Add(reader[0].ToString());
                 }
             }
+        }
+        public async Task<IEnumerable<TEntity>> GetEntitiesAsync<TEntity>(SqlConnection connection)
+            where TEntity : new()
+        {
+            List<TEntity> entities = new List<TEntity>();
+            using SqlDataReader reader = await new SqlCommand($"select * from {this.Name}", connection).ExecuteReaderAsync().NoContext();
+            while (await reader.ReadAsync().NoContext())
+                entities.Add(this.GetValues<TEntity>(reader));
+            return entities;
+        }
+        public async IAsyncEnumerable<SqlDataReader> GetAsync(SqlConnection sqlConnection, string query, IEnumerable<SqlParameter> parameters)
+        {
+            if (sqlConnection.State != ConnectionState.Open)
+                await sqlConnection.OpenAsync().NoContext();
+            SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+            foreach (SqlParameter parameter in parameters)
+                sqlCommand.Parameters.Add(parameter);
+            using SqlDataReader reader = await sqlCommand.ExecuteReaderAsync().NoContext();
+            while (await reader.ReadAsync().NoContext())
+                yield return reader;
         }
         public List<string> NamedColumns { get; private set; }
     }

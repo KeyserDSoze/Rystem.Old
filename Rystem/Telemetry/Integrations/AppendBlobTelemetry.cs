@@ -32,7 +32,7 @@ namespace Rystem
             .Build(installation);
         }
 
-        public Task<IEnumerable<Telemetry>> GetEventsAsync(Expression<Func<Telemetry, bool>> expression)
+        public Task<IEnumerable<Telemetry>> GetEventsAsync(DateTime from, DateTime to, string key)
         {
             throw new NotImplementedException();
         }

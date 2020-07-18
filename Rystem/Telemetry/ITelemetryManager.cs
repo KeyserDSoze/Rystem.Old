@@ -12,6 +12,6 @@ namespace Rystem
     internal interface ITelemetryManager : IRystemManager<Telemetry>
     {
         Task TrackEventAsync(Telemetry telemetry, Installation installation);
-        Task<IEnumerable<Telemetry>> GetEventsAsync(Expression<Func<Telemetry, bool>> expression, Installation installation);
+        Task<IEnumerable<Telemetry>> GetEventsAsync(DateTime from, DateTime to, string key = null, Installation installation = Installation.Default);
     }
 }
