@@ -16,5 +16,7 @@ namespace Rystem
         public string Method { get; set; }
         public string RequestUri { get; set; }
         public string Version { get; set; }
+        public string Id { get; set; }
+        public string TelemetryId { get; set; }
     }
 }

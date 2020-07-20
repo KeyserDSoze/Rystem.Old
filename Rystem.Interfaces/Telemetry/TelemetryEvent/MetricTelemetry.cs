@@ -10,5 +10,7 @@ namespace Rystem
         public DateTime Timestamp { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }
+        public string Id { get; set; }
+        public string TelemetryId { get; set; }
     }
 }

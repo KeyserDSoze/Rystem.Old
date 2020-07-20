@@ -9,6 +9,8 @@ namespace Rystem
 {
     public class DependencyTelemetry : ITelemetryEvent
     {
+        public string Id { get; set; }
+        public string TelemetryId { get; set; }
         public string Name { get; set; }
         public string Caller { get; set; }
         public string PathCaller { get; set; }

@@ -14,7 +14,7 @@ namespace Rystem
         private readonly IDictionary<Installation, TelemetryConfiguration> TelemetryConfiguration;
         private readonly TelemetryAggregator Aggregator;
         private readonly IDictionary<Installation, ITelemetryIntegration> Integrations = new Dictionary<Installation, ITelemetryIntegration>();
-        public TelemetryManager(ConfigurationBuilder configurationBuilder)
+        public TelemetryManager(ConfigurationBuilder configurationBuilder, Telemetry telemetry)
         {
             this.TelemetryConfiguration = configurationBuilder.GetConfigurations(this.InstallerType).ToDictionary(x => x.Key, x => x.Value as TelemetryConfiguration);
             ConfigurationBuilder aggregatorConfigurationBuilder = new ConfigurationBuilder();
@@ -40,7 +40,7 @@ namespace Rystem
                     case TelemetryType.AppendBlob:
                         return new AppendBlobTelemetry(telemetryConfiguration, installation);
                     case TelemetryType.Sql:
-                        return new SqlTelemetry(telemetryConfiguration as SqlTelemetryConfiguration);
+                        return new SqlTelemetry(telemetryConfiguration as SqlTelemetryConfiguration, telemetry);
                     default:
                         throw new InvalidOperationException($"Wrong type installed {telemetryConfiguration.Type}");
                 }

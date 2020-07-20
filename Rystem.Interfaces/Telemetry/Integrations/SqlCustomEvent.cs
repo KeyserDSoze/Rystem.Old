@@ -13,6 +13,7 @@ namespace Rystem
             => this.TelemetryBuilder = telemetryBuilder;
         public SqlCustomEvent AddCustomEvent<TEntity>(SqlTable sqlTable)
         {
+            sqlTable.AddType(typeof(TEntity));
             (this.TelemetryBuilder.TelemetryConfiguration as SqlTelemetryConfiguration).CustomTables.Add(typeof(TEntity).Name, sqlTable);
             return this;
         }

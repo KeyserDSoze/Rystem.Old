@@ -18,8 +18,15 @@ namespace Rystem.Utility.SqlReflection
         public string IdentityName => Columns.FirstOrDefault(x => x.IsIdentity).Name;
         public string InsertQuery => $"Insert into {Name} ({ParametersName}) VALUES ({ParametersValue});";
         public string InsertQueryWithOutputPrimaryKey => $"Insert into {Name} ({ParametersName}) OUTPUT Inserted.{IdentityName} VALUES ({ParametersValue});";
+        public string SelectQuery(string where) => $"select * from {this.Name} {where}";
+        public Type InstanceOf { get; private set; }
         public SqlTable(string name)
             => this.Name = name;
+        public SqlTable AddType(Type instanceOf)
+        {
+            this.InstanceOf = instanceOf;
+            return this;
+        }
         public SqlColumn With(string name, SqlTablePrameterType type)
         {
             var column = new SqlColumn(name, type, this);
@@ -37,15 +44,6 @@ namespace Rystem.Utility.SqlReflection
             foreach (var column in this.Columns)
                 values.Add(column.Name, column.GetValue(telemetryEvent));
             return values;
-        }
-        public TEntity GetValues<TEntity>(SqlDataReader reader)
-            where TEntity : new()
-        {
-            TEntity entity = new TEntity();
-            foreach (var column in this.Columns)
-                if (column.SetValue != null)
-                    entity = (TEntity)column.SetValue(reader[column.Name], entity);
-            return entity;
         }
         private const string AddColumnAlteringTable = "ALTER TABLE {0} ADD {1};";
         private const string DropColumnAlteringTable = "ALTER TABLE {0} DROP COLUMN {1};";
@@ -93,25 +91,22 @@ namespace Rystem.Utility.SqlReflection
                 }
             }
         }
-        public async Task<IEnumerable<TEntity>> GetEntitiesAsync<TEntity>(SqlConnection connection)
-            where TEntity : new()
-        {
-            List<TEntity> entities = new List<TEntity>();
-            using SqlDataReader reader = await new SqlCommand($"select * from {this.Name}", connection).ExecuteReaderAsync().NoContext();
-            while (await reader.ReadAsync().NoContext())
-                entities.Add(this.GetValues<TEntity>(reader));
-            return entities;
-        }
-        public async IAsyncEnumerable<SqlDataReader> GetAsync(SqlConnection sqlConnection, string query, IEnumerable<SqlParameter> parameters)
+        public async IAsyncEnumerable<object> GetAsync(SqlConnection sqlConnection, string where, IEnumerable<SqlParameter> parameters)
         {
             if (sqlConnection.State != ConnectionState.Open)
                 await sqlConnection.OpenAsync().NoContext();
-            SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+            using SqlCommand sqlCommand = new SqlCommand(this.SelectQuery(where), sqlConnection);
             foreach (SqlParameter parameter in parameters)
                 sqlCommand.Parameters.Add(parameter);
             using SqlDataReader reader = await sqlCommand.ExecuteReaderAsync().NoContext();
             while (await reader.ReadAsync().NoContext())
-                yield return reader;
+            {
+                var entity = Activator.CreateInstance(this.InstanceOf);
+                foreach (var column in this.Columns)
+                    if (column.SetValue != null && !reader.IsDBNull(column.Name))
+                        column.SetValue(entity, Convert.ChangeType(reader[column.Name], column.Type.Primitive));
+                yield return entity;
+            }
         }
         public List<string> NamedColumns { get; private set; }
     }

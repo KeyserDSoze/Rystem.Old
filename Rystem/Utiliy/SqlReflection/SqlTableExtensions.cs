@@ -17,27 +17,20 @@ namespace Rystem.Utility.SqlReflection
             {
                 if (connection.State != ConnectionState.Open)
                     await connection.OpenAsync().NoContext();
-                try
+                Func<Task> action = (async () =>
                 {
-                    Func<Task> action = (async () =>
+                    using SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(connection);
+                    sqlBulkCopy.DestinationTableName = sqlTable.Name;
+                    await sqlBulkCopy.WriteToServerAsync(ToDataTable(values));
+                });
+                await action.Retry(3)
+                    .WithCircuitBreak(3, TimeSpan.FromMinutes(5), nameof(SqlBulkCopy))
+                    .CatchError(async x =>
                     {
-                        using SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(connection);
-                        sqlBulkCopy.DestinationTableName = sqlTable.Name;
-                        await sqlBulkCopy.WriteToServerAsync(ToDataTable(values));
-                    });
-                    await action.Retry(3)
-                        .WithCircuitBreak(3, TimeSpan.FromMinutes(5), nameof(SqlBulkCopy))
-                        .CatchError(async x =>
-                        {
-                            if (connection.State != ConnectionState.Open)
-                                await connection.OpenAsync().NoContext();
-                        })
-                        .ExecuteAsync().NoContext();
-                }
-                catch (Exception ex)
-                {
-                    string olaf = ex.ToString();
-                }
+                        if (connection.State != ConnectionState.Open)
+                            await connection.OpenAsync().NoContext();
+                    })
+                    .ExecuteAsync().NoContext();
             }
 
             DataTable ToDataTable(IEnumerable<object> data)

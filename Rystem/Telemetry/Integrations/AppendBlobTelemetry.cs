@@ -17,8 +17,10 @@ namespace Rystem
         private readonly TelemetryConfiguration TelemetryConfiguration;
         private readonly ConfigurationBuilder BaseConfigurationForData;
         private readonly ConfigurationBuilder BaseConfigurationForEventData;
+        private readonly Installation Installation;
         public AppendBlobTelemetry(TelemetryConfiguration telemetryConfiguration, Installation installation)
         {
+            this.Installation = installation;
             this.TelemetryConfiguration = telemetryConfiguration;
             if (this.TelemetryConfiguration.ObjectName == null)
                 this.TelemetryConfiguration.ObjectName = "telemetry";
@@ -32,9 +34,38 @@ namespace Rystem
             .Build(installation);
         }
 
-        public Task<IEnumerable<Telemetry>> GetEventsAsync(DateTime from, DateTime to, string key)
+        public async Task<IEnumerable<Telemetry>> GetEventsAsync(DateTime from, DateTime to, string key)
         {
-            throw new NotImplementedException();
+            List<Telemetry> telemetries = new List<Telemetry>();
+            try
+            {
+                await foreach (var telemetryData in GetTelemetryDataAsync())
+                    if (telemetryData != null)
+                        telemetries.AddRange(telemetryData.Events);
+            }
+            catch (Exception ex)
+            {
+                string olaf = ex.ToString();
+            }
+            return telemetries;
+
+            async IAsyncEnumerable<TelemetryData> GetTelemetryDataAsync()
+            {
+                while (from <= to)
+                {
+                    string name = $"{this.TelemetryConfiguration.ObjectName}/{(key == null ? string.Empty : $"{key}/")}{from:yyyyMMddHH}.avro";
+                    if (await new TelemetryData()
+                    {
+                        ConfigurationBuilder = BaseConfigurationForData,
+                        Name = name
+                    }.ExistsAsync())
+                        yield return (await new TelemetryData()
+                        {
+                            ConfigurationBuilder = BaseConfigurationForData,
+                        }.ListAsync(name, null, this.Installation).NoContext()).FirstOrDefault();
+                    from = from.AddHours(1);
+                }
+            }
         }
 
         public async Task ParseAsync(string queueName, IList<Telemetry> events, ILogger log, Installation installation)

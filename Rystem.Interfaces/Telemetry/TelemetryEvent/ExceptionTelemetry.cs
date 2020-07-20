@@ -5,6 +5,8 @@ namespace Rystem
 {
     public class ExceptionTelemetry : ITelemetryEvent
     {
+        public string Id { get; set; }
+        public string TelemetryId { get; set; }
         [JsonIgnore]
         public Telemetry Telemetry { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;

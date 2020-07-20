@@ -47,12 +47,12 @@ namespace Rystem.Utility.SqlReflection
             return this;
         }
         public Func<object, object> GetValue;
-        public Func<object, object, object> SetValue;
-        public SqlTable Compose<TEntity>(Func<TEntity, object> getValue, Func<object, TEntity, TEntity> setValue = null)
+        public Action<object, object> SetValue;
+        public SqlTable Compose<TEntity>(Func<TEntity, object> getValue, Action<TEntity, object> setValue = null)
         {
             this.GetValue = x => getValue((TEntity)x);
             if (setValue != null)
-                this.SetValue = (x, y) => setValue(x, (TEntity)y);
+                this.SetValue = (x, y) => setValue((TEntity)x, y);
             return this.Table;
         }
 

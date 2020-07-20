@@ -14,7 +14,7 @@ namespace Rystem
     public static class TelemetryExtensions
     {
         private static IRystemManager<Telemetry> GetTelemetryManager(Telemetry entity)
-            => new TelemetryManager(entity.GetConfigurationBuilder());
+            => new TelemetryManager(entity.GetConfigurationBuilder(), entity);
         private static ITelemetryManager Manager(this Telemetry entity)
             => entity.DefaultManager<Telemetry>(GetTelemetryManager) as ITelemetryManager;
 
