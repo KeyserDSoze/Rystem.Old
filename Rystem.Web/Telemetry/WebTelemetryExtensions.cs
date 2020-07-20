@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,17 +33,32 @@ namespace Rystem
                 Version = httpRequest.Protocol
             }, installation);
         }
-        public static void TrackRequest<TTelemetry>(this TTelemetry telemetry, HttpRequest httpRequest, Installation installation = Installation.Default)
+        public static async Task TrackRequest<TTelemetry>(this TTelemetry telemetry, HttpRequest httpRequest, Installation installation = Installation.Default)
            where TTelemetry : Telemetry
         {
+            MemoryStream memoryStream = new MemoryStream();
+            await httpRequest.Body.CopyToAsync(memoryStream);
             telemetry.Track(new RequestTelemetry()
             {
                 Headers = httpRequest.Headers?.ToDictionary(x => x.Key, x => x.Value.ToString()),
-                BodyLength = httpRequest.Body.Length,
+                BodyLength = memoryStream.Length,
+                Content = await memoryStream.GetValueAsync(),
                 Method = httpRequest.Method,
                 RequestUri = httpRequest.Path.Value,
                 Version = httpRequest.Protocol
             }, installation);
+        }
+        public static IServiceCollection AddRystemTelemetry<TTelemetry>(this IServiceCollection services)
+            where TTelemetry : Telemetry, new()
+        {
+            services.AddHttpContextAccessor();
+            services.AddScoped<Telemetry, TTelemetry>(x => Telemetry.CreateNew<TTelemetry>());
+            services.AddScoped<TelemetryMiddleware>();
+            return services;
+        }
+        public static void UseRystemTelemetry(this IApplicationBuilder app)
+        {
+            app.UseMiddleware<TelemetryMiddleware>();
         }
     }
 }

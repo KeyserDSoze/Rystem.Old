@@ -27,8 +27,8 @@ namespace Rystem.ZConsoleApp.Tester.StreamAnalytics
                 {
                     myTelemetry.TrackException(er);
                 }
-                myTelemetry.TrackMetric(new MetricTelemetry { Name = "solid", Value = 550.ToString() });
-                myTelemetry.TrackTrace(new TraceTelemetry { LogLevel = Microsoft.Extensions.Logging.LogLevel.Information, Message = "Good is good" });
+                myTelemetry.TrackMetric("solid", 550);
+                myTelemetry.TrackTrace(Microsoft.Extensions.Logging.LogLevel.Information, "Good is good");
                 myTelemetry.Track(new MyCustomEvent { Saturday2 = 44, Value = "aaaaaa", Fortunes = new List<Fortune> { new Fortune { Molecule = 3 }, new Fortune { Molecule = i } } });
                 myTelemetry.TrackRequest(MyHttpContext.SimulateRequest(new byte[0], "text/plain", System.Net.IPAddress.Parse("125.25.26.23"), 45, System.Net.IPAddress.Parse("125.25.26.23")));
                 await Task.Delay(100);

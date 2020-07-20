@@ -24,6 +24,7 @@ namespace Rystem.WebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRystemViews();
+            services.AddRystemTelemetry<MyTelemetry>();
             services.AddLocalization(options => options.ResourcesPath = "Resources");
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages().AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
@@ -71,16 +72,13 @@ namespace Rystem.WebApp
             app.UseRequestLocalization(options.Value);
 
             app.UseAuthorization();
-
+            app.UseRystemTelemetry();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
-
             });
-
-
         }
     }
 }

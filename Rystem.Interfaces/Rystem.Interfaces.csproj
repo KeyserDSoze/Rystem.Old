@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Version>7.0.10</Version>
+    <Version>7.1.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>You need to implement Rystem only when the rystem engine is needed.</Description>
     <Copyright>2019-2030</Copyright>

@@ -15,12 +15,19 @@ namespace Rystem.WebApp.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly Telemetry Telemetry;
+        public HomeController(Telemetry telemetry)
+        {
+            this.Telemetry = telemetry;
+        }
         public IActionResult Index()
         {
+            this.Telemetry.TrackMetric("Silos", 3);
             List<Alo> alo = new List<Alo>();
             for (int i = 0; i < 200; i++)
             {
                 alo.Add(new Alo() { A = i.ToString(), Group = (i % 40), Val = i });
+                this.Telemetry.TrackTrace(LogLevel.Debug, i.ToString());
             }
             return View(alo);
         }

@@ -1,4 +1,5 @@
-﻿using Microsoft.OData.Edm;
+﻿using Microsoft.Azure.Storage;
+using Microsoft.OData.Edm;
 using Rystem.Utility;
 using System;
 using System.Collections.Generic;
@@ -26,16 +27,17 @@ namespace Rystem
             telemetryEvent.Telemetry = telemetry;
             telemetry.Events.Add(telemetryEvent);
         }
-        public static void TrackMetric<TTelemetry>(this TTelemetry telemetry, MetricTelemetry metric, Installation installation = Installation.Default)
+        public static void TrackMetric<TTelemetry>(this TTelemetry telemetry, string name, object value, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
-            => telemetry.Track(metric, installation);
-        public static void TrackTrace<TTelemetry>(this TTelemetry telemetry, TraceTelemetry trace, Installation installation = Installation.Default)
+            => telemetry.Track(new MetricTelemetry { Name = name, Value = value.ToString() }, installation);
+        public static void TrackTrace<TTelemetry>(this TTelemetry telemetry, Microsoft.Extensions.Logging.LogLevel logLevel, string message, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
-            => telemetry.Track(trace, installation);
+            => telemetry.Track(new TraceTelemetry { LogLevel = logLevel, Message = message }, installation);
         public static void TrackException<TTelemetry>(this TTelemetry telemetry, Exception exception, Installation installation = Installation.Default)
             where TTelemetry : Telemetry
             => telemetry.Track(new ExceptionTelemetry { Exception = exception }, installation);
-        public static DependencyTelemetry TrackDependency<TTelemetry>(this TTelemetry telemetry, string name,
+        public static DependencyTelemetry TrackDependency<TTelemetry>(this TTelemetry telemetry,
+            string name,
             Installation installation = Installation.Default,
             [CallerMemberName] string caller = "",
             [CallerFilePath] string pathCaller = "",
