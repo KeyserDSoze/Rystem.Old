@@ -48,6 +48,7 @@ namespace Rystem.WebApp
                 options.SupportedCultures = supportedCultures;
                 options.SupportedUICultures = supportedCultures;
             });
+            services.AddRepositoryPattern();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,6 +74,7 @@ namespace Rystem.WebApp
 
             app.UseAuthorization();
             app.UseRystemTelemetry();
+            app.UseRepositoryPattern();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
