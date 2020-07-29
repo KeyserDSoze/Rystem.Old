@@ -8,43 +8,43 @@ using System.Threading.Tasks;
 
 namespace Rystem.WebApp.Controllers
 {
-    public class Weather
+    public class Society
     {
         public int Id { get; set; }
         public string City { get; set; }
-        public int Temperature { get; set; }
+        public int Value { get; set; }
     }
-    public class WeatherController : RepositoryController<Weather>
+    public class SocietyController : RepositoryController<Society>
     {
-        private static readonly Dictionary<string, Weather> InMemoryWeather = new Dictionary<string, Weather>()
+        private static readonly Dictionary<string, Society> InMemoryWeather = new Dictionary<string, Society>()
         {
-            { "2", new Weather{ Id = 2, City = "Rome", Temperature = 23 } }
+            { "2", new Society{ Id = 2, City = "Fdalda", Value = 25 } }
         };
-        protected override Task<EntityResponse> CreateAsync(Weather entity)
+        protected override Task<EntityResponse> CreateAsync(Society entity)
         {
             InMemoryWeather.Add(entity.Id.ToString(), entity);
             return Task.FromResult(new EntityResponse { Id = entity.Id.ToString() });
         }
 
-        protected override Task<EntityResponse> DeleteAsync(Weather entity)
+        protected override Task<EntityResponse> DeleteAsync(Society entity)
         {
             InMemoryWeather.Remove(entity.Id.ToString());
             return Task.FromResult(new EntityResponse { Id = entity.Id.ToString() });
         }
 
-        protected override async Task<Weather> GetAsync(string id)
+        protected override async Task<Society> GetAsync(string id)
         {
-            await Task.Delay(2000);
+            await Task.Delay(1000);
             return InMemoryWeather.ContainsKey(id) ? InMemoryWeather[id] : default;
         }
 
-        protected override async Task<IEnumerable<Weather>> ListAsync()
+        protected override async Task<IEnumerable<Society>> ListAsync()
         {
-            await Task.Delay(2000);
+            await Task.Delay(1000);
             return InMemoryWeather.Select(x => x.Value);
         }
 
-        protected override Task<EntityResponse> UpdateAsync(Weather entity)
+        protected override Task<EntityResponse> UpdateAsync(Society entity)
         {
             if (!InMemoryWeather.ContainsKey(entity.Id.ToString()))
                 InMemoryWeather.Add(entity.Id.ToString(), entity);

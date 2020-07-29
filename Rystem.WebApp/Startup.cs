@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Rystem.Web;
+using Rystem.WebApp.Controllers;
 using Rystem.WebApp.Models;
 
 namespace Rystem.WebApp
@@ -48,7 +49,18 @@ namespace Rystem.WebApp
                 options.SupportedCultures = supportedCultures;
                 options.SupportedUICultures = supportedCultures;
             });
-            services.AddRepositoryPattern();
+            services.AddRepositoryPattern(x =>
+            {
+                x.AddCache<Weather>(Cache.CacheConsistency.Always)
+                .WithMemory(new Cache.MemoryCacheProperties(Cache.ExpireTime.EightHour))
+                .Build();
+                x.AddCache<Society>(Cache.CacheConsistency.Always)
+                .WithMemory(new Cache.MemoryCacheProperties(Cache.ExpireTime.FiveMinutes))
+                .Build();
+                x.AddDefaultCache(Cache.CacheConsistency.Never)
+                .WithMemory(new Cache.MemoryCacheProperties(Cache.ExpireTime.OneMinute))
+                .Build();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
