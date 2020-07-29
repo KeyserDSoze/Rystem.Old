@@ -26,10 +26,12 @@ namespace Rystem.WebApp.Controllers
             return Task.FromResult(new EntityResponse { Id = entity.Id.ToString() });
         }
 
-        protected override Task<EntityResponse> DeleteAsync(Weather entity)
+        protected override Task<EntityResponse> DeleteAsync(string id)
         {
-            InMemoryWeather.Remove(entity.Id.ToString());
-            return Task.FromResult(new EntityResponse { Id = entity.Id.ToString() });
+            bool exists = InMemoryWeather.ContainsKey(id);
+            if (exists)
+                InMemoryWeather.Remove(id);
+            return Task.FromResult(new EntityResponse { Id = id, IsNotOk = !exists });
         }
 
         protected override async Task<Weather> GetAsync(string id)

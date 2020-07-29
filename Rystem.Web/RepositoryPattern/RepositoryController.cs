@@ -13,6 +13,14 @@ using System.Threading.Tasks;
 
 namespace Rystem.Web
 {
+    internal static class RepositoryCommand
+    {
+        public const string Get = "get";
+        public const string List = "list";
+        public const string Create = "create";
+        public const string Update = "update";
+        public const string Delete = "delete";
+    }
     [ApiController]
     [Route("api/[controller]")]
     public abstract class RepositoryController<TModel> : Controller
@@ -21,8 +29,10 @@ namespace Rystem.Web
         private bool IsImplemented(string method)
             => !NotImplemented.ContainsKey(method);
         private static bool hasCache = true;
-        private bool HasCache(string method) => hasCache && (method == "get" || method == "list");
-        private bool HasSetCache(string method) => hasCache && EntityResponse != null && (method == "create" || method == "delete" || method == "update");
+        private bool HasCache(string method)
+            => hasCache && (method == RepositoryCommand.Get || method == RepositoryCommand.List);
+        private bool HasSetCache(string method)
+            => hasCache && EntityResponse != null && !EntityResponse.IsNotOk && (method == RepositoryCommand.Create || method == RepositoryCommand.Delete || method == RepositoryCommand.Update);
         private async Task<T> DealWithCache<T>(string method, string id)
         {
             var cache = RepositoryPatternExtensions.Options.GetCache<T>();
@@ -34,35 +44,35 @@ namespace Rystem.Web
             T model = default;
             if (cache.IsDefault)
             {
-                if (method == "get")
-                    model = (T)await GetKey<object>(async () => await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"get-{id}", typeof(TModel).Name).InstanceAsync().NoContext();
-                else if (method == "list")
-                    model = (T)await GetKey<object>(async () => await this.ListAsync().NoContext(), cache.CacheConfiguration, $"list", typeof(TModel).Name).InstanceAsync().NoContext();
+                if (method == RepositoryCommand.Get)
+                    model = (T)await GetKey<object>(async () => await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"{RepositoryCommand.Get}-{id}", typeof(TModel).Name).InstanceAsync().NoContext();
+                else if (method == RepositoryCommand.List)
+                    model = (T)await GetKey<object>(async () => await this.ListAsync().NoContext(), cache.CacheConfiguration, RepositoryCommand.List, typeof(TModel).Name).InstanceAsync().NoContext();
                 else
                 {
                     List<Task> tasks = new List<Task>();
-                    if (method != "delete")
-                        tasks.Add(GetKey<object>(async () => await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"get-{id}", typeof(TModel).Name).RestoreAsync());
+                    if (method != RepositoryCommand.Delete)
+                        tasks.Add(GetKey<object>(async () => await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"{RepositoryCommand.Get}-{id}", typeof(TModel).Name).RestoreAsync());
                     else
                         tasks.Add(GetKey<object>(null, cache.CacheConfiguration, $"get-{id}", typeof(TModel).Name).RemoveAsync());
-                    tasks.Add(GetKey<object>(async () => await this.ListAsync().NoContext(), cache.CacheConfiguration, $"list", typeof(TModel).Name).RestoreAsync());
+                    tasks.Add(GetKey<object>(async () => await this.ListAsync().NoContext(), cache.CacheConfiguration, RepositoryCommand.List, typeof(TModel).Name).RestoreAsync());
                     await Task.WhenAll(tasks);
                 }
             }
             else
             {
-                if (method == "get")
-                    model = await GetKey(async () => (T)(object)await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"get-{id}").InstanceAsync().NoContext();
-                else if (method == "list")
-                    model = await GetKey(async () => (T)await this.ListAsync().NoContext(), cache.CacheConfiguration, $"list").InstanceAsync().NoContext();
+                if (method == RepositoryCommand.Get)
+                    model = await GetKey(async () => (T)(object)await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"{RepositoryCommand.Get}-{id}").InstanceAsync().NoContext();
+                else if (method == RepositoryCommand.List)
+                    model = await GetKey(async () => (T)await this.ListAsync().NoContext(), cache.CacheConfiguration, RepositoryCommand.List).InstanceAsync().NoContext();
                 else
                 {
                     List<Task> tasks = new List<Task>();
-                    if (method != "delete")
-                        tasks.Add(GetKey(async () => (T)(object)await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"get-{id}").RestoreAsync());
+                    if (method != RepositoryCommand.Delete)
+                        tasks.Add(GetKey(async () => (T)(object)await this.GetAsync(id).NoContext(), cache.CacheConfiguration, $"{RepositoryCommand.Get}-{id}").RestoreAsync());
                     else
-                        tasks.Add(GetKey<T>(null, cache.CacheConfiguration, $"get-{id}").RemoveAsync());
-                    tasks.Add(GetKey(async () => ((IEnumerable)await this.ListAsync().NoContext()).Cast<T>(), cache.CacheConfiguration, $"list").RestoreAsync());
+                        tasks.Add(GetKey<T>(null, cache.CacheConfiguration, $"{RepositoryCommand.Get}-{id}").RemoveAsync());
+                    tasks.Add(GetKey(async () => ((IEnumerable)await this.ListAsync().NoContext()).Cast<T>(), cache.CacheConfiguration, RepositoryCommand.List).RestoreAsync());
                     await Task.WhenAll(tasks);
                 }
             }
@@ -77,7 +87,7 @@ namespace Rystem.Web
                 ConfigurationBuilder = configurationBuilder
             };
         }
-        private async Task<T> ExecuteAsync<T>(string method, Func<Task<T>> action, string id = null)
+        private async Task<IActionResult> ExecuteAsync<T>(string method, Func<Task<T>> action, string id = null)
         {
             if (IsImplemented(method))
             {
@@ -87,54 +97,81 @@ namespace Rystem.Web
                     {
                         var cacheResponse = await this.DealWithCache<T>(method, id).NoContext();
                         if (cacheResponse != null)
-                            return cacheResponse;
+                            return Ok(cacheResponse);
                     }
                     var response = await action.Invoke().NoContext();
-                    if (response == null)
-                        Response.StatusCode = StatusCodes.Status404NotFound;
+                    if (response == null && (method == RepositoryCommand.Get || method == RepositoryCommand.List))
+                        return NotFound();
                     else
                     {
                         if (HasSetCache(method))
                             await this.DealWithCache<T>(method, EntityResponse.Id).NoContext();
-                        return response;
+                        if (EntityResponse != null && EntityResponse.IsNotOk)
+                            return NotFound();
+                        else
+                        {
+                            if (method == RepositoryCommand.Create)
+                                return StatusCode(StatusCodes.Status201Created);
+                            else if (method == RepositoryCommand.Update || method == RepositoryCommand.Delete)
+                                return Ok();
+                            else
+                                return Ok(response);
+                        }
                     }
                 }
                 catch (NotImplementedException)
                 {
                     NotImplemented.TryAdd(method, true);
-                    Response.StatusCode = StatusCodes.Status501NotImplemented;
+                    return StatusCode(StatusCodes.Status501NotImplemented);
                 }
                 catch (Exception)
                 {
-                    Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return BadRequest();
                 }
             }
             else
-                Response.StatusCode = StatusCodes.Status501NotImplemented;
-            return default;
+                return StatusCode(StatusCodes.Status501NotImplemented);
         }
+
         protected abstract Task<TModel> GetAsync(string id);
         protected abstract Task<IEnumerable<TModel>> ListAsync();
         protected abstract Task<EntityResponse> CreateAsync(TModel entity);
-        protected abstract Task<EntityResponse> DeleteAsync(TModel entity);
         protected abstract Task<EntityResponse> UpdateAsync(TModel entity);
+        protected abstract Task<EntityResponse> DeleteAsync(string id);
+
         private EntityResponse EntityResponse;
         [HttpGet]
-        public async Task<IEnumerable<TModel>> Get()
-            => await ExecuteAsync("list", async () => await this.ListAsync());
+        public async Task<IActionResult> Get()
+            => await ExecuteAsync(RepositoryCommand.List, async () => await this.ListAsync());
         [HttpGet]
         [Route("{id}")]
-        public async Task<TModel> Get(string id)
-            => await ExecuteAsync("get", async () => await this.GetAsync(id), id);
+        public async Task<IActionResult> Get(string id)
+            => await ExecuteAsync(RepositoryCommand.Get, async () => await this.GetAsync(id), id);
         [HttpPost]
-        public async Task Post([FromBody] TModel model)
-           => await ExecuteAsync("create", async () => { EntityResponse = await this.CreateAsync(model); return model; });
+        public async Task<IActionResult> Post([FromBody] TModel model)
+        {
+            if (model != null)
+                return await ExecuteAsync(RepositoryCommand.Create, async () => { EntityResponse = await this.CreateAsync(model); return model; });
+            else
+                return BadRequest();
+        }
         [HttpPatch]
         [HttpPut]
-        public async Task Update([FromBody] TModel model)
-            => await ExecuteAsync("update", async () => { EntityResponse = await this.UpdateAsync(model); return model; });
+        public async Task<IActionResult> Update([FromBody] TModel model)
+        {
+            if (model != null)
+                return await ExecuteAsync(RepositoryCommand.Update, async () => { EntityResponse = await this.UpdateAsync(model); return model; });
+            else
+                return BadRequest();
+        }
         [HttpDelete]
-        public async Task Delete([FromBody] TModel model)
-            => await ExecuteAsync("delete", async () => { EntityResponse = await this.DeleteAsync(model); return model; });
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (id != null)
+                return await ExecuteAsync<TModel>(RepositoryCommand.Delete, async () => { EntityResponse = await this.DeleteAsync(id); EntityResponse.Id = id; return default; }, id);
+            else
+                return BadRequest();
+        }
     }
 }
