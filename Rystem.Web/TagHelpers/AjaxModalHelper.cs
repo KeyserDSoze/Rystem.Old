@@ -55,6 +55,7 @@ namespace Rystem.Web
             {
                 SizeType.Small => "modal-sm",
                 SizeType.Large => "modal-lg",
+                SizeType.ExtraLarge => "modal-xl",
                 _ => string.Empty,
             };
     }
