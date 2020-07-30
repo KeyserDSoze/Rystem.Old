@@ -18,5 +18,15 @@ namespace System
             using StreamReader streamReader = new StreamReader(stream);
             return streamReader.ReadToEnd();
         }
+        public static async Task SetValueAsync(this Stream stream, string value)
+        {
+            using StreamWriter streamWriter = new StreamWriter(stream);
+            await streamWriter.WriteAsync(value);
+        }
+        public static void SetValue(this Stream stream, string value)
+        {
+            using StreamWriter streamWriter = new StreamWriter(stream);
+            streamWriter.Write(value);
+        }
     }
 }

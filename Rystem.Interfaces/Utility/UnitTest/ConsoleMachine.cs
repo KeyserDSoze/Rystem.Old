@@ -100,7 +100,7 @@ namespace Rystem.UnitTest
                     actions.Add(ExecuteAsync(actionNumber, command.Value, metrics, action, args));
                 }, new object());
             }
-            await Task.Delay(2000);
+            await Task.Delay(4000);
             await Task.WhenAll(actions);
             resume.Add(metricses);
             resume.Show(hasLabel);
