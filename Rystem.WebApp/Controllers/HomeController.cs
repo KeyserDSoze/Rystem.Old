@@ -47,6 +47,14 @@ namespace Rystem.WebApp.Controllers
             await Task.Delay(4000);
             return Ok();
         }
+        public async Task<IActionResult> Could([FromQuery] string query)
+        {
+            return Ok("[\"Alfano\",\"Alfano2\"]");
+        }
+        public async Task<IActionResult> Could2([FromQuery] string query)
+        {
+            return Ok("[\"Alfano\",\"Alfano2\"]");
+        }
         private static readonly string Instance = Guid.NewGuid().ToString("N");
         [HttpGet]
         public IActionResult Check()

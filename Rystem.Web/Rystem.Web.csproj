@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <Version>1.4.2</Version>
+    <Version>1.5.0</Version>
     <Authors>Alessandro Rapiti</Authors>
     <Company>Rystem</Company>
     <Product>Rystem</Product>
@@ -33,10 +33,6 @@
     <Content Remove="wwwroot\images\rystem.png" />
     <Content Remove="wwwroot\images\rystem.web.jpg" />
     <Content Remove="wwwroot\images\rystem.web.png" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <EmbeddedResource Remove="wwwroot\rystem.old.js" />
   </ItemGroup>
   
   <ItemGroup>
