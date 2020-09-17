@@ -35,15 +35,9 @@ namespace Rystem.Web
         private const string EmptyFunction = "undefined";
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            output.TagName = "div";
-            while (output.Attributes.Count > 0)
-                output.Attributes.RemoveAt(0);
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append($"<input type=\"text\" id=\"{this.Id}\"");
-            foreach (var attribute in context.AllAttributes)
-                stringBuilder.Append($" {attribute.Name}='{attribute.Value}' ");
-            stringBuilder.Append($"/><div id=\"suggesstion-box-{this.Id}\"></div>");
-            output.Content.AppendHtml(stringBuilder.ToString());
+            output.TagName = "input";
+            output.Attributes.Add("id", this.Id);
+            output.PostContent.AppendHtml($"<div id=\"suggesstion-box-{this.Id}\"></div>");
             output.PostContent.AppendHtml(string.Format(AutcompleteScript,
                 this.Id,
                 this.RequestContext?.FinalizeRequestContext(this.ViewContext.HttpContext.Request) ?? EmptyFunction,
