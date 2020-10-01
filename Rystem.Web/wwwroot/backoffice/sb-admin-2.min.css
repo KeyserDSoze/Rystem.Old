@@ -6358,7 +6358,10 @@ a.bg-dark:focus, a.bg-dark:hover, button.bg-dark:focus, button.bg-dark:hover {
 }
 
 .d-flex {
-    display: flex !important
+    display: -webkit-box !important; /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+    display: -ms-flexbox !important; /* TWEENER - IE 10 */
+    display: -webkit-flex !important; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+    display: flex !important; /* NEW, Spec - Firefox, Chrome, Opera */
 }
 
 .d-inline-flex {

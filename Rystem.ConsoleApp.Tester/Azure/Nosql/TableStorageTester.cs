@@ -15,6 +15,7 @@ namespace Rystem.ZConsoleApp.Tester.Azure.NoSql
         public async Task DoWorkAsync(Action<object> action, UnitTestMetrics metrics, params string[] args)
         {
             string name = $"Alto{metrics.ThreadId}";
+            var qu = await new Example().FirstOrDefaultAsync(x => x.PartitionKey == "A" && x.RowKey == "dsadsadasdasdsa");
             Solute example = new Example()
             {
                 PartitionKey = name,
