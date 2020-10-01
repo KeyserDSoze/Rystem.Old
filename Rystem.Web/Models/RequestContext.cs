@@ -32,6 +32,8 @@ namespace Rystem.Web
         public string FailureCallback { get; set; }
         [JsonProperty("selector")]
         public string Selector { get; set; }
+        [JsonProperty("onRedirect")]
+        public bool OnRedirect { get; set; }
         [JsonProperty("url")]
         public string Url { get; private set; }
         [JsonProperty("data")]

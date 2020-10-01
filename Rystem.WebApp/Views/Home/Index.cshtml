@@ -8,11 +8,12 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
-<rystem-ajax-modal rystem-size="Large" rystem-request-context='new RequestContext() {Action = "Rexo", Controller="Home"}' rystem-update-context='new RequestContext() { Action="Rexo", Controller="Home", Selector="#flirt" }' class="don-rodrigo">
+<rystem-autocomplete placeholder="Folder" qulu="daskdlaskd" class="forbidden-realm" rystem-retrieve-context='new RequestContext() { Action="Could", Controller="Home" }' rystem-request-context='new RequestContext() { Action="Could2", Controller="Home", OnRedirect = true }'></rystem-autocomplete>
+<rystem-ajax-modal rystem-size="Large" rystem-request-context='new RequestContext() {Action = "Rexo", Controller="Home" }' rystem-update-context='new RequestContext() { Action="Rexo", Controller="Home", Selector="#flirt" }' class="don-rodrigo">
     <div>Show my Rexo</div>
     <div id="flirt"></div>
 </rystem-ajax-modal>
-<rystem-dropdown name="Alo" rystem-data-multiple="true"  rystem-data="Model.Select(x => new DropdownItem() { Group = x.Group.ToString(), Label = x.A, Selected = false, Value = x.Val.ToString()})" rystem-data-disabled='new List<string>() { "1", "2" }' rystem-request-context='new RequestContext() { Action = "Cold", Controller = "Home" }' rystem-update-context='new RequestContext() { Action = "More", Controller = "Home", Selector="#ciccia"}'>
+<rystem-dropdown name="Alo" rystem-data-multiple="true" rystem-data="Model.Select(x => new DropdownItem() { Group = x.Group.ToString(), Label = x.A, Selected = false, Value = x.Val.ToString()})" rystem-data-disabled='new List<string>() { "1", "2" }' rystem-request-context='new RequestContext() { Action = "Cold", Controller = "Home" }' rystem-update-context='new RequestContext() { Action = "More", Controller = "Home", Selector="#ciccia"}'>
 </rystem-dropdown>
 <rystem-dropdown name="Alo2" rystem-data-multiple="false" rystem-data="Model.Select(x => new DropdownItem() { Group = x.Group.ToString(), Label = x.A, Selected = false, Value = x.Val.ToString()})" rystem-data-disabled='new List<string>() { "1", "2" }' rystem-request-context='new RequestContext() { Action = "Cold", Controller = "Home" }' rystem-update-context='new RequestContext() { Action = "More", Controller = "Home", Selector="#ciccia"}'>
 </rystem-dropdown>

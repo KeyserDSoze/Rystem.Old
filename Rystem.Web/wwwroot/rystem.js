@@ -26,42 +26,47 @@ class Rystem {
     static httpRequest(request, withLoader, query, event, obj, onSuccess, onFailure, feedback = false, feedbackNotOk = true) {
         if (withLoader)
             Rystem.showLoader();
-        $.ajax({
-            type: request.method,
-            enctype: 'multipart/form-data',
-            processData: false,
-            contentType: false,
-            cache: false,
-            url: request.url + (query && query.length > 0 ? (request.url.indexOf("?") > -1 ? "&" : "?") + query : rystem.stringEmpty),
-            data: request.data == "null" ? rystem.stringEmpty : request.data,
-            success: function (data) {
-                if (request.onSuccess) {
-                    request.onSuccess = eval(request.onSuccess);
-                    request.onSuccess(data, event, obj);
-                }
-                if (onSuccess)
-                    onSuccess(data);
-                if (request.selector && request.selector.length > 0)
-                    $(request.selector).html(data);
+        if (request.onRedirect) {
+            document.location = request.url + (query && query.length > 0 ? (request.url.indexOf("?") > -1 ? "&" : "?") + query : rystem.stringEmpty);
+        }
+        else {
+            $.ajax({
+                type: request.method,
+                enctype: 'multipart/form-data',
+                processData: false,
+                contentType: false,
+                cache: false,
+                url: request.url + (query && query.length > 0 ? (request.url.indexOf("?") > -1 ? "&" : "?") + query : rystem.stringEmpty),
+                data: request.data == "null" ? rystem.stringEmpty : request.data,
+                success: function (data) {
+                    if (request.onSuccess) {
+                        request.onSuccess = eval(request.onSuccess);
+                        request.onSuccess(data, event, obj);
+                    }
+                    if (onSuccess)
+                        onSuccess(data);
+                    if (request.selector && request.selector.length > 0)
+                        $(request.selector).html(data);
 
-                if (withLoader)
-                    Rystem.hideLoader();
-                if (feedback)
-                    ToastRystem.ok();
-            },
-            error: function (data) {
-                if (request.onFailure) {
-                    request.onFailure = eval(request.onFailure);
-                    request.onFailure(data, event, obj);
+                    if (withLoader)
+                        Rystem.hideLoader();
+                    if (feedback)
+                        ToastRystem.ok();
+                },
+                error: function (data) {
+                    if (request.onFailure) {
+                        request.onFailure = eval(request.onFailure);
+                        request.onFailure(data, event, obj);
+                    }
+                    if (onFailure)
+                        onFailure(data);
+                    if (withLoader)
+                        Rystem.hideLoader();
+                    if (feedbackNotOk)
+                        ToastRystem.notOk(data.responseText);
                 }
-                if (onFailure)
-                    onFailure(data);
-                if (withLoader)
-                    Rystem.hideLoader();
-                if (feedbackNotOk)
-                    ToastRystem.notOk(data.responseText);
-            }
-        });
+            });
+        }
     }
 
     static generateGUID() {
@@ -363,5 +368,37 @@ class TableRystem extends Rystem {
             });
         else
             $("#" + this.id).DataTable();
+    }
+}
+
+class AutocompleteRystem extends Rystem {
+    constructor(id, request, retrieve, length) {
+        super(id);
+        this.request = request;
+        this.retrieve = retrieve;
+        this.length = length;
+    }
+    show() {
+        let autocomplete = this;
+        let $autocomplete = $("#" + this.id);
+        $autocomplete.autocomplete({
+            source: function (req, response) {
+                if (autocomplete.retrieve)
+                    Rystem.httpRequest(autocomplete.retrieve, false, "query=" + req.term, null, null, function (data) {
+                        response(eval(data));
+                    });
+            },
+            minLength: autocomplete.length
+        });
+        $autocomplete.keydown(function (event) {
+            if (event.which == 13) {
+                if (autocomplete.request) {
+                    event.preventDefault();
+                    Rystem.httpRequest(autocomplete.request, false, "query=" + $autocomplete.val(), null, null, function (response) {
+                        alert(response);
+                    });
+                }
+            }
+        });
     }
 }
