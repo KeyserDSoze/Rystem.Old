@@ -9,7 +9,13 @@ namespace System.Net
 {
     public static partial class HttpWebRequestExtensions
     {
-        public static async Task<(HttpWebResponse Response, string Body)> InvokeHttpAsync(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+        public static async Task<string> InvokeHttpAsync(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+        {
+            using (HttpWebResponse httpWebResponse = await uri.PrepareRequest(timeout, method, headers, contentType, body))
+            using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
+                return await streamReader.ReadToEndAsync().NoContext();
+        }
+        private static async Task<HttpWebResponse> PrepareRequest(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
         {
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
             httpWebRequest.Timeout = timeout;
@@ -19,7 +25,11 @@ namespace System.Net
                 httpWebRequest.ContentType = contentType;
             if (headers != null)
                 foreach (var header in headers)
+                {
+                    if (header.Key == "Host")
+                        continue;
                     httpWebRequest.Headers.Add(header.Key, string.Join(",", header.Value));
+                }
             if (body != null)
             {
                 byte[] postBytes = Encoding.UTF8.GetBytes(body);
@@ -27,28 +37,40 @@ namespace System.Net
                 using (Stream requestStream = await httpWebRequest.GetRequestStreamAsync())
                     await requestStream.WriteAsync(postBytes, 0, postBytes.Length).NoContext();
             }
-            using (HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync().NoContext()))
-            using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
-                return (httpWebResponse, await streamReader.ReadToEndAsync().NoContext());
+            return (HttpWebResponse)(await httpWebRequest.GetResponseAsync().NoContext());
         }
-        public static async Task<(HttpWebResponse Response, string Body)> InvokeHttpPostAsync<TEntity>(this TEntity entity, Uri uri, int timeout = 30_000, HttpHeaders headers = null)
+        public static async Task<(HttpWebResponse Response, byte[] Body)> InvokeHttpToByteAsync(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+        {
+            HttpWebResponse httpWebResponse = await uri.PrepareRequest(timeout, method, headers, contentType, body);
+            using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
+            {
+                var bytes = default(byte[]);
+                using (var memstream = new MemoryStream())
+                {
+                    streamReader.BaseStream.CopyTo(memstream);
+                    bytes = memstream.ToArray();
+                }
+                return (httpWebResponse, bytes);
+            }
+        }
+        public static async Task<string> InvokeHttpPostAsync<TEntity>(this TEntity entity, Uri uri, int timeout = 30_000, HttpHeaders headers = null)
             => await uri.InvokeHttpAsync(timeout, HttpMethod.Post, headers, "application/json; charset=UTF-8", entity.ToDefaultJson()).NoContext();
 
         public static async Task<TEntity> InvokeHttpAsync<TEntity>(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
-           => (await uri.InvokeHttpAsync(timeout, method, headers, contentType, body).NoContext()).Body.FromDefaultJson<TEntity>();
+           => (await uri.InvokeHttpAsync(timeout, method, headers, contentType, body).NoContext()).FromDefaultJson<TEntity>();
         public static async Task<TResponse> InvokeHttpPostAsync<TEntity, TResponse>(this TEntity entity, Uri uri, int timeout = 30_000, HttpHeaders headers = null)
-            => (await entity.InvokeHttpPostAsync(uri, timeout, headers).NoContext()).Body.FromDefaultJson<TResponse>();
+            => (await entity.InvokeHttpPostAsync(uri, timeout, headers).NoContext()).FromDefaultJson<TResponse>();
     }
     public static partial class HttpWebRequestExtensions
     {
-        public static async Task<(HttpWebResponse Response, string Body)> InvokeHttpAsync(this string uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+        public static async Task<string> InvokeHttpAsync(this string uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
             => await new Uri(uri).InvokeHttpAsync(timeout, method, headers, contentType, body).NoContext();
-        public static async Task<(HttpWebResponse Response, string Body)> InvokeHttpPostAsync<TEntity>(this TEntity entity, string uri, int timeout = 30_000, HttpHeaders headers = null)
+        public static async Task<string> InvokeHttpPostAsync<TEntity>(this TEntity entity, string uri, int timeout = 30_000, HttpHeaders headers = null)
             => await entity.InvokeHttpPostAsync(new Uri(uri), timeout, headers).NoContext();
 
         public static async Task<TEntity> InvokeHttpAsync<TEntity>(this string uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
-          => (await uri.InvokeHttpAsync(timeout, method, headers, contentType, body).NoContext()).Body.FromDefaultJson<TEntity>();
+          => (await uri.InvokeHttpAsync(timeout, method, headers, contentType, body).NoContext()).FromDefaultJson<TEntity>();
         public static async Task<TResponse> InvokeHttpPostAsync<TEntity, TResponse>(this TEntity entity, string uri, int timeout = 30_000, HttpHeaders headers = null)
-            => (await entity.InvokeHttpPostAsync(uri, timeout, headers).NoContext()).Body.FromDefaultJson<TResponse>();
+            => (await entity.InvokeHttpPostAsync(uri, timeout, headers).NoContext()).FromDefaultJson<TResponse>();
     }
 }
