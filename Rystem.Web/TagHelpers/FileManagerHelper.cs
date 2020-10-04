@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Localization;
+using Rystem.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,25 +17,31 @@ using System.Threading.Tasks;
 
 namespace Rystem.Web
 {
-    [HtmlTargetElement("rystem-autocomplete", TagStructure = TagStructure.NormalOrSelfClosing)]
-    public class FileViewerHelper : TagHelper
+    [HtmlTargetElement("rystem-file-manager", TagStructure = TagStructure.NormalOrSelfClosing)]
+    public class FileManagerHelper : TagHelper
     {
+        private readonly IHtmlHelper HtmlHelper;
         [ViewContext]
         public ViewContext ViewContext { get; set; }
         [HtmlAttributeName("rystem-files")]
-        public IEnumerable<FileMode> Files { get; set; }
+        public IEnumerable<FileModel> Files { get; set; }
+        [HtmlAttributeName("rystem-localizer")]
+        public IStringLocalizer Localizer { get; set; }
         private string Id { get; } = $"rystem-files-{Guid.NewGuid():N}";
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             ProcessAsync(context, output).ToResult();
         }
-        public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        public FileManagerHelper(IHtmlHelper htmlHelper)
+        {
+            HtmlHelper = htmlHelper;
+        }
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "div";
             output.Attributes.Add("id", this.Id);
-            output.Content.AppendHtml("");
-            
-            return Task.CompletedTask;
+            (HtmlHelper as IViewContextAware).Contextualize(ViewContext);
+            output.Content.SetHtmlContent(await HtmlHelper.PartialAsync("_FileManager", (this.Files, this.Localizer)));
         }
     }
 }

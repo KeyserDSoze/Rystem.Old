@@ -402,3 +402,15 @@ class AutocompleteRystem extends Rystem {
         });
     }
 }
+
+var fileManager = {
+    openDirectory: function (value) {
+        if (value) {
+            $(".folder-container-visible").removeClass("folder-container-visible");
+            $("." + value).addClass("folder-container-visible");
+        }
+    },
+    openFile: function (value) {
+
+    }
+}

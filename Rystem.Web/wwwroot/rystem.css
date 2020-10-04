@@ -236,3 +236,70 @@
     }
 
 /*#endregion*/
+
+/*#region file-manager*/
+.file-explorer {
+    border: 1px solid black;
+    position: relative;
+    float: left;
+    padding: 15px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.file-explorer-back {
+    font-size: 30px;
+}
+
+.file-explorer-distance {
+    position: relative;
+    float: left;
+    width: 100%;
+}
+
+.folder-file-line {
+    position: relative;
+    float: left;
+    width: 100%;
+}
+
+.file-explorer-distance div.name {
+    position: relative;
+    float: left;
+    width: 50%;
+    font-size: 16px;
+}
+
+.file-explorer-distance div.datetime {
+    position: relative;
+    float: left;
+    width: 20%;
+}
+
+.file-explorer-distance div.type {
+    position: relative;
+    float: left;
+    width: 30%;
+}
+
+.file-explorer-distance .name img {
+    position: relative;
+    float: left;
+    width: 25px;
+}
+
+.file-explorer-distance .name div {
+    position: relative;
+    float: left;
+    width: calc(100%-35px);
+    margin-left: 10px;
+}
+
+.folder-container {
+    display: none;
+}
+
+.folder-container-visible {
+    display: block;
+}
+/*#endregion*/

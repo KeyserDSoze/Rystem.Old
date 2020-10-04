@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Rystem.Utility;
 using Rystem.Web;
+using Rystem.Web.Models;
 using Rystem.WebApp.Models;
 
 namespace Rystem.WebApp.Controllers
@@ -31,6 +32,23 @@ namespace Rystem.WebApp.Controllers
             }
             return View(alo);
         }
+        public IActionResult FilesD()
+        {
+            return View(Files);
+        }
+        private static readonly List<FileModel> Files = new List<FileModel>()
+        {
+            new FileModel("text/plan", "cardio/falbio/carol.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio/falbio2/carol2.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio2/falbio/carol3.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio/falbio2/carol4.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio/falbio/carol5.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio/falbio3/carol6.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio3/falbio/carol7.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio/falbio/carol8.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio/carol8.txt", DateTime.UtcNow),
+            new FileModel("text/plan", "cardio3/carol8.txt", DateTime.UtcNow),
+        };
 
         [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]

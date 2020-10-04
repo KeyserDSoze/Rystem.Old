@@ -1,0 +1,16 @@
+﻿@using Rystem.Web.Models
+@using Microsoft.Extensions.Localization 
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model (IEnumerable<FileModel> Files, IStringLocalizer StringLocalizer)
+@{
+    var root = DirectoryModel.FromFiles(Model.Files, Model.StringLocalizer);
+}
+
+<div class="file-explorer" style="width:800px;">
+    <div class="file-explorer-distance">
+        <div class="name">Name</div>
+        <div class="datetime">Date modified</div>
+        <div class="type">Type</div>
+    </div>
+    <partial name="_FileFileManager" model="root" />
+</div>

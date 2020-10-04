@@ -1,0 +1,42 @@
+﻿@using Rystem.Web.Models
+@model DirectoryModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    string cssClass = Model.IsRoot ? "folder-container-visible" : string.Empty;
+}
+
+<div class="folder-container @Model.Id @cssClass">
+    <div onclick="fileManager.openDirectory('@Model.Father?.Id')">
+        <div class="name file-explorer-back">
+            ...
+        </div>
+    </div>
+    <div class="file-explorer-distance">
+        @foreach (var directory in Model.Directories)
+        {
+            <div class="folder-file-line" onclick="fileManager.openDirectory('@directory.Value.Id')">
+                <div class="name">
+                    <img src="https://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" />
+                    <div>@directory.Value.Name</div>
+                </div>
+                <div class="datetime"></div>
+                <div class="type">folder</div>
+            </div>
+        }
+        @foreach (var file in Model.Files)
+        {
+            <div class="folder-file-line" onclick="fileManager.openFile('@file.FullName')">
+                <div class="name">
+                    <img src="https://puntocuneo.it/wp-content/uploads/2019/03/Cosa-sono-i-file-nome.png" />
+                    <div>@file.Name</div>
+                </div>
+                <div class="datetime">@file.ModificationTime</div>
+                <div class="type">@file.ContentType</div>
+            </div>
+        }
+    </div>
+</div>
+@foreach (var directory in Model.Directories)
+{
+    <partial name="_FileFileManager" model="directory.Value" />
+}
