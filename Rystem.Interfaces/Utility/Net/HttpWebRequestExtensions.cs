@@ -10,12 +10,14 @@ namespace System.Net
     public static partial class HttpWebRequestExtensions
     {
         public static async Task<string> InvokeHttpAsync(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+            => await uri.InvokeHttpAsyncWithStream(timeout, method, headers, contentType, new MemoryStream(Encoding.UTF8.GetBytes(body)));
+        public static async Task<string> InvokeHttpAsyncWithStream(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, Stream body = null)
         {
             using (HttpWebResponse httpWebResponse = await uri.PrepareRequest(timeout, method, headers, contentType, body))
             using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
                 return await streamReader.ReadToEndAsync().NoContext();
         }
-        private static async Task<HttpWebResponse> PrepareRequest(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+        private static async Task<HttpWebResponse> PrepareRequest(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, Stream body = null)
         {
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
             httpWebRequest.Timeout = timeout;
@@ -32,14 +34,12 @@ namespace System.Net
                 }
             if (body != null)
             {
-                byte[] postBytes = Encoding.UTF8.GetBytes(body);
-                httpWebRequest.ContentLength = postBytes.Length;
                 using (Stream requestStream = await httpWebRequest.GetRequestStreamAsync())
-                    await requestStream.WriteAsync(postBytes, 0, postBytes.Length).NoContext();
+                    await body.CopyToAsync(requestStream);
             }
             return (HttpWebResponse)(await httpWebRequest.GetResponseAsync().NoContext());
         }
-        public static async Task<(HttpWebResponse Response, byte[] Body)> InvokeHttpToByteAsync(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, string body = null)
+        public static async Task<(HttpWebResponse Response, byte[] Body)> InvokeHttpToByteAsync(this Uri uri, int timeout = 30_000, HttpMethod method = null, HttpHeaders headers = null, string contentType = null, Stream body = null)
         {
             HttpWebResponse httpWebResponse = await uri.PrepareRequest(timeout, method, headers, contentType, body);
             using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
