@@ -6,11 +6,11 @@
     var root = DirectoryModel.FromFiles(Model.Files, Model.StringLocalizer);
 }
 
-<div class="file-explorer" style="width:800px;">
+<div class="file-explorer">
     <div class="file-explorer-distance">
-        <div class="name">Name</div>
-        <div class="datetime">Date modified</div>
-        <div class="type">Type</div>
+        <div class="name">@(Model.StringLocalizer != null ? Model.StringLocalizer["Name"] : "Name")</div>
+        <div class="datetime">@(Model.StringLocalizer != null ? Model.StringLocalizer["Date modified"] : "Date modified")</div>
+        <div class="type">@(Model.StringLocalizer != null ? Model.StringLocalizer["Type"] : "Type")</div>
     </div>
     <partial name="_FileFileManager" model="root" />
 </div>

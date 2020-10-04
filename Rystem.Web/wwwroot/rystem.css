@@ -245,6 +245,7 @@
     padding: 15px;
     box-sizing: border-box;
     cursor: pointer;
+    width: 100%;
 }
 
 .file-explorer-back {
