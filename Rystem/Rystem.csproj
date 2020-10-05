@@ -7,6 +7,7 @@
     <StartupObject />
     <LangVersion>8.0</LangVersion>
     <Version>7.2.4</Version>
+    <Authors>Alessandro Rapiti</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>2019-2030</Copyright>
