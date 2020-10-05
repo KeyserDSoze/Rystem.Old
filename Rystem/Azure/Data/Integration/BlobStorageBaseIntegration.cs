@@ -69,7 +69,7 @@ namespace Rystem.Data.Integration
             IList<string> items = new List<string>();
             CancellationToken token = default;
             int count = 0;
-            await foreach (var t in client.GetBlobsAsync(BlobTraits.All, BlobStates.All, prefix, token))
+            await foreach (var t in client.GetBlobsAsync(BlobTraits.None, BlobStates.None, prefix, token))
             {
                 items.Add($"{client.Uri}/{t.Name}");
                 count++;

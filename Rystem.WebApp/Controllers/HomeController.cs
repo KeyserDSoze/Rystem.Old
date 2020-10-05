@@ -36,6 +36,16 @@ namespace Rystem.WebApp.Controllers
         {
             return View(Files);
         }
+        [HttpPost]
+        public IActionResult DeleteFile([FromQuery] string fileName)
+        {
+            return Ok();
+        }
+        [HttpPost]
+        public IActionResult UploadFile([FromQuery] string directory, IFormFile file)
+        {
+            return Ok();
+        }
         private static readonly List<FileModel> Files = new List<FileModel>()
         {
             new FileModel("text/plan", "cardio/falbio/carol.txt", DateTime.UtcNow),

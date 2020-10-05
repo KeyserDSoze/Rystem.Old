@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.Web
 {
-    [HtmlTargetElement("rystem-file-manager", TagStructure = TagStructure.NormalOrSelfClosing)]
+    [HtmlTargetElement("rystem-file-manager", Attributes = "rystem-files", TagStructure = TagStructure.NormalOrSelfClosing)]
     public class FileManagerHelper : TagHelper
     {
         private readonly IHtmlHelper HtmlHelper;
@@ -27,6 +27,12 @@ namespace Rystem.Web
         public IEnumerable<FileModel> Files { get; set; }
         [HtmlAttributeName("rystem-localizer")]
         public IStringLocalizer Localizer { get; set; }
+        [HtmlAttributeName("rystem-request-context")]
+        public RequestContext RequestContext { get; set; }
+        [HtmlAttributeName("rystem-delete-request-context")]
+        public RequestContext DeleteRequestContext { get; set; }
+        [HtmlAttributeName("rystem-skip-path")]
+        public int Skip { get; set; }
         private string Id { get; } = $"rystem-files-{Guid.NewGuid():N}";
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
@@ -41,7 +47,7 @@ namespace Rystem.Web
             output.TagName = "div";
             output.Attributes.Add("id", this.Id);
             (HtmlHelper as IViewContextAware).Contextualize(ViewContext);
-            output.Content.SetHtmlContent(await HtmlHelper.PartialAsync("_FileManager", (this.Files, this.Localizer)));
+            output.Content.SetHtmlContent(await HtmlHelper.PartialAsync("_FileManager", (this.Files, this.Localizer, this.RequestContext, this.DeleteRequestContext, this.Skip)));
         }
     }
 }

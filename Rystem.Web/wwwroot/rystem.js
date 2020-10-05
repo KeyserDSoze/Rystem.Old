@@ -410,7 +410,10 @@ var fileManager = {
             $("." + value).addClass("folder-container-visible");
         }
     },
-    openFile: function (value) {
-
+    downloadAllFiles: function (value) {
+        window.open(value, "_Blank");
+    },
+    remove: function (value) {
+        $("#file-" + value).remove();
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <Version>1.5.2</Version>
+    <Version>1.6.0</Version>
     <Authors>Alessandro Rapiti</Authors>
     <Company>Rystem</Company>
     <Product>Rystem</Product>
@@ -43,6 +43,8 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Include="Views\Shared\ShowDocument.cshtml" />
+    <None Include="Views\Shared\ShowImage.cshtml" />
     <None Include="wwwroot\images\rystem.web.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>

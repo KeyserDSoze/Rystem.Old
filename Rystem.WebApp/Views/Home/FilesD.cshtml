@@ -1,3 +1,6 @@
 ﻿@model IEnumerable<Rystem.Web.Models.FileModel>
 
-<rystem-file-manager rystem-files="Model" style="width:800px;"></rystem-file-manager>
+<rystem-file-manager rystem-files="Model"
+                     rystem-request-context='new RequestContext() { Action = "UploadFile", Controller = "Home"}'
+                     rystem-delete-request-context='new RequestContext() { Action = "DeleteFile", Controller = "Home"}'
+                     style="width:800px;"></rystem-file-manager>

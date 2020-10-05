@@ -1,42 +1,126 @@
 ﻿@using Rystem.Web.Models
-@model DirectoryModel
+@using Rystem.Web
+@using Microsoft.Extensions.Localization
+@using System.Web
+@using System.Threading
+@model (DirectoryModel Directory, RequestContext RequestContext, RequestContext DeleteRequestContext, IStringLocalizer StringLocalizer)
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Rystem.Web
 @{
-    string cssClass = Model.IsRoot ? "folder-container-visible" : string.Empty;
+    string cssClass = Model.Directory.IsRoot ? "folder-container-visible" : string.Empty;
+    string allUrl = string.Empty;
 }
 
-<div class="folder-container @Model.Id @cssClass">
-    <div onclick="fileManager.openDirectory('@Model.Father?.Id')">
-        <div class="name file-explorer-back">
+<div class="folder-container @Model.Directory.Id @cssClass">
+    <div onclick="fileManager.openDirectory('@Model.Directory.Father?.Id')">
+        <div class="folder-file-name file-explorer-back">
             ...
         </div>
     </div>
     <div class="file-explorer-distance">
-        @foreach (var directory in Model.Directories)
+        @foreach (var directory in Model.Directory.Directories)
         {
             <div class="folder-file-line" onclick="fileManager.openDirectory('@directory.Value.Id')">
-                <div class="name">
-                    <img src="https://icons.iconarchive.com/icons/custom-icon-design/flatastic-1/256/folder-icon.png" />
-                    <div>@directory.Value.Name</div>
+                <div class="folder-file-name">
+                    <i class="fas fa-folder text-xl-left folder-file-color"></i>
+                    <div>@directory.Value.LocalizedName</div>
                 </div>
-                <div class="datetime"></div>
-                <div class="type">folder</div>
+                <div class="folder-file-type">
+                    @if (Model.StringLocalizer != null)
+                    {
+                        @Model.StringLocalizer["Folder"];
+                    }
+                    else
+                    {
+                        @:Folder
+                    }
+                </div>
+
+
+                <div class="folder-file-datetime"></div>
             </div>
         }
-        @foreach (var file in Model.Files)
+        @foreach (var file in Model.Directory.Files)
         {
-            <div class="folder-file-line" onclick="fileManager.openFile('@file.FullName')">
-                <div class="name">
-                    <img src="https://puntocuneo.it/wp-content/uploads/2019/03/Cosa-sono-i-file-nome.png" />
-                    <div>@file.Name</div>
+            allUrl += $"urls={file.FullName}&";
+            <div class="folder-file-line" id="file-@file.RandomId">
+                @if (file.IsImage())
+                {
+                    <rystem-ajax-modal rystem-request-context='new RequestContext() { Action = "ShowImage", Controller = "RystemAjaxManager", QueryString = new Dictionary<object, object> { { "url", HttpUtility.UrlEncode(file.FullName) } } }' rystem-size="Large" class="folder-file-name">
+                        <img class="col-md-4 btn" src="@file.FullName" />
+                    </rystem-ajax-modal>
+                }
+                else
+                {
+                    <rystem-ajax-modal rystem-request-context='new RequestContext() { Action = "ShowDocument", Controller = "RystemAjaxManager", QueryString = new Dictionary<object, object> { { "url", HttpUtility.UrlEncode(file.FullName) } } }' rystem-size="Large" class="folder-file-name">
+                        <i title="@file.Name" class="fas @file.GetRightIcon() text-xl-left"></i>
+                        <div>@file.Name</div>
+                    </rystem-ajax-modal>
+                }
+                <div class="folder-file-type">@file.ContentType</div>
+                <div class="folder-file-datetime">@file.ModificationTime.ToString("yyyy-MM-dd HH:mm")</div>
+                @{
+                    if (Model.DeleteRequestContext != null)
+                    {
+                        RequestContext requestContext = new RequestContext
+                        {
+                            Action = Model.DeleteRequestContext.Action,
+                            Controller = Model.DeleteRequestContext.Controller,
+                            Area = Model.DeleteRequestContext.Area,
+                            FurtherPath = Model.DeleteRequestContext.FurtherPath,
+                            SuccessCallback = $"(a,b,c)=>fileManager.remove('{file.RandomId}')"
+                        };
+                        if (Model.DeleteRequestContext.QueryString == null)
+                            requestContext.QueryString = new Dictionary<object, object>();
+                        else
+                            requestContext.QueryString = Model.DeleteRequestContext.QueryString.ToDictionary(x => x.Key, x => x.Value);
+                        requestContext.QueryString.Add("fileName", file.FullName);
+                        <rystem-ajax-button rystem-request-context='requestContext' rystem-size="Large" class="folder-file-delete">
+                            <i title="@file.Name" class="fas fa-trash text-xl-left folder-file-delete-color"></i>
+                        </rystem-ajax-button>
+                    }
+                }
+            </div>
+        }
+        @if (!string.IsNullOrWhiteSpace(allUrl))
+        {
+            <div class="folder-file-line" style="margin-top:10px;">
+                <div class="folder-file-name" onclick="fileManager.downloadAllFiles('../../../../../../rystemajaxmanager/download?name=@Model.Directory.Name&@allUrl');">
+                    <i class="fas fa-download text-xl-left folder-file-download-color"></i>
+                    <div>
+                        @if (Model.StringLocalizer != null)
+                        {
+                            @Model.StringLocalizer["Download All"];
+                        }
+                        else
+                        {
+                            @:Download All
+                        }
+                    </div>
                 </div>
-                <div class="datetime">@file.ModificationTime</div>
-                <div class="type">@file.ContentType</div>
             </div>
         }
     </div>
+    @{
+        if (Model.RequestContext != null)
+        {
+            RoutingContext routingContext = new RoutingContext
+            {
+                Action = Model.RequestContext.Action,
+                Controller = Model.RequestContext.Controller,
+                Area = Model.RequestContext.Area,
+                FurtherPath = Model.RequestContext.FurtherPath,
+            };
+            if (Model.RequestContext.QueryString == null)
+                routingContext.QueryString = new Dictionary<object, object>();
+            else
+                routingContext.QueryString = Model.RequestContext.QueryString.ToDictionary(x => x.Key, x => x.Value);
+            routingContext.QueryString.Add("directory", Model.Directory.Name);
+            <rystem-ajax-file rystem-message='' rystem-request-context='routingContext' class="folder-file-upload"></rystem-ajax-file>
+        }
+    }
 </div>
-@foreach (var directory in Model.Directories)
+@foreach (var directory in Model.Directory.Directories)
 {
-    <partial name="_FileFileManager" model="directory.Value" />
+    <partial name="_FileFileManager" model="(directory.Value, Model.RequestContext, Model.DeleteRequestContext, Model.StringLocalizer)" />
 }
