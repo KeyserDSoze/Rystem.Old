@@ -25,7 +25,7 @@ namespace Rystem.Cache
             => MemoryInstance(key).Instance;
         public bool Update(string key, T value, TimeSpan expireTime)
         {
-            if (value == null)
+            if (value == null || string.IsNullOrWhiteSpace(key))
                 return false;
             long multitonExpireTime = Properties.ExpireSeconds;
             if (expireTime != default)

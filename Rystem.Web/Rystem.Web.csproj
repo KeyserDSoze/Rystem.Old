@@ -46,4 +46,8 @@
     </None>
   </ItemGroup>
   
+  <ItemGroup>
+    <ProjectReference Include="..\Rystem\Rystem.csproj" />
+  </ItemGroup>
+  
 </Project>

@@ -30,7 +30,10 @@ namespace System.Net
                 {
                     if (header.Key == "Host")
                         continue;
-                    httpWebRequest.Headers.Add(header.Key, string.Join(",", header.Value));
+                    if (header.Key.ToLower() == "referer")
+                        httpWebRequest.Headers.Add(header.Key, $"{uri.Scheme}://{uri.Host}");
+                    else
+                        httpWebRequest.Headers.Add(header.Key, string.Join(",", header.Value));
                 }
             if (body != null)
             {
