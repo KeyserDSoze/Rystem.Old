@@ -6,7 +6,7 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <LangVersion>8.0</LangVersion>
-    <Version>7.2.5</Version>
+    <Version>7.2.6</Version>
     <Authors>Alessandro Rapiti</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -38,7 +38,7 @@
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.0.0" />
     <PackageReference Include="Microsoft.Azure.Storage.Common" Version="11.2.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.9" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NuGet.CommandLine" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>

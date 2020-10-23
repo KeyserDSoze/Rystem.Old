@@ -10,7 +10,7 @@ namespace Rystem.Queue
 {
     internal class QueueStorageIntegration<TEntity> : IQueueIntegration<TEntity>
     {
-        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private readonly RaceCondition RaceCondition = new RaceCondition();
         private QueueClient context;
         private async Task<QueueClient> GetContextAsync()
         {

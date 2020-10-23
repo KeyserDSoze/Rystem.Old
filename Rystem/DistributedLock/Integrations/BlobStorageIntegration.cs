@@ -15,8 +15,8 @@ namespace Rystem.DistributedLock
     {
         private static readonly string LeaseGuidId = Guid.NewGuid().ToString();
         private readonly LockConfiguration Configuration;
-        private static readonly RaceCondition BlobTrafficLight = new RaceCondition();
-        private static readonly RaceCondition ContainerTrafficLight = new RaceCondition();
+        private readonly RaceCondition BlobTrafficLight = new RaceCondition();
+        private readonly RaceCondition ContainerTrafficLight = new RaceCondition();
         private static readonly MemoryStream EmptyStream = new MemoryStream(new byte[0]);
         private BlobContainerClient container;
         private async Task<BlobContainerClient> GetContainerAsync()
@@ -67,7 +67,7 @@ namespace Rystem.DistributedLock
             this.Name = name;
         }
         private ConcurrentDictionary<string, BlobLeaseClient> TokenAcquireds = new ConcurrentDictionary<string, BlobLeaseClient>();
-        private static readonly RaceCondition AcquiringRaceCondition = new RaceCondition();
+        private readonly RaceCondition AcquiringRaceCondition = new RaceCondition();
         public async Task<bool> AcquireAsync(string key)
         {
             try
@@ -101,7 +101,7 @@ namespace Rystem.DistributedLock
             Response<BlobProperties> properties = await blob.GetPropertiesAsync().NoContext();
             return properties.Value.LeaseStatus == LeaseStatus.Locked;
         }
-        private static readonly RaceCondition ReleasingRaceCondition = new RaceCondition();
+        private readonly RaceCondition ReleasingRaceCondition = new RaceCondition();
         public async Task<bool> ReleaseAsync(string key)
         {
             string normalizedKey = key ?? string.Empty;

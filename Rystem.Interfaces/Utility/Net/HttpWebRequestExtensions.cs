@@ -28,7 +28,7 @@ namespace System.Net
             if (headers != null)
                 foreach (var header in headers)
                 {
-                    if (header.Key == "Host")
+                    if (header.Key.ToLower() == "host")
                         continue;
                     if (header.Key.ToLower() == "referer")
                         httpWebRequest.Headers.Add(header.Key, $"{uri.Scheme}://{uri.Host}");

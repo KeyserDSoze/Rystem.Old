@@ -6,7 +6,7 @@ namespace System
     public sealed class RaceCondition
     {
         private readonly object Semaphore = new object();
-        private bool IsLocked;
+        private bool IsLocked { get; set; }
         public async Task<RaceConditionResponse> ExecuteAsync(Func<Task> action)
         {
             var isTheFirst = false;

@@ -13,7 +13,7 @@ namespace Rystem.Cache
     internal class InTableStorage<T> : ICacheIntegrationAsync<T>
     {
         private CloudTable context;
-        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private readonly RaceCondition RaceCondition = new RaceCondition();
         private async Task<CloudTable> GetContextAsync()
         {
             if (context == null)

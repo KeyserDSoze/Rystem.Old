@@ -19,7 +19,7 @@ namespace Rystem.Data.Integration
         private protected abstract IDataReader<TEntity> DefaultReader { get; }
         private protected abstract IDataWriter<TEntity> DefaultWriter { get; }
         private protected BlobContainerClient context;
-        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private readonly RaceCondition RaceCondition = new RaceCondition();
         private protected async Task<BlobContainerClient> GetContextAsync()
         {
             if (context == null)

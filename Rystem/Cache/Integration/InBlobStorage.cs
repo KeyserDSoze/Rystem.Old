@@ -16,7 +16,7 @@ namespace Rystem.Cache
     {
         private readonly CacheConfiguration Properties;
         private protected BlobContainerClient context;
-        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private readonly RaceCondition RaceCondition = new RaceCondition();
         private protected async Task<BlobContainerClient> GetContextAsync()
         {
             if (context == null)

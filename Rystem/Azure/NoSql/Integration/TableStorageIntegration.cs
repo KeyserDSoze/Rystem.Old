@@ -15,7 +15,7 @@ namespace Rystem.NoSql
     {
         private static readonly object TrafficLight = new object();
         private CloudTable context;
-        private static readonly RaceCondition RaceCondition = new RaceCondition();
+        private readonly RaceCondition RaceCondition = new RaceCondition();
         private async Task<CloudTable> GetContextAsync()
         {
             if (context == null)
