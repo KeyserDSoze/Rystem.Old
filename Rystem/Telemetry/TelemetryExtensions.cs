@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Storage;
+﻿using Azure.Storage;
 using Microsoft.OData.Edm;
 using Rystem.Utility;
 using System;

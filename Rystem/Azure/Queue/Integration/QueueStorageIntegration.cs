@@ -63,8 +63,12 @@ namespace Rystem.Queue
             return !string.IsNullOrWhiteSpace((await client.SendMessageAsync(messages.ToDefaultJson()).NoContext()).Value.MessageId);
         }
 
-        public Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
-            => throw new NotImplementedException("Queue storage doesn't allow this operation.");
+        public async Task<long> SendScheduledAsync(TEntity message, int delayInSeconds, int path, int organization)
+        {
+            var client = context ?? await GetContextAsync();
+            _ = await client.SendMessageAsync(message.ToDefaultJson(), new TimeSpan(0, 0, delayInSeconds)).NoContext();
+            return 0;
+        }
 
         public Task<IEnumerable<long>> SendScheduledBatchAsync(IEnumerable<TEntity> messages, int delayInSeconds, int path, int organization)
             => throw new NotImplementedException("Queue storage doesn't allow this operation.");
