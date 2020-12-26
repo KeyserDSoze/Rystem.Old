@@ -6,7 +6,7 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <LangVersion>8.0</LangVersion>
-    <Version>7.2.8</Version>
+    <Version>7.2.9</Version>
     <Authors>Alessandro Rapiti</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -24,6 +24,8 @@
       Utility: Real random number, All types in assembler ran, Mime mapping, Deep copy, Latency and Properties Manager for Reflection.
       Crypting: Aes helper, Sha256 helper.</Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
