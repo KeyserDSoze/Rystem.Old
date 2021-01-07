@@ -18,5 +18,10 @@ namespace Rystem.NoSql
             tableStorageBuilder.NoSqlConfiguration.ConnectionString = this.ConnectionString;
             return new NoSqlBuilder(tableStorageBuilder.NoSqlConfiguration, this);
         }
+        public NoSqlBuilder WithBlobStorage(BlobStorageBuilder blobStorageBuilder)
+        {
+            blobStorageBuilder.NoSqlConfiguration.ConnectionString = this.ConnectionString;
+            return new NoSqlBuilder(blobStorageBuilder.NoSqlConfiguration, this);
+        }
     }
 }

@@ -15,5 +15,10 @@ namespace Rystem.Fast
                 .WithNoSql(connectionString)
                 .WithTableStorage(new TableStorageBuilder())
                 .Build());
+        public static void ConfigureBlobStorage(string connectionString)
+            => FastNoSqlInstaller.Configure(new ConfigurationBuilder()
+                .WithNoSql(connectionString)
+                .WithBlobStorage(new BlobStorageBuilder())
+                .Build());
     }
 }

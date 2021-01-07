@@ -24,6 +24,9 @@ namespace Rystem.NoSql
                             case NoSqlType.TableStorage:
                                 Integrations.Add(installation, new TableStorageIntegration<TEntity>(configuration, this.DefaultEntity));
                                 break;
+                            case NoSqlType.BlobStorage:
+                                Integrations.Add(installation, new BlobStorageIntegration<TEntity>(configuration, this.DefaultEntity));
+                                break;
                             default:
                                 throw new InvalidOperationException($"Wrong type installed {configuration.Type}");
                         }

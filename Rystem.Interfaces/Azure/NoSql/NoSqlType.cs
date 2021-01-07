@@ -6,6 +6,7 @@ namespace Rystem.NoSql
 {
     public enum NoSqlType
     {
-        TableStorage
+        TableStorage,
+        BlobStorage
     }
 }

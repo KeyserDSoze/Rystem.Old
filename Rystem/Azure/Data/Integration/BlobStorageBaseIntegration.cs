@@ -60,7 +60,7 @@ namespace Rystem.Data.Integration
         private protected async Task<bool> ExistsAsync(string name)
         {
             var client = context ?? await GetContextAsync().NoContext();
-            return await client.GetBlobClient(name).ExistsAsync().NoContext();
+            return await client.GetBlobClient(name).ExistsAsync().NoContext();  
         }
 
         private protected async Task<IList<string>> SearchAsync(string prefix = null, int? takeCount = null)

@@ -13,7 +13,6 @@ namespace Rystem.NoSql
 {
     internal class TableStorageIntegration<TEntity> : INoSqlIntegration<TEntity>
     {
-        private static readonly object TrafficLight = new object();
         private CloudTable context;
         private readonly RaceCondition RaceCondition = new RaceCondition();
         private async Task<CloudTable> GetContextAsync()
