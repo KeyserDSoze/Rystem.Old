@@ -42,7 +42,7 @@
         }
         @foreach (var file in Model.Directory.Files)
         {
-            allUrl += $"urls={file.FullName}&";
+            allUrl += $"urls={HttpUtility.UrlEncode(file.FullName)}&";
             <div class="folder-file-line" id="file-@file.RandomId">
                 @if (file.IsImage())
                 {
@@ -74,7 +74,7 @@
                             requestContext.QueryString = new Dictionary<object, object>();
                         else
                             requestContext.QueryString = Model.DeleteRequestContext.QueryString.ToDictionary(x => x.Key, x => x.Value);
-                        requestContext.QueryString.Add("fileName", file.FullName);
+                        requestContext.QueryString.Add("fileName", HttpUtility.UrlEncode(file.FullName));
                         <rystem-ajax-button rystem-request-context='requestContext' rystem-size="Large" class="folder-file-delete">
                             <i title="@file.Name" class="fas fa-trash text-xl-left folder-file-delete-color"></i>
                         </rystem-ajax-button>
