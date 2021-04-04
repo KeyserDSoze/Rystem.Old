@@ -35,7 +35,11 @@ namespace Rystem.Data.Integration
                 Properties = dummy.Properties,
                 Name = dummy.Name
             };
-            await dummy.Stream.CopyToAsync((dataLake as IFileData).Stream).NoContext();
+            var fileData = (dataLake as IFileData);
+            if (fileData.Stream == null)
+                fileData.Stream = new MemoryStream();
+            await dummy.Stream.CopyToAsync(fileData.Stream).NoContext();
+            fileData.Stream.Position = 0;
             return new WrapperEntity<TEntity>() { Entities = new List<TEntity>() { dataLake } };
         }
     }
