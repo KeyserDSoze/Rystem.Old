@@ -28,7 +28,6 @@ namespace Rystem.Aggregation
             foreach (var installation in AggregationProperties.Keys)
                 this.CreateTrafficLight(installation);
         }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's an action that catch the exception")]
         public async Task<IList<T>> RunAsync(IEnumerable<T> events, ILogger log, Func<T, Task> action = null, Func<Exception, T, Task> errorCatcher = null, Installation installation = Installation.Default)
         {
             IList<Exception> exceptions = new List<Exception>();
@@ -59,7 +58,6 @@ namespace Rystem.Aggregation
         }
         public async Task AutoFlushAsync(Installation installation)
             => await this.FlushAsync(null, installation).NoContext();
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "There's a logger that catch the exception")]
         public Task<IList<T>> FlushAsync(ILogger log, Installation installation)
         {
             IList<T> events = new List<T>();
