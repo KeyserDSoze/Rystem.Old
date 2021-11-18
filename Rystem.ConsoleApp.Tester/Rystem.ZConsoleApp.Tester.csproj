@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rystem.Web\Rystem.Web.csproj" />
-    <ProjectReference Include="..\Rystem\Rystem.csproj" />
+    <ProjectReference Include="..\Rystem.Web\Rystem.Old.Web.csproj" />
+    <ProjectReference Include="..\Rystem\Rystem.Old.csproj" />
   </ItemGroup>
 
 </Project>
