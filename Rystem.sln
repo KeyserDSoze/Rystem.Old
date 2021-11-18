@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem", "Rystem\Rystem.csproj", "{79D8E048-5626-4472-A900-6EEBFD99520C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.Old", "Rystem\Rystem.Old.csproj", "{79D8E048-5626-4472-A900-6EEBFD99520C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.ZConsoleApp.Tester", "Rystem.ConsoleApp.Tester\Rystem.ZConsoleApp.Tester.csproj", "{1F98BCB5-47D5-4057-81FF-620541D692C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.Interfaces", "Rystem.Interfaces\Rystem.Interfaces.csproj", "{114A2ED7-2B31-42EB-9C95-CF0D3D873F9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.Old.Interfaces", "Rystem.Interfaces\Rystem.Old.Interfaces.csproj", "{114A2ED7-2B31-42EB-9C95-CF0D3D873F9D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.WebApp", "Rystem.WebApp\Rystem.WebApp.csproj", "{C8056488-5F25-4B5C-8F8E-B01101CEBEA2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.Web", "Rystem.Web\Rystem.Web.csproj", "{6568328F-E9BF-4D00-889A-BA35B63E93D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.Old.Web", "Rystem.Web\Rystem.Old.Web.csproj", "{6568328F-E9BF-4D00-889A-BA35B63E93D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.WebApp.Backoffice", "Rystem.WebApp.Backoffice\Rystem.WebApp.Backoffice.csproj", "{73373C68-A374-4B7F-9AA8-A96CE09A3692}"
 EndProject

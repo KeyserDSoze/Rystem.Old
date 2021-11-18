@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rystem.ConsoleApp.Tester\Rystem.ZConsoleApp.Tester.csproj" />
-    <ProjectReference Include="..\Rystem\Rystem.csproj" />
+    <ProjectReference Include="..\Rystem\Rystem.Old.csproj" />
   </ItemGroup>
 
 </Project>

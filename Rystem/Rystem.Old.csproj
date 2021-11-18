@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rystem.Interfaces\Rystem.Interfaces.csproj" />
+    <ProjectReference Include="..\Rystem.Interfaces\Rystem.Old.Interfaces.csproj" />
   </ItemGroup>
 
   <ItemGroup>
