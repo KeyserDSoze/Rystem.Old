@@ -20,9 +20,9 @@ jobs:
         id: publish_nuget
         uses: rohith/publish-nuget@v2
         with:
-          PROJECT_FILE_PATH: Rystem/Rystem.csproj
+          PROJECT_FILE_PATH: Rystem/Rystem.Old.csproj
           PACKAGE_NAME: Rystem.Old
-          VERSION_FILE_PATH: Rystem/Rystem.csproj
+          VERSION_FILE_PATH: Rystem/Rystem.Old.csproj
           VERSION_REGEX: <Version>(.*)<\/Version>
           TAG_COMMIT: true
           TAG_FORMAT: v*
