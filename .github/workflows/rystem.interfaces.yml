@@ -20,9 +20,9 @@ jobs:
         id: publish_nuget
         uses: rohith/publish-nuget@v2
         with:
-          PROJECT_FILE_PATH: Rystem.Interfaces/Rystem.Interfaces.csproj
+          PROJECT_FILE_PATH: Rystem.Interfaces/Rystem.Old.Interfaces.csproj
           PACKAGE_NAME: Rystem.Old.Interfaces
-          VERSION_FILE_PATH: Rystem.Interfaces/Rystem.Interfaces.csproj
+          VERSION_FILE_PATH: Rystem.Interfaces/Rystem.Old.Interfaces.csproj
           VERSION_REGEX: <Version>(.*)<\/Version>
           TAG_COMMIT: true
           TAG_FORMAT: v*
